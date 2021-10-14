@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="me.ag2s.cronetlib">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+<!--    Android 11更改了应用查询用户在设备上已安装的其他应用以及与之交互的方式。您应用的targetSdkVersion是30或者更高版本时，-->
+<!--    需要在“AndroidManifest.xml”中manifest下添加<queries>标签，-->
+<!--    使应用可以访问HMS Core（APK）。-->
+
+    <queries>
+        <intent>
+            <action android:name="com.huawei.hms.core.aidlservice" />
+        </intent>
+    </queries>
+
+    <application>
+
+        <provider
+            android:name=".CronetContentProvider"
+            android:authorities="${applicationId}.CronetContentProvider"
+            android:enabled="true"
+            android:exported="false" />
+    </application>
+
+</manifest>
