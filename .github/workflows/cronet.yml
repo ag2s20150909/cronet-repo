@@ -23,6 +23,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          git rebase --continue
           git commit -am "update cronet"
           git tag -a "$lastest_cronet_version"
       - name: Create Pull Request
