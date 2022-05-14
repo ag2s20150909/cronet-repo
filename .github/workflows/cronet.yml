@@ -22,6 +22,8 @@ jobs:
           echo "PR_BODY=Changes in the [Git log](https://chromium.googlesource.com/chromium/src/+log/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -am "update cronet"
           git tag -a "$lastest_cronet_version"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
