@@ -104,7 +104,7 @@ public abstract class AbsCronetCallback extends UrlRequest.Callback {
         Log.e(TAG, negotiatedProtocol);
 
         if (negotiatedProtocol.contains("h3")) {
-            return Protocol.QUIC;
+            return Protocol.HTTP_3;
         } else if (negotiatedProtocol.contains("quic")) {
             return Protocol.QUIC;
         } else if (negotiatedProtocol.contains("spdy")) {

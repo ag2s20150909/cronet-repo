@@ -176,7 +176,7 @@ static synchronized def RunCmd(String cmd, String name) {
     cmdP.waitFor()
 }
 
-//task tt {
+//task test {
 //    //RunCmd("cd $rootDir.absolutePath", "AAAA")
 //    doFirst {
 //        println runCommands("git", "status")

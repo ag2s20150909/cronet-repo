@@ -3,12 +3,16 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        // Configure the Maven repository address for the Audio SDK.
+        maven { url 'https://developer.huawei.com/repo/' }
+
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // Configure the Maven repository address for the Audio SDK.
         maven { url 'https://developer.huawei.com/repo/' }
         google()
         mavenCentral()

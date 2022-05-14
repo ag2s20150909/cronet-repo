@@ -35,6 +35,7 @@ jobs:
           add-paths: |
             *cronet*jar
             *cronet.json
+            *cronet*.so
             gradle.properties
 
       - name: Git Push to release
