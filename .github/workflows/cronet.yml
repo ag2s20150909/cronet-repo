@@ -20,6 +20,7 @@ jobs:
           source .github/scripts/cronet.sh
           echo "PR_TITLE=Bump cronet from $current_cronet_version to $lastest_cronet_version " >> $GITHUB_ENV
           echo "PR_BODY=Changes in the [Git log](https://chromium.googlesource.com/chromium/src/+log/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
+          git tag -a "$lastest_cronet_version"
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         continue-on-error: true
@@ -37,16 +38,4 @@ jobs:
             *cronet.json
             *cronet*.so
             gradle.properties
-
-      - name: Git Push to release
-        run: |
-          cd $GITHUB_WORKSPACE/
-          git init
-          git checkout -b release
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # git remote add origin "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}"
-          git add *.* 
-          git commit -m "update"
-          git push -f -u origin release
           
