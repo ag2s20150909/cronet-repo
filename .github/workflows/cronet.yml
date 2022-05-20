@@ -38,5 +38,5 @@ jobs:
             *cronet.json
             *cronet*.so
             *cronet*.so.js
-            gradle.properties
+            *gradle.properties
           
