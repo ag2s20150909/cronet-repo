@@ -1,13 +1,12 @@
 #bin/sh
 echo "fetch release info from https://chromiumdash.appspot.com ..."
 
-branch="Stable"
+branch="Beta"
 
 lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=0" | jq .[0].version -r`
 echo "lastest_cronet_version: $lastest_cronet_version"
 
-cd cronetlib
-path=$GITHUB_WORKSPACE/cronetlib/gradle.properties
+path=$GITHUB_WORKSPACE/gradle.properties
 ls
 echo "path: $path"
 current_cronet_version=`cat $path | grep CronetVersion | sed s/CronetVersion=//`
