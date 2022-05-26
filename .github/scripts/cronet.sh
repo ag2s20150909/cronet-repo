@@ -20,4 +20,5 @@ else
     echo "start download latest cronet"
     chmod +x gradlew
     ./gradlew downloadCronet
+    ./gradlew publish
 fi

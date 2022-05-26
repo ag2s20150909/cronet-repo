@@ -38,7 +38,7 @@ afterEvaluate {
         repositories {
             maven {
                 name = 'myrepo'
-                url = "${project.buildDir}/repo"
+                url = "${rootDir}/repo"
             }
         }
     }
