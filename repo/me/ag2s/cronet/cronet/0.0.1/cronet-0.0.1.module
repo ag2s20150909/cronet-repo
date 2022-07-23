@@ -1,0 +1,134 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "cronet",
+    "version": "0.0.1",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4.2"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.1.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "cronet-0.0.1.aar",
+          "url": "cronet-0.0.1.aar",
+          "size": 464298,
+          "sha512": "2db56d2df1c3b1708af76c3c656979d3ea289a3696da053df096b997e0076153f4816ad6b7022db261d56e07bba317388db579cd85ea7fe76440cf58c004d64b",
+          "sha256": "8dd8ab6f3d02c146177ac93881085203aa52d8831c87ec92f574b890db57b045",
+          "sha1": "c2a1b710daf4c75843c14aa0cc593dab923ffcd4",
+          "md5": "fc1001cc4d19b2b606a8ccc1402525eb"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.1.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "cronet-0.0.1.aar",
+          "url": "cronet-0.0.1.aar",
+          "size": 464298,
+          "sha512": "2db56d2df1c3b1708af76c3c656979d3ea289a3696da053df096b997e0076153f4816ad6b7022db261d56e07bba317388db579cd85ea7fe76440cf58c004d64b",
+          "sha256": "8dd8ab6f3d02c146177ac93881085203aa52d8831c87ec92f574b890db57b045",
+          "sha1": "c2a1b710daf4c75843c14aa0cc593dab923ffcd4",
+          "md5": "fc1001cc4d19b2b606a8ccc1402525eb"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "cronet-0.0.1-sources.jar",
+          "url": "cronet-0.0.1-sources.jar",
+          "size": 21800,
+          "sha512": "a49af3d66ee336ddabfad71087b68d8dc4aa50156b2a8915a399f6ebf191d1cc3083e62cc9b98b1f3459a118e8fdfee4599885fce5650e6459223574b5f03b9e",
+          "sha256": "d8c5fa47c6416099f8e3d2c8ee497ab465ed7bf0db4f6b41ae5262d8c246f3b8",
+          "sha1": "99e98b3a7e636b52886d960b4744a5f1395f8e14",
+          "md5": "fdffc8d028542bdae09fecaf03441255"
+        }
+      ]
+    }
+  ]
+}
