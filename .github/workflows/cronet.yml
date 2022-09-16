@@ -39,4 +39,5 @@ jobs:
             *cronet*.so
             *cronet*.so.js
             *gradle.properties
+            repo/**
           
