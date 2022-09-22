@@ -1,0 +1,68 @@
+plugins {
+    id 'com.android.library'
+//    id 'maven-publish'
+}
+apply from: "$rootDir/gradle/mvn.gradle"
+
+android {
+
+    compileSdk 33
+    namespace 'me.ag2s.cronet'
+    defaultConfig {
+        minSdk 21
+        targetSdk 30
+
+        aarMetadata {
+            minCompileSdk = 29
+        }
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        buildConfigField "String", "Cronet_Version", "\"$CronetVersion\""
+        buildConfigField "boolean", "includeCronetSo", "$includeCronetSo"
+    }
+
+    buildTypes {
+        debug {
+
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
+}
+
+dependencies {
+
+
+    implementation "androidx.startup:startup-runtime:1.1.1"
+    //Cronet jars
+    api fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    //GMS
+    api('com.google.android.gms:play-services-cronet:18.0.1'){exclude(group: "org.chromium.net")}
+    //HMS
+    api ('com.huawei.hms:hquic-provider:5.0.1.300'){exclude(group: "org.chromium.net")}
+
+
+
+    //implementation 'androidx.appcompat:appcompat:1.3.1'
+    //implementation 'com.google.android.material:material:1.4.0'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+}
+
+apply from:'download.gradle'
