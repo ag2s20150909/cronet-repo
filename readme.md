@@ -8,6 +8,21 @@ Cronet binary files are from [Cronet Google Cloud Platform](https://console.clou
 
 You can find the last cronet version numbert here:[ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Android)
 
+
+## USE
+
+```bash
+        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/cronet/repo/" }
+        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/cronet/repo/'}
+        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/cronet/repo/" }
+```
+
+```bash
+    implementation("me.ag2s.cronet:core:0.0.1")
+    implementation("me.ag2s.cronet:okhttp:0.0.1")
+```
+
+
 ## Install
 #### 1,Get source code
 ```bash
