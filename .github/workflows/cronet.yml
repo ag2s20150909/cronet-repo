@@ -19,10 +19,10 @@ jobs:
           echo "获取cronet最新版本"
           source .github/scripts/cronet.sh
           echo "PR_TITLE=Bump cronet from $current_cronet_version to $lastest_cronet_version " >> $GITHUB_ENV
-          echo "PR_BODY=Changes in the [Git log](https://chromium.googlesource.com/chromium/src/+log/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
+          echo "PR_BODY=Changes in the [Git log](https://github.com/chromium/chromium/compare/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
           
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         continue-on-error: true
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -39,4 +39,5 @@ jobs:
             *cronet*.so
             *cronet*.so.js
             *gradle.properties
+            repo/**
           
