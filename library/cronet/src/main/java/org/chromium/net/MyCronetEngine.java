@@ -6,9 +6,12 @@ import android.util.Log;
 import androidx.annotation.VisibleForTesting;
 
 
+import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.NativeCronetProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -84,24 +87,27 @@ public abstract class MyCronetEngine extends ExperimentalCronetEngine {
                         Log.e(TAG,"无效："+provider.getName());
                     }
                 }
+                if(providers.size()==0){
+                    providers.add(new JavaCronetProvider(context));
+                }
 
                 if (providers.size() == 0) {
                     throw new RuntimeException("All available CronetClient providers are disabled. A provider should be enabled before it can be used.");
                 } else {
-//                    Collections.sort(providers, new Comparator<CronetProvider>() {
-//                        public int compare(CronetProvider p1, CronetProvider p2) {
-//                            Log.e("Cronet",p1.getName());
-//                            Log.e("Cronet",p2.getName());
-//                            if ("Fallback-CronetClient-Provider".equals(p1.getName())&&"HQUICProvider".equals(p2.getName())){
-//                                return -1;
-//                            }
-//                            else if ("Fallback-CronetClient-Provider".equals(p1.getName())) {
-//                                return 1;
-//                            } else {
-//                                return "Fallback-CronetClient-Provider".equals(p2.getName()) ? -1 : -CronetEngine.Builder.compareVersions(p1.getVersion(), p2.getVersion());
-//                            }
-//                        }
-//                    });
+                    Collections.sort(providers, new Comparator<CronetProvider>() {
+                        public int compare(CronetProvider p1, CronetProvider p2) {
+                            Log.e("Cronet",p1.getName());
+                            Log.e("Cronet",p2.getName());
+                            if ("Fallback-CronetClient-Provider".equals(p1.getName())&&"HQUICProvider".equals(p2.getName())){
+                                return -1;
+                            }
+                            else if ("Fallback-CronetClient-Provider".equals(p1.getName())) {
+                                return 1;
+                            } else {
+                                return "Fallback-CronetClient-Provider".equals(p2.getName()) ? -1 : -CronetEngine.Builder.compareVersions(p1.getVersion(), p2.getVersion());
+                            }
+                        }
+                    });
                     return providers;
                 }
             }
