@@ -1,0 +1,35 @@
+pluginManagement {
+    repositories {
+        maven {url"https://maven-central-asia.storage-download.googleapis.com/maven2/"}
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        maven { url 'https://developer.huawei.com/repo/' }
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        // Configure the Maven repository address for the Audio SDK.
+        maven { url 'https://developer.huawei.com/repo/' }
+        maven {url"https://maven-central-asia.storage-download.googleapis.com/maven2/"}
+        google()
+        mavenCentral()
+    }
+}
+
+
+
+rootProject.name = "Cronet"
+
+include ':app'
+
+include ':core'
+project(':core').projectDir = new File(rootDir, 'library/cronet')
+
+
+include ':okhttp'
+project(':okhttp').projectDir = new File(rootDir, 'library/okhttp')
+
+include ':glide'
+project(':glide').projectDir = new File(rootDir, 'library/glide')
