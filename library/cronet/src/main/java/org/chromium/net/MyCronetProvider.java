@@ -1,6 +1,6 @@
 package org.chromium.net;
 
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,27 +23,28 @@ import java.util.Set;
  * {@link #getAllProviders(Context)}.
  * <p/>
  * <b>NOTE:</b> This class is for advanced users that want to select a particular
- * CronetClient implementation. Most users should simply use {@code new} .
+ * Cronet implementation. Most users should simply use {@code new} {@link
+ *
  *
  * {@hide}
  */
 public abstract class MyCronetProvider {
     /**
      * String returned by {@link CronetProvider#getName} for {@link CronetProvider}
-     * that provides native CronetClient implementation packaged inside an application.
+     * that provides native Cronet implementation packaged inside an application.
      * This implementation offers significantly higher performance relative to the
-     * fallback CronetClient implementations (see {@link #PROVIDER_NAME_FALLBACK}).
+     * fallback Cronet implementations (see {@link #PROVIDER_NAME_FALLBACK}).
      */
-    public static final String PROVIDER_NAME_APP_PACKAGED = "App-Packaged-CronetClient-Provider";
+    public static final String PROVIDER_NAME_APP_PACKAGED = "App-Packaged-Cronet-Provider";
 
     /**
      * String returned by {@link CronetProvider#getName} for {@link CronetProvider}
-     * that provides CronetClient implementation based on the system's
+     * that provides Cronet implementation based on the system's
      * {@link java.net.HttpURLConnection} implementation. This implementation
-     * offers significantly degraded performance relative to native CronetClient
+     * offers significantly degraded performance relative to native Cronet
      * implementations (see {@link #PROVIDER_NAME_APP_PACKAGED}).
      */
-    public static final String PROVIDER_NAME_FALLBACK = "Fallback-CronetClient-Provider";
+    public static final String PROVIDER_NAME_FALLBACK = "Fallback-Cronet-Provider";
 
     /**
      * The name of an optional key in the app string resource file that contains the class name of
@@ -66,7 +67,7 @@ public abstract class MyCronetProvider {
      * Creates and returns an instance of {@link CronetEngine.Builder}.
      * <p/>
      * <b>NOTE:</b> This class is for advanced users that want to select a particular
-     * CronetClient implementation. Most users should simply use {@code new} .
+     * Cronet implementation. Most users should simply use {@code new} {@link
      *
      * @return {@code CronetEngine.Builder}.
      * @throws IllegalStateException if the provider is not enabled (see {@link #isEnabled}.
@@ -93,7 +94,7 @@ public abstract class MyCronetProvider {
     public abstract String getVersion();
 
     /**
-     * Returns whether the provider is enabled and can be used to instantiate the CronetClient engine.
+     * Returns whether the provider is enabled and can be used to instantiate the Cronet engine.
      * A provider being out-of-date (older than the API) and needing updating is one potential
      * reason it could be disabled. Please read the provider documentation for
      * enablement procedure.
@@ -135,8 +136,10 @@ public abstract class MyCronetProvider {
      */
     private static final String GMS_CORE_CRONET_PROVIDER_CLASS =
             "com.google.android.gms.net.GmsCoreCronetProvider";
-
-    public static final String HQUIC_PROVIDER_CLASS = "com.huawei.hms.hquic.HQUICProvider";
+    /**
+     * {@link CronetProvider} class that is packaged with Huawei Mobile Services.
+     */
+    private static final String HQUIC_PROVIDER_CLASS = "com.huawei.hms.hquic.HQUICProvider";
 
     /**
      * Returns an unmodifiable list of all available {@link CronetProvider}s.
@@ -150,11 +153,11 @@ public abstract class MyCronetProvider {
         // Use LinkedHashSet to preserve the order and eliminate duplicate providers.
         Set<CronetProvider> providers = new LinkedHashSet<>();
         addCronetProviderFromResourceFile(context, providers);
-        addCronetProviderImplByClassName(context, NATIVE_CRONET_PROVIDER_CLASS, providers, false);
         addCronetProviderImplByClassName(
                 context, PLAY_SERVICES_CRONET_PROVIDER_CLASS, providers, false);
         addCronetProviderImplByClassName(context, GMS_CORE_CRONET_PROVIDER_CLASS, providers, false);
         addCronetProviderImplByClassName(context,HQUIC_PROVIDER_CLASS,providers,false);
+        addCronetProviderImplByClassName(context, NATIVE_CRONET_PROVIDER_CLASS, providers, false);
         addCronetProviderImplByClassName(context, JAVA_CRONET_PROVIDER_CLASS, providers, false);
         return Collections.unmodifiableList(new ArrayList<>(providers));
     }
@@ -217,6 +220,8 @@ public abstract class MyCronetProvider {
      *         {@link #RES_KEY_CRONET_IMPL_CLASS} key.
      * @throws RuntimeException if the provider cannot be found or instantiated.
      */
+    // looking up resources from other apps requires the use of getIdentifier()
+    @SuppressWarnings("DiscouragedApi")
     private static boolean addCronetProviderFromResourceFile(
             Context context, Set<CronetProvider> providers) {
         int resId = context.getResources().getIdentifier(
@@ -233,13 +238,13 @@ public abstract class MyCronetProvider {
         if (className == null || className.equals(PLAY_SERVICES_CRONET_PROVIDER_CLASS)
                 || className.equals(GMS_CORE_CRONET_PROVIDER_CLASS)
                 || className.equals(JAVA_CRONET_PROVIDER_CLASS)
-                || className.equals(NATIVE_CRONET_PROVIDER_CLASS)||className.equals(HQUIC_PROVIDER_CLASS)) {
+                || className.equals(NATIVE_CRONET_PROVIDER_CLASS)) {
             return false;
         }
 
         if (!addCronetProviderImplByClassName(context, className, providers, true)) {
             Log.e(TAG,
-                    "Unable to instantiate CronetClient implementation class " + className
+                    "Unable to instantiate Cronet implementation class " + className
                             + " that is listed as in the app string resource file under "
                             + RES_KEY_CRONET_IMPL_CLASS + " key");
         }
