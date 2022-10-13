@@ -9,13 +9,11 @@ import org.chromium.net.CronetEngine;
 import org.chromium.net.UrlRequest;
 
 import java.io.IOException;
-import java.util.List;
 
 import me.ag2s.cronet.CronetLoader;
 import okhttp3.Call;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
-import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.Response;
 
@@ -48,7 +46,7 @@ public class CronetInterceptor implements okhttp3.Interceptor {
         builder.removeHeader("Keep-Alive");
         builder.removeHeader("Accept-Encoding");
         if (mCookieJar != null) {
-            String cookieString = getCookieString(mCookieJar, request.url());
+            String cookieString = CronetHelper.getCookieString(mCookieJar, request.url());
             if (cookieString.length() > 4) {
                 builder.header("Cookie", cookieString);
             }
@@ -81,18 +79,6 @@ public class CronetInterceptor implements okhttp3.Interceptor {
         }
 
 
-    }
-
-
-    public static String getCookieString(CookieJar cookieJar, HttpUrl url) {
-        StringBuilder sb = new StringBuilder();
-        if (cookieJar != null) {
-            List<Cookie> cookies = cookieJar.loadForRequest(url);
-            for (Cookie cookie : cookies) {
-                sb.append(cookie.name()).append("=").append(cookie.value()).append("; ");
-            }
-        }
-        return sb.toString();
     }
 
 

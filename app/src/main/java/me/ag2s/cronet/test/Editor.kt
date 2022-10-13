@@ -1,6 +1,5 @@
 package me.ag2s.cronet.test
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,8 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.Request
+import me.ag2s.cronet.test.ui.theme.NetImage
 
 private val ELEMENT_HEIGHT = 48.dp
 
@@ -26,12 +24,6 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
 
     Column(modifier = Modifier.fillMaxSize()) {
 
-        LaunchedEffect(key1 = Unit) {
-           txt= withContext(Dispatchers.IO){
-                Http.okHttpClient.newCall(Request("https://http3.is/".toHttpUrl())).execute().body.string()
-            }
-            
-        }
 
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(text = "Request Method", modifier = Modifier.weight(1.0f))
@@ -44,7 +36,11 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
             )
 
         }
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
 
             DropDownSpinner(
                 modifier = Modifier.width(110.dp),
@@ -57,8 +53,18 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
                 value = RequestState.url.value,
                 onValueChange = { view -> RequestState.url.value = view })
         }
-        
+        NetImage(
+            model = OkhttpUtils.getRandomImgLink(),
+            modifier = Modifier
+                .size(200.dp)
+                .align(Alignment.CenterHorizontally)
+        )
         Text(text = txt)
+
+        LaunchedEffect(key1 = Unit) {
+            txt = withContext(Dispatchers.IO) { OkhttpUtils.httpGet("https://http3.is") }
+
+        }
     }
 
 
@@ -97,8 +103,8 @@ fun <E> DropDownSpinner(
         Text(
             text = selectedItem?.toString() ?: "",
             modifier = Modifier.align(Alignment.Center)
-                //.fillMaxWidth()
-                //.padding(start = 16.dp, end = 32.dp, bottom = 3.dp),
+            //.fillMaxWidth()
+            //.padding(start = 16.dp, end = 32.dp, bottom = 3.dp),
             ,
             color = MaterialTheme.colors.onSurface
         )

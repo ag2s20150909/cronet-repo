@@ -1,14 +1,19 @@
 package me.ag2s.cronet.okhttp;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UploadDataProviders;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -19,7 +24,9 @@ import okio.Buffer;
 public class CronetHelper {
 
     public static final Executor executor = Executors.newCachedThreadPool();
-    public static UrlRequest buildRequest(CronetEngine engine, Request request, UrlRequest.Callback callback) throws IOException {
+
+    @NonNull
+    public static UrlRequest buildRequest(@NonNull CronetEngine engine, @NonNull Request request, @NonNull UrlRequest.Callback callback) throws IOException {
         String url = request.url().toString();
 
 
@@ -52,5 +59,16 @@ public class CronetHelper {
 
     public static CronetHttpURLConnection openConnection(CronetEngine engine, HttpUrl httpUrl) {
         return new CronetHttpURLConnection(httpUrl.url(), engine);
+    }
+
+    public static String getCookieString(CookieJar cookieJar, HttpUrl url) {
+        StringBuilder sb = new StringBuilder();
+        if (cookieJar != null) {
+            List<Cookie> cookies = cookieJar.loadForRequest(url);
+            for (Cookie cookie : cookies) {
+                sb.append(cookie.name()).append("=").append(cookie.value()).append("; ");
+            }
+        }
+        return sb.toString();
     }
 }

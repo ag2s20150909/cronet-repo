@@ -1,5 +1,7 @@
 package me.ag2s.cronet.glide;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Priority;
@@ -7,64 +9,56 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.data.DataFetcher;
 import com.bumptech.glide.load.model.GlideUrl;
 
-import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
+import org.chromium.net.impl.ImplVersion;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 
+import me.ag2s.cronet.CronetHolder;
 
 
-public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<ByteBuffer>,AutoCloseable {
-    private static final int BYTE_BUFFER_CAPACITY_BYTES = 64 * 1024;
-
-    private final ByteArrayOutputStream bytesReceived = new ByteArrayOutputStream();
-    private final WritableByteChannel receiveChannel = Channels.newChannel(bytesReceived);
-    //ByteBuffer buffer=ByteBuffer.allocateDirect(BYTE_BUFFER_CAPACITY_BYTES);
+public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T>, AutoCloseable {
 
 
-    private DataCallback<? super ByteBuffer> dataCallback;
+    private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
+    private final GlideUrl url;
     private UrlRequest urlRequest;
     private final UrlRequest.Builder builder;
-    T url;
+    private final ByteBufferParser<T> parser;
+    private DataCallback<? super T> dataCallback;
+    private BufferQueue.Builder bufferQueue;
 
-    public CronetDataFetcher(CronetEngine engine, T url) {
+    public CronetDataFetcher(ByteBufferParser<T> parser, GlideUrl url) {
         this.url = url;
-        if (url instanceof GlideUrl) {
-            GlideUrl s = (GlideUrl) url;
-            builder = engine.newUrlRequestBuilder(s.toStringUrl(), this, CronetLibraryGlideModule.executor);
-        } else {
-            builder = engine.newUrlRequestBuilder((String) url, this, CronetLibraryGlideModule.executor);
-        }
+        this.parser = parser;
+        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, CronetLibraryGlideModule.executor);
+
 
     }
 
     @Override
-    public void loadData(@NonNull Priority priority, @NonNull DataCallback<? super ByteBuffer> dataCallback) {
+    public void loadData(@NonNull Priority priority, @NonNull final DataCallback<? super T> dataCallback) {
         this.dataCallback = dataCallback;
-        builder.setPriority(CronetUrlLoaderFactory.GLIDE_TO_CHROMIUM_PRIORITY.get(priority));
+        builder.setPriority(CronetLibraryGlideModule.GLIDE_TO_CHROMIUM_PRIORITY.get(priority));
         builder.allowDirectExecutor();
-        urlRequest = builder.build();
-        if (url instanceof GlideUrl) {
-            GlideUrl t = (GlideUrl) url;
-            for (Map.Entry<String, String> headerEntry : t.getHeaders().entrySet()) {
+
+        builder.addHeader("Cronet", ImplVersion.getCronetVersion());
+        if (url != null) {
+            for (Map.Entry<String, String> headerEntry : url.getHeaders().entrySet()) {
                 String key = headerEntry.getKey();
                 builder.addHeader(key, headerEntry.getValue());
             }
         }
-
+        urlRequest = builder.build();
         urlRequest.start();
     }
 
     @Override
     public void cleanup() {
-        bytesReceived.reset();
+        //bytesReceived.reset();
     }
 
     @Override
@@ -77,8 +71,8 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
     @NonNull
     @Override
-    public Class<ByteBuffer> getDataClass() {
-        return ByteBuffer.class;
+    public Class<T> getDataClass() {
+        return parser.getDataClass();
     }
 
     @NonNull
@@ -96,30 +90,25 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
     @Override
     public void onResponseStarted(UrlRequest request, UrlResponseInfo info) throws Exception {
-        request.read(ByteBuffer.allocateDirect(BYTE_BUFFER_CAPACITY_BYTES));
+        String negotiatedProtocol = info.getNegotiatedProtocol().toLowerCase();
+        Log.e("Cronet", negotiatedProtocol + info.getUrl());
+
+        bufferQueue = BufferQueue.builder();
+        request.read(bufferQueue.getFirstBuffer(info));
+
+
     }
 
     @Override
     public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception {
-        byteBuffer.flip();
-       try {
-            receiveChannel.write(byteBuffer);
-        } catch (IOException e) {
-            android.util.Log.i("CronetDataFetcher", "IOException during ByteBuffer read. Details: ", e);
-        }
-         //Reset the buffer to prepare it for the next read
-        byteBuffer.clear();
+        request.read(bufferQueue.getNextBuffer(byteBuffer));
 
-        // Continue reading the request
-        request.read(byteBuffer);
     }
 
 
     @Override
     public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-        //Log.e("SSS",info.getAllHeadersAsList().toString());
-        ByteBuffer byteBuffer = ByteBuffer.wrap(bytesReceived.toByteArray());
-        dataCallback.onDataReady(byteBuffer);
+        dataCallback.onDataReady(parser.parse(bufferQueue.build().coalesceToBuffer()));
     }
 
     @Override
@@ -132,4 +121,5 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
     public void close() throws Exception {
 
     }
+
 }

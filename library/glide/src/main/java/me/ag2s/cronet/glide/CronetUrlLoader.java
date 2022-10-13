@@ -1,41 +1,104 @@
 package me.ag2s.cronet.glide;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.bumptech.glide.load.Options;
+import com.bumptech.glide.load.data.DataFetcher;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.ModelLoader;
-import com.bumptech.glide.signature.ObjectKey;
+import com.bumptech.glide.load.model.ModelLoaderFactory;
+import com.bumptech.glide.load.model.MultiModelLoaderFactory;
+import com.bumptech.glide.util.ByteBufferUtil;
 
-import org.chromium.net.CronetEngine;
-
-import java.nio.Buffer;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 
-public class CronetUrlLoader<T, B extends Buffer> implements ModelLoader<T, ByteBuffer> {
-    private final CronetEngine engine;
-    CronetUrlLoader(CronetEngine cronetEngine){
-        this.engine=cronetEngine;
-    }
-    @Nullable
-    @Override
-    public LoadData<ByteBuffer> buildLoadData(@NonNull T model, int width, int height, @NonNull Options options) {
-        if (model instanceof GlideUrl){
-            GlideUrl t= (GlideUrl) model;
-            return new LoadData<>(t, /*fetcher=*/ new CronetDataFetcher<>(engine, t));
-        }else {
-            String s= (String) model;
-            return new LoadData<>(new ObjectKey(s), new CronetDataFetcher<>(engine, s));
-        }
+public class CronetUrlLoader<T> implements ModelLoader<GlideUrl, T> {
 
+
+    private final ByteBufferParser<T> parser;
+
+    CronetUrlLoader(ByteBufferParser<T> parser) {
+        this.parser = parser;
     }
 
     @Override
-    public boolean handles(@NonNull T url) {
-        if (url instanceof GlideUrl){
-            return true;
+    public LoadData<T> buildLoadData(@NonNull GlideUrl glideUrl, int width, int height, @NonNull Options options) {
+        DataFetcher<T> fetcher = new CronetDataFetcher<>(parser, glideUrl);
+        return new LoadData<>(glideUrl, fetcher);
+    }
+
+    @Override
+    public boolean handles(@NonNull GlideUrl url) {
+        return true;
+    }
+
+    /**
+     * Loads {@link InputStream}s for {@link GlideUrl}s using cronet.
+     */
+    public static final class StreamFactory
+            implements ModelLoaderFactory<GlideUrl, InputStream>, ByteBufferParser<InputStream> {
+
+        public StreamFactory() {
+
         }
-        return url.toString().startsWith("http://")||url.toString().startsWith("https://");
+
+        @Override
+        public ModelLoader<GlideUrl, InputStream> build(MultiModelLoaderFactory multiFactory) {
+            return new CronetUrlLoader<>(this /*parser*/);
+        }
+
+        @Override
+        public void teardown() {
+        }
+
+        @Override
+        public InputStream parse(ByteBuffer byteBuffer) {
+            try {
+                return ByteBufferUtil.toStream(byteBuffer);
+            } finally {
+                byteBuffer.clear();
+            }
+
+        }
+
+        @Override
+        public Class<InputStream> getDataClass() {
+            return InputStream.class;
+        }
+    }
+
+    /**
+     * Loads {@link ByteBuffer}s for {@link GlideUrl}s using cronet.
+     */
+    public static final class ByteBufferFactory
+            implements ModelLoaderFactory<GlideUrl, ByteBuffer>, ByteBufferParser<ByteBuffer> {
+
+
+        public ByteBufferFactory() {
+        }
+
+        @Override
+        public ModelLoader<GlideUrl, ByteBuffer> build(MultiModelLoaderFactory multiFactory) {
+            return new CronetUrlLoader<>(this /*parser*/);
+        }
+
+        @Override
+        public void teardown() {
+            // Do nothing.
+        }
+
+        @Override
+        public ByteBuffer parse(ByteBuffer byteBuffer) {
+            return byteBuffer;
+        }
+
+        @Override
+        public Class<ByteBuffer> getDataClass() {
+            return ByteBuffer.class;
+        }
     }
 }
+
+
+

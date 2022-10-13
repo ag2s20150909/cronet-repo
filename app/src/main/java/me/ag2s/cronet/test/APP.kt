@@ -2,6 +2,7 @@ package me.ag2s.cronet.test
 
 import android.app.Application
 import android.content.Context
+
 lateinit var appCtx:APP
 class APP: Application() {
     override fun onCreate() {
@@ -11,6 +12,9 @@ class APP: Application() {
 
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
+
         appCtx= this
     }
+
+
 }

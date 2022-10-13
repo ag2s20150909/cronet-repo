@@ -8,8 +8,11 @@ import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,14 +24,20 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okio.Buffer;
-import okio.ByteString;
 
 @SuppressWarnings("unused")
 abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoCloseable {
     private static final String TAG = "Callback";
 
     private static final int MAX_FOLLOW_COUNT = 20;
+    private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
+
+    private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
+    // See ArrayList.MAX_ARRAY_SIZE for reasoning.
+    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+    private ByteArrayOutputStream mResponseBodyStream;
+    private WritableByteChannel mResponseBodyChannel;
 
     private final Request originalRequest;
     protected final Call mCall;
@@ -37,9 +46,7 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
     protected Response mResponse;
 
 
-
-    public final Buffer buffer = new Buffer();
-
+    //public final Buffer buffer = new Buffer();
 
 
     AbsCronetCallback(Request request, Call call) {
@@ -82,7 +89,7 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
     @SuppressWarnings("deprecation")
     private static Protocol protocolFromNegotiatedProtocol(UrlResponseInfo responseInfo) {
         String negotiatedProtocol = responseInfo.getNegotiatedProtocol().toLowerCase();
-        Log.e(TAG, negotiatedProtocol);
+        Log.e(TAG, negotiatedProtocol + responseInfo.getUrl());
 
         if (negotiatedProtocol.contains("h3")) {
             return Protocol.QUIC;
@@ -122,8 +129,23 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
         return headerBuilder.build();
     }
 
+    /**
+     * Returns the numerical value of the Content-Header length, or 32 if not set or invalid.
+     */
+    private static long getBodyLength(@NonNull UrlResponseInfo info) {
+        List<String> contentLengthHeader = info.getAllHeaders().get(CONTENT_LENGTH_HEADER_NAME);
+        if (contentLengthHeader == null || contentLengthHeader.size() != 1) {
+            return 32;
+        }
+        try {
+            return Long.parseLong(contentLengthHeader.get(0));
+        } catch (NumberFormatException e) {
+            return 32;
+        }
+    }
+
     @NonNull
-    private Response responseFromResponse(@NonNull Response response, UrlResponseInfo responseInfo) {
+    private Response responseFromResponse(@NonNull Response response, @NonNull UrlResponseInfo responseInfo) {
         Protocol protocol = protocolFromNegotiatedProtocol(responseInfo);
         Headers headers = headersFromResponse(responseInfo);
 
@@ -137,7 +159,6 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
                 .build();
     }
 
-
     @Override
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
         if (mCall.isCanceled()) {
@@ -147,7 +168,7 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
         }
         if (followCount > MAX_FOLLOW_COUNT) {
             request.cancel();
-        }else {
+        } else {
             followCount += 1;
             request.followRedirect();
         }
@@ -162,10 +183,15 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
             onError(new IOException("Request Canceled"));
             request.cancel();
         }
+        long bodyLength = getBodyLength(info);
+        if (bodyLength > MAX_ARRAY_SIZE) {
+            throw new IllegalArgumentException(
+                    "The body is too large and wouldn't fit in a byte array!");
+        }
+        mResponseBodyStream = new ByteArrayOutputStream((int) bodyLength);
+        mResponseBodyChannel = Channels.newChannel(mResponseBodyStream);
+        request.read(ByteBuffer.allocateDirect(BYTE_BUFFER_CAPACITY));
 
-
-        request.read(ByteBuffer.allocateDirect(32 * 1024));
-        //request.read(ByteBuffer.allocateDirect(64 * 1024));
     }
 
     @Override
@@ -173,8 +199,8 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
         byteBuffer.flip();
 
         try {
-            buffer.write(byteBuffer);
-            //mReceiveChannel.write(byteBuffer);
+            //buffer.write(byteBuffer);
+            mResponseBodyChannel.write(byteBuffer);
         } catch (Exception e) {
             Log.i(TAG, "IOException during ByteBuffer read. Details: ", e);
             throw e;
@@ -182,21 +208,6 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
 
         byteBuffer.clear();
         request.read(byteBuffer);
-    }
-
-    @Override
-    public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-
-
-        String contentTypeString = mResponse.header("content-type");
-        MediaType contentType = MediaType.parse(contentTypeString != null ? contentTypeString : "text/plain; charset=\"utf-8\"");
-        ByteString bytes = buffer.readByteString();
-        mResponse = mResponse.newBuilder().body(ResponseBody.create(bytes, contentType)).request(originalRequest.newBuilder().url(info.getUrl()).build()).build();
-
-        //mResponseConditon.open();
-        onSuccess(mResponse);
-
-
     }
 
     @Override
@@ -210,9 +221,26 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
     public void onCanceled(UrlRequest request, UrlResponseInfo info) {
         onError(new IOException("CronetClient Request Canceled"));
     }
+
+    @Override
+    public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
+
+
+        String contentTypeString = mResponse.header("content-type");
+        MediaType contentType = MediaType.parse(contentTypeString != null ? contentTypeString : "text/plain; charset=\"utf-8\"");
+        //yteString bytes = buffer.readByteString();
+        mResponse = mResponse.newBuilder().body(ResponseBody.create(mResponseBodyStream.toByteArray(), contentType))
+                .request(originalRequest.newBuilder()
+                        .url(info.getUrl()).build())
+                .build();
+        onSuccess(mResponse);
+
+
+    }
+
     @Override
     public void close() {
-        buffer.close();
+        //buffer.close();
 
     }
 }

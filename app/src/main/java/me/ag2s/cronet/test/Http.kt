@@ -1,13 +1,15 @@
 package me.ag2s.cronet.test
 
 import android.util.Log
-import me.ag2s.cronet.CoronetHolder
+import me.ag2s.cronet.CronetHolder
+import me.ag2s.cronet.okhttp.CronetCoroutineInterceptor
 import me.ag2s.cronet.okhttp.CronetInterceptor
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK
 import org.chromium.net.MyCronetEngine
+import org.chromium.net.NetworkQualityObservationSource
 import org.chromium.net.NetworkQualityRttListener
 import org.json.JSONObject
 import java.util.concurrent.Executors
@@ -15,7 +17,7 @@ import java.util.concurrent.TimeUnit
 
 object Http {
     fun cancelAll() {
-       okHttpClient.dispatcher.cancelAll()
+        okHttpClient.dispatcher.cancelAll()
     }
 
 
@@ -26,18 +28,20 @@ object Http {
             enableQuic(true)//设置支持http/3
             enableHttp2(true)  //设置支持http/2
             enableBrotli(true)//Brotli压缩
+            addQuicHint("storage.googleapis.com", 443, 443)
+            addQuicHint("http3.is", 443, 443)
             setExperimentalOptions(options)
             enableNetworkQualityEstimator(true)
         }
         builder.build().also {
-            CoronetHolder.setEngine(it)
             it.addRttListener(object :
                 NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
                 override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
-                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source}")
+                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
                 }
 
             })
+            CronetHolder.setEngine(it)
         }
     }
 
@@ -59,12 +63,17 @@ object Http {
 
         options.put("AsyncDNS", JSONObject("{'enable':true}"))
 
+        Log.e("Cronet", options.toString(4))
+
 
         options.toString()
     }
 
     private val cronetInterceptor: CronetInterceptor by lazy {
         CronetInterceptor(cronetEngine)
+    }
+    private val coroutineInterceptor: CronetCoroutineInterceptor by lazy {
+        CronetCoroutineInterceptor(cronetEngine)
     }
 
     val okHttpClient: OkHttpClient by lazy {
@@ -84,8 +93,48 @@ object Http {
             .connectionSpecs(specs)
             .followRedirects(true)
             .followSslRedirects(true)
-            .addInterceptor(cronetInterceptor)
+            .addInterceptor(coroutineInterceptor)
 
         builder.build()
     }
+
+
+    fun source2String(@NetworkQualityObservationSource source: Int): String {
+        return when (source) {
+            NetworkQualityObservationSource.HTTP -> {
+                "HTTP"
+            }
+            NetworkQualityObservationSource.TCP -> {
+                "TCP"
+            }
+            NetworkQualityObservationSource.QUIC -> {
+                "QUIC"
+            }
+            NetworkQualityObservationSource.HTTP_CACHED_ESTIMATE -> {
+                "HTTP_CACHED_ESTIMATE"
+            }
+            NetworkQualityObservationSource.DEFAULT_HTTP_FROM_PLATFORM -> {
+                "DEFAULT_HTTP_FROM_PLATFORM"
+            }
+            NetworkQualityObservationSource.DEPRECATED_HTTP_EXTERNAL_ESTIMATE -> {
+                "DEPRECATED_HTTP_EXTERNAL_ESTIMATE"
+            }
+            NetworkQualityObservationSource.TRANSPORT_CACHED_ESTIMATE -> {
+                "TRANSPORT_CACHED_ESTIMATE"
+            }
+            NetworkQualityObservationSource.DEFAULT_TRANSPORT_FROM_PLATFORM -> {
+                "DEFAULT_TRANSPORT_FROM_PLATFORM"
+            }
+            NetworkQualityObservationSource.H2_PINGS -> {
+                "H2_PINGS"
+            }
+            NetworkQualityObservationSource.MAX -> {
+                "MAX"
+            }
+            else -> {
+                "未知"
+            }
+        }
+    }
+
 }

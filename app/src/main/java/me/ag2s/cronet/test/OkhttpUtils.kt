@@ -11,6 +11,22 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 @Suppress("unused")
 object OkhttpUtils {
+
+    private val imageUrls = arrayOf(
+        "https://storage.googleapis.com/cronet/sun.jpg",
+        "https://storage.googleapis.com/cronet/flower.jpg",
+        "https://storage.googleapis.com/cronet/chair.jpg",
+        "https://storage.googleapis.com/cronet/white.jpg",
+        "https://storage.googleapis.com/cronet/moka.jpg",
+        "https://storage.googleapis.com/cronet/walnut.jpg"
+    )
+    private val r = Random(System.currentTimeMillis())
+
+    fun getRandomImgLink(): String {
+        return imageUrls[r.nextInt(imageUrls.size)] + "?_r=" + System.currentTimeMillis()
+    }
+
+
     @JvmField
     val executor: ExecutorService = Executors.newCachedThreadPool()
     private val JSON: MediaType = "application/json; charset=utf-8".toMediaType()
@@ -92,7 +108,7 @@ object OkhttpUtils {
         return try {
             val response: Response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                Objects.requireNonNull(response.body.string())
+                response.body!!.string()
             } else {
                 HTTP_ERROR + response.message + " errorcode:" + response.code
             }
@@ -125,7 +141,7 @@ object OkhttpUtils {
         return try {
             val response: Response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                Objects.requireNonNull(response.body.string())
+                Objects.requireNonNull(response.body!!.string())
             } else {
                 HTTP_ERROR + response.message + " errorcode:" + response.code
             }
@@ -207,7 +223,7 @@ object OkhttpUtils {
         return try {
             val response: Response = client.newCall(request).execute()
             if (response.isSuccessful) {
-                Objects.requireNonNull(response.body.string())
+                Objects.requireNonNull(response.body!!.string())
             } else {
                 HTTP_ERROR + response.message + " errorcode:" + response.code
             }
