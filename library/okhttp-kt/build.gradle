@@ -2,14 +2,14 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
 }
-
+apply from: "$rootDir/gradle/mvn.gradle"
 android {
     namespace 'me.ag2s.cronet.okhttp'
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 21
-        targetSdk 32
+        targetSdk 33
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -27,6 +27,11 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
     }
 }
 
