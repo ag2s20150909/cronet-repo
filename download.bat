@@ -1,7 +1,7 @@
 @echo off
 ::set Cronet version
 chcp 65001
-SET CronetVersion="SS"
+SET CronetVersion=%1
 
 python filemd5.py
 
@@ -26,6 +26,6 @@ echo "命名新tag"
 git tag -a "%CronetVersion%" -m "Cronet Version %CronetVersion%"
 
 echo "强制更新到远程仓库"
-git push -f origin main --tags
+::git push -f origin main --tags
 
 pause
