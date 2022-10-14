@@ -65,7 +65,7 @@ dependencies {
     //annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     kapt "com.github.bumptech.glide:compiler:$glide_version"
 
-    implementation 'com.github.skydoves:landscapist-glide:2.0.0'
+    implementation 'com.github.skydoves:landscapist-glide:2.0.1'
 
 
     implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
