@@ -1,6 +1,8 @@
 package me.ag2s.cronet.test
 
 import android.util.Log
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
 import me.ag2s.cronet.CronetHolder
 import me.ag2s.cronet.okhttp.CronetCoroutineInterceptor
 import me.ag2s.cronet.okhttp.CronetInterceptor
@@ -16,9 +18,13 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 object Http {
+
+    val OkhttpDispatcher: CoroutineDispatcher by lazy { bootClient.dispatcher.executorService.asCoroutineDispatcher() }
     fun cancelAll() {
-        okHttpClient.dispatcher.cancelAll()
+        bootClient.dispatcher.cancelAll()
     }
+
+    val bootClient: OkHttpClient by lazy { OkHttpClient() }
 
 
     private val cronetEngine: CronetEngine by lazy {
@@ -73,7 +79,7 @@ object Http {
         CronetInterceptor(cronetEngine)
     }
     private val coroutineInterceptor: CronetCoroutineInterceptor by lazy {
-        CronetCoroutineInterceptor(cronetEngine)
+        CronetCoroutineInterceptor(cronetEngine, context = OkhttpDispatcher)
     }
 
     val okHttpClient: OkHttpClient by lazy {
@@ -84,7 +90,7 @@ object Http {
         )
 
 
-        val builder = OkHttpClient.Builder()
+        val builder = bootClient.newBuilder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
@@ -94,6 +100,28 @@ object Http {
             .followRedirects(true)
             .followSslRedirects(true)
             .addInterceptor(coroutineInterceptor)
+
+        builder.build()
+    }
+
+    val okHttpClient1: OkHttpClient by lazy {
+        val specs = arrayListOf(
+            ConnectionSpec.MODERN_TLS,
+            ConnectionSpec.COMPATIBLE_TLS,
+            ConnectionSpec.CLEARTEXT
+        )
+
+
+        val builder = bootClient.newBuilder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .callTimeout(60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .connectionSpecs(specs)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .addInterceptor(cronetInterceptor)
 
         builder.build()
     }

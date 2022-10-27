@@ -12,14 +12,23 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 private val ELEMENT_HEIGHT = 48.dp
 
 @Composable
-fun Editor(navController: NavController, screen: Screen, scaffoldState: ScaffoldState) {
-    var txt by remember { mutableStateOf("") }
+fun Editor(navController: NavController, screen: Screen, viewModel: TestViewModel) {
+    val txt by viewModel.txt.collectAsState()
+    val host by viewModel.url.collectAsState()
+    val method by viewModel.httpMethod.collectAsState()
+    val protocol by viewModel.protocol.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        viewModel.getHtml()
+
+    }
+
+
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -29,8 +38,8 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
 
 
             DropDownSpinner(
-                selectedItem = RequestState.httpMethod.value,
-                onItemSelected = { _, item -> RequestState.httpMethod.value = item },
+                selectedItem = method,
+                onItemSelected = { index, _ -> viewModel.changeMethod(index) },
                 itemList = RequestState.httpMethodS
             )
 
@@ -43,14 +52,20 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
 
             DropDownSpinner(
                 modifier = Modifier.width(110.dp),
-                selectedItem = RequestState.protocol.value,
-                onItemSelected = { _, item -> RequestState.protocol.value = item },
+                selectedItem = protocol,
+                onItemSelected = { _, item ->
+                    viewModel.changeProtocol(item)
+                    viewModel.getHtml()
+                },
                 itemList = RequestState.protocols
             )
             TextField(
                 modifier = Modifier.weight(1.0f),
-                value = RequestState.url.value,
-                onValueChange = { view -> RequestState.url.value = view })
+                value = host,
+                onValueChange = { view ->
+                    viewModel.changeHost(view)
+
+                })
         }
         NetImage(
             model = OkhttpUtils.getRandomImgLink(),
@@ -60,10 +75,7 @@ fun Editor(navController: NavController, screen: Screen, scaffoldState: Scaffold
         )
         Text(text = txt)
 
-        LaunchedEffect(key1 = Unit) {
-            txt = withContext(Dispatchers.IO) { OkhttpUtils.httpGet("https://http3.is") }
 
-        }
     }
 
 

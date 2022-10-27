@@ -8,12 +8,14 @@ import okhttp3.*
 import org.chromium.net.CronetEngine
 import org.chromium.net.UrlRequest
 import java.io.IOException
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CronetCoroutineInterceptor(
     private val engine: CronetEngine,
-    private val cookieJar: CookieJar = CookieJar.NO_COOKIES
+    private val cookieJar: CookieJar = CookieJar.NO_COOKIES,
+    private val context: CoroutineContext = Dispatchers.IO
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
@@ -33,7 +35,7 @@ class CronetCoroutineInterceptor(
             }
         }
         val copy: Request = builder.build()
-        return runBlocking(Dispatchers.IO) {
+        return runBlocking(context) {
             proceedWithCronet(engine = engine, copy, chain.call())
         }
     }

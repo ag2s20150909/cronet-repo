@@ -37,3 +37,4 @@ include ':glide'
 project(':glide').projectDir = new File(rootDir, 'library/glide')
 include ':okhttp-kt'
 project(':okhttp-kt').projectDir = new File(rootDir, 'library/okhttp-kt')
+include ':benchmark'

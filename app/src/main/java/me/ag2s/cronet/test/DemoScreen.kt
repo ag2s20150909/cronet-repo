@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -45,26 +46,32 @@ fun DemoScreen() {
             BottomBar(navController = navController)
         }
     ) { innerPadding ->
+
+
+        val viewModel: TestViewModel = viewModel()
+
+
         NavHost(navController, Screen.Editor.route, Modifier.padding(innerPadding)) {
             composable(Screen.Editor.route) {
                 Editor(
                     navController = navController,
                     screen = Screen.Editor,
-                    scaffoldState = scaffoldState
+                    viewModel = viewModel
                 )
             }
             composable(Screen.Request.route) {
-                Editor(
-                    navController = navController,
-                    screen = Screen.Request,
-                    scaffoldState = scaffoldState
-                )
+                BenchmarkScreen()
+//                Editor(
+//                    navController = navController,
+//                    screen = Screen.Request,
+//                    viewModel = viewModel
+//                )
             }
             composable(Screen.Response.route) {
                 Editor(
                     navController = navController,
                     screen = Screen.Response,
-                    scaffoldState = scaffoldState
+                    viewModel = viewModel
                 )
             }
         }

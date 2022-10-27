@@ -27,6 +27,25 @@ object OkhttpUtils {
         return imageUrls[r.nextInt(imageUrls.size)] + "?_r=" + System.currentTimeMillis()
     }
 
+    private var okHttpClient: OkHttpClient? = null
+
+
+    fun setOkhttpClent(client: OkHttpClient) {
+        okHttpClient = client
+    }
+
+
+    private fun getOkhttpClient(): OkHttpClient {
+        if (okHttpClient == null) {
+            synchronized(OkhttpUtils) {
+                if (okHttpClient == null) {
+                    okHttpClient = Http.okHttpClient
+                }
+            }
+        }
+        return okHttpClient!!
+    }
+
 
     @JvmField
     val executor: ExecutorService = Executors.newCachedThreadPool()
@@ -52,7 +71,7 @@ object OkhttpUtils {
     }
 
     fun httpHead(url: String): String {
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         val requestBuilder: Request.Builder = Request.Builder().url(url)
         requestBuilder.method("HEAD", null)
         val refer = url.substring(0, url.lastIndexOf("/") + 1)
@@ -70,7 +89,7 @@ object OkhttpUtils {
     }
 
     fun getContentType(url: String): String? {
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         val requestBuilder: Request.Builder = Request.Builder().url(url)
         requestBuilder.method("HEAD", null)
         val refer = url.substring(0, url.lastIndexOf("/") + 1)
@@ -90,7 +109,7 @@ object OkhttpUtils {
         if (url == null || !URLUtil.isNetworkUrl(url)) {
             return HTTP_ERROR + "url is null"
         }
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         val requestBuilder: Request.Builder = Request.Builder().get().url(url)
         //requestBuilder.header("Referer", CommonTool.getReferer(url))
         requestBuilder.header("Dnt", "1")
@@ -124,7 +143,7 @@ object OkhttpUtils {
         if (url == null || !URLUtil.isNetworkUrl(url)) {
             return HTTP_ERROR + "url is null"
         }
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         val requestBuilder: Request.Builder = Request.Builder().get().url(url)
         //requestBuilder.header("Referer", CommonTool.getReferer(url))
         requestBuilder.header("Dnt", "1")
@@ -160,7 +179,7 @@ object OkhttpUtils {
         headers: Map<String, String> = mapOf<String, String>(),
         body: Map<String, String>
     ): String {
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         //构建Body
         val params = FormBody.Builder()
         for ((key, value) in body) {
@@ -202,7 +221,7 @@ object OkhttpUtils {
         data: String,
         headers: HashMap<String?, String?>? = null
     ): String {
-        val client: OkHttpClient = Http.okHttpClient
+        val client: OkHttpClient = getOkhttpClient()
         val body: RequestBody = data.toRequestBody(JSON)
 
 //构建headers
