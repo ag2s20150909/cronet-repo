@@ -27,6 +27,7 @@ object OkhttpUtils {
         return imageUrls[r.nextInt(imageUrls.size)] + "?_r=" + System.currentTimeMillis()
     }
 
+    @Volatile
     private var okHttpClient: OkHttpClient? = null
 
 

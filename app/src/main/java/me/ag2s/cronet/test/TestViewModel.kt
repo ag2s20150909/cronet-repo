@@ -11,7 +11,7 @@ class TestViewModel : ViewModel() {
 
     val httpMethod = MutableStateFlow<String>(RequestState.httpMethodS.first())
     val protocol = MutableStateFlow<String>(RequestState.protocols.first())
-    val url = MutableStateFlow<String>("http3.is")
+    val url = MutableStateFlow<String>("crypto.cloudflare.com/cdn-cgi/trace")
 
     var txt = MutableStateFlow<String>("")
 

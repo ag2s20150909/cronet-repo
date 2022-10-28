@@ -19,12 +19,28 @@ import java.util.concurrent.TimeUnit
 
 object Http {
 
-    val OkhttpDispatcher: CoroutineDispatcher by lazy { bootClient.dispatcher.executorService.asCoroutineDispatcher() }
+    private val OkhttpDispatcher: CoroutineDispatcher by lazy { bootClient.dispatcher.executorService.asCoroutineDispatcher() }
     fun cancelAll() {
         bootClient.dispatcher.cancelAll()
     }
 
-    val bootClient: OkHttpClient by lazy { OkHttpClient() }
+    private val bootClient: OkHttpClient by lazy {
+        val specs = arrayListOf(
+            ConnectionSpec.MODERN_TLS,
+            ConnectionSpec.COMPATIBLE_TLS,
+            ConnectionSpec.CLEARTEXT
+        )
+        OkHttpClient.Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .writeTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .callTimeout(60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .connectionSpecs(specs)
+            .followRedirects(true)
+            .followSslRedirects(true)
+            .build()
+    }
 
 
     private val cronetEngine: CronetEngine by lazy {
@@ -51,7 +67,7 @@ object Http {
         }
     }
 
-    val options by lazy {
+    private val options by lazy {
         val options = JSONObject()
 
         //设置域名映射规则
@@ -68,6 +84,8 @@ object Http {
         options.put("UseDnsHttpsSvcb", dnsSvcb)
 
         options.put("AsyncDNS", JSONObject("{'enable':true}"))
+        options.put("SSLMinVersionAtLeastTLS12", JSONObject("{'enable':false}"))
+        options.put("EncryptedClientHello", JSONObject("{'enable':true}"))
 
         Log.e("Cronet", options.toString(4))
 
@@ -83,44 +101,16 @@ object Http {
     }
 
     val okHttpClient: OkHttpClient by lazy {
-        val specs = arrayListOf(
-            ConnectionSpec.MODERN_TLS,
-            ConnectionSpec.COMPATIBLE_TLS,
-            ConnectionSpec.CLEARTEXT
-        )
-
 
         val builder = bootClient.newBuilder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .callTimeout(60, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .connectionSpecs(specs)
-            .followRedirects(true)
-            .followSslRedirects(true)
             .addInterceptor(coroutineInterceptor)
 
         builder.build()
     }
 
     val okHttpClient1: OkHttpClient by lazy {
-        val specs = arrayListOf(
-            ConnectionSpec.MODERN_TLS,
-            ConnectionSpec.COMPATIBLE_TLS,
-            ConnectionSpec.CLEARTEXT
-        )
-
 
         val builder = bootClient.newBuilder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .callTimeout(60, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .connectionSpecs(specs)
-            .followRedirects(true)
-            .followSslRedirects(true)
             .addInterceptor(cronetInterceptor)
 
         builder.build()

@@ -41,7 +41,7 @@ class BenchmarkViewModel : ViewModel() {
             OkhttpUtils.setOkhttpClent(Http.okHttpClient)
             val startTime = System.currentTimeMillis()
             (1..10).map {
-                OkhttpUtils.httpGet("https://http3.is")
+                OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
             }
             result.emit("test1:${System.currentTimeMillis() - startTime}\n${result.value}")
         }
@@ -52,7 +52,7 @@ class BenchmarkViewModel : ViewModel() {
             OkhttpUtils.setOkhttpClent(Http.okHttpClient1)
             val startTime = System.currentTimeMillis()
             (1..10).map {
-                OkhttpUtils.httpGet("https://http3.is")
+                OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
             }
             result.emit("test2:${System.currentTimeMillis() - startTime}\n${result.value}")
         }

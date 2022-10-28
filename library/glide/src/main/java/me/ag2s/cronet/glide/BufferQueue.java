@@ -86,7 +86,6 @@ final class BufferQueue implements AutoCloseable {
             lastBuffer.flip();
 
             try {
-                //buffer.write(byteBuffer);
                 mResponseBodyChannel.write(lastBuffer);
             } catch (Exception ignored) {
             }
@@ -106,8 +105,7 @@ final class BufferQueue implements AutoCloseable {
             // to allocate 1032 bytes per byte sent by the server.
             long bodyLength = getBodyLength(info);
             if (bodyLength > MAX_ARRAY_SIZE) {
-                throw new IllegalArgumentException(
-                        "The body is too large and wouldn't fit in a byte array!");
+                throw new IllegalArgumentException("The body is too large and wouldn't fit in a byte array!");
             }
             mResponseBodyStream = new ByteArrayOutputStream((int) bodyLength);
             mResponseBodyChannel = Channels.newChannel(mResponseBodyStream);
