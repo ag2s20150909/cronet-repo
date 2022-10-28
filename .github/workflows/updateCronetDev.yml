@@ -1,4 +1,4 @@
-name: Update Cronet Stable
+name: Update Cronet Dev
 
 on:
   schedule:
@@ -25,7 +25,7 @@ jobs:
       - name: Check Cronet Updates
         run: |
           echo "获取cronet最新版本"
-          source .github/scripts/cronetStable.sh
+          source .github/scripts/cronetDev.sh
           echo "PR_TITLE=Bump cronet from $current_cronet_version to $lastest_cronet_version " >> $GITHUB_ENV
           echo "PR_BODY=Changes in the [Git log](https://github.com/chromium/chromium/compare/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
 
@@ -39,7 +39,7 @@ jobs:
             ${{ env.PR_TITLE }}
             - ${{ env.PR_BODY }}
           body: ${{ env.PR_BODY }}
-          branch: Stable
+          branch: Dev
           delete-branch: true
           add-paths: |
             *cronet*jar
