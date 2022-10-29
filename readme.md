@@ -10,7 +10,7 @@ from [Cronet Google Cloud Platform](https://console.cloud.google.com/storage/bro
 You can find the last cronet version numbert
 here:[ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Android)
 
-## USE Guide
+## Usage
 
 ### Stable
 
