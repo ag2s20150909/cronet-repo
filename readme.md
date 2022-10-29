@@ -74,15 +74,16 @@ git clone https://github.com/ag2s20150909/cronet-repo.git
 
 #### 2,Edit gradle.properties file
 
-you can edit ```/cronet-repo/cronetlib/gradle.properties```
+you can edit ```/cronet-repo/gradle.properties```
 
-#### 3,Download Cronet and Applay
+#### 3,Download Cronet and Apply
 
 ```bash
 
 gradlew cronetlib:downloadCronet
 ```
-#### 4,Genrate AAR
+
+#### 4,Generate AAR
 
 ```bash
 
