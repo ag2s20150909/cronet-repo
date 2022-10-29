@@ -10,17 +10,58 @@ from [Cronet Google Cloud Platform](https://console.cloud.google.com/storage/bro
 You can find the last cronet version numbert
 here:[ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Android)
 
-## USE
+## USE Guide
+
+### Stable
 
 ```bash
-        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/cronet/repo/" }
-        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/cronet/repo/'}
-        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/cronet/repo/" }
+        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Stable/repo/" }
+        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Stable/repo/'}
+        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Stable/repo/" }
+```
+
+### Beta
+
+```bash
+        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Beta/repo/" }
+        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Beta/repo/'}
+        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Beta/repo/" }
+```
+
+### Dev
+
+```bash
+        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Dev/repo/" }
+        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Dev/repo/'}
+        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Dev/repo/" }
+```
+
+### Canary
+
+```bash
+        maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Canary/repo/" }
+        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Canary/repo/'}
+        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Canary/repo/" }
 ```
 
 ```bash
-    implementation("me.ag2s.cronet:core:0.0.1")
-    implementation("me.ag2s.cronet:okhttp:0.0.1")
+    implementation("me.ag2s.cronet:core:1+")
+    implementation("me.ag2s.cronet:okhttp:1+")
+    implementation("me.ag2s.cronet:okhttp-kt:1+")
+    implementation("me.ag2s.cronet:glide:1+")
+```
+
+```kotlin
+val cronetEngine: CronetEngine by lazy {
+    val builder = MyCronetEngine.Builder(appCtx).apply {
+        ....
+    }
+    builder.build().also {
+        //For Glide
+        CronetHolder.setEngine(it)
+    }
+}
+
 ```
 
 ## Install
