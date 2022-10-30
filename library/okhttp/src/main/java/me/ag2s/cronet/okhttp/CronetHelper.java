@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import me.ag2s.cronet.DirectExecutor;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Headers;
@@ -23,14 +24,14 @@ import okio.Buffer;
 
 public class CronetHelper {
 
-    public static final Executor executor = Executors.newCachedThreadPool();
+    private static final Executor uploadExecutor = Executors.newFixedThreadPool(4);
 
     @NonNull
     public static UrlRequest buildRequest(@NonNull CronetEngine engine, @NonNull Request request, @NonNull UrlRequest.Callback callback) throws IOException {
         String url = request.url().toString();
 
 
-        UrlRequest.Builder requestBuilder = engine.newUrlRequestBuilder(url, callback, executor);
+        UrlRequest.Builder requestBuilder = engine.newUrlRequestBuilder(url, callback, DirectExecutor.INSTANCE);
         requestBuilder.setHttpMethod(request.method());
         requestBuilder.allowDirectExecutor();
 
@@ -51,7 +52,7 @@ public class CronetHelper {
             }
             Buffer buffer = new Buffer();
             requestBody.writeTo(buffer);
-            requestBuilder.setUploadDataProvider(UploadDataProviders.create(buffer.readByteArray()), executor);
+            requestBuilder.setUploadDataProvider(UploadDataProviders.create(buffer.readByteArray()), uploadExecutor);
         }
 
         return requestBuilder.build();
