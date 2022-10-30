@@ -82,14 +82,9 @@ final class BufferQueue implements AutoCloseable {
         /**
          * Returns the next buffer to write data into.
          */
-        public ByteBuffer getNextBuffer(ByteBuffer lastBuffer) {
+        public ByteBuffer getNextBuffer(ByteBuffer lastBuffer) throws IOException {
             lastBuffer.flip();
-
-            try {
-                mResponseBodyChannel.write(lastBuffer);
-            } catch (Exception ignored) {
-            }
-
+            mResponseBodyChannel.write(lastBuffer);
             lastBuffer.clear();
             return lastBuffer;
         }
@@ -97,7 +92,7 @@ final class BufferQueue implements AutoCloseable {
         /**
          * Returns a ByteBuffer heuristically sized to hold the whole response body.
          */
-        public ByteBuffer getFirstBuffer(UrlResponseInfo info) {
+        public ByteBuffer getFirstBuffer(UrlResponseInfo info) throws IllegalArgumentException {
             // Security note - a malicious server could attempt to exhaust client memory by sending
             // down a Content-Length of a very large size, which we would eagerly allocate without
             // the server having to actually send those bytes. This isn't considered to be an

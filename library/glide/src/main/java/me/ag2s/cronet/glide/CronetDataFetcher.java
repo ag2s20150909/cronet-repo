@@ -90,26 +90,40 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
 
     @Override
-    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) throws Exception {
+    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
         String negotiatedProtocol = info.getNegotiatedProtocol().toLowerCase();
         Log.e("Cronet", negotiatedProtocol + info.getUrl());
 
         bufferQueue = BufferQueue.builder();
-        request.read(bufferQueue.getFirstBuffer(info));
+        try {
+            request.read(bufferQueue.getFirstBuffer(info));
+        } catch (Exception e) {
+            dataCallback.onLoadFailed(e);
+        }
 
 
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception {
-        request.read(bufferQueue.getNextBuffer(byteBuffer));
+    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
+        try {
+            request.read(bufferQueue.getNextBuffer(byteBuffer));
+        } catch (Exception e) {
+            dataCallback.onLoadFailed(e);
+        }
+
 
     }
 
 
     @Override
     public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
-        dataCallback.onDataReady(parser.parse(bufferQueue.build().coalesceToBuffer()));
+        try {
+            dataCallback.onDataReady(parser.parse(bufferQueue.build().coalesceToBuffer()));
+        } catch (Exception e) {
+            dataCallback.onLoadFailed(e);
+        }
+
     }
 
     @Override
