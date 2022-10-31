@@ -14,42 +14,72 @@ here:[ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Android)
 
 ### Stable
 
-```bash
+```groovy
         maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Stable/repo/" }
-        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Stable/repo/'}
-        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Stable/repo/" }
+maven { url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Stable/repo/' }
+maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Stable/repo/" }
 ```
+
+```groovy
+    def cronet_version = "stable-SNAPSHOT"
+implementation("me.ag2s.cronet:core:$cronet_version")
+implementation("me.ag2s.cronet:okhttp:$cronet_version")
+implementation("me.ag2s.cronet:okhttp-kt:$cronet_version")
+implementation("me.ag2s.cronet:glide:$cronet_version")
+```
+
+<details>
+<summary>Show more branches</summary>
 
 ### Beta
 
-```bash
+```groovy
         maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Beta/repo/" }
-        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Beta/repo/'}
-        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Beta/repo/" }
+maven { url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Beta/repo/' }
+maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Beta/repo/" }
+```
+
+```groovy
+    def cronet_version = "beta-SNAPSHOT"
+implementation("me.ag2s.cronet:core:$cronet_version")
+implementation("me.ag2s.cronet:okhttp:$cronet_version")
+implementation("me.ag2s.cronet:okhttp-kt:$cronet_version")
+implementation("me.ag2s.cronet:glide:$cronet_version")
 ```
 
 ### Dev
 
-```bash
+```groovy
         maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Dev/repo/" }
-        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Dev/repo/'}
-        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Dev/repo/" }
+maven { url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Dev/repo/' }
+maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Dev/repo/" }
+```
+
+```groovy
+    def cronet_version = "dev-SNAPSHOT"
+implementation("me.ag2s.cronet:core:$cronet_version")
+implementation("me.ag2s.cronet:okhttp:$cronet_version")
+implementation("me.ag2s.cronet:okhttp-kt:$cronet_version")
+implementation("me.ag2s.cronet:glide:$cronet_version")
 ```
 
 ### Canary
 
-```bash
+```groovy
         maven { url "https://raw.githubusercontent.com/ag2s20150909/cronet-repo/Canary/repo/" }
-        maven {url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Canary/repo/'}
-        maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Canary/repo/" }
+maven { url 'https://raw.fastgit.org/ag2s20150909/cronet-repo/Canary/repo/' }
+maven { url "https://cdn.staticaly.com/gh/ag2s20150909/cronet-repo/Canary/repo/" }
 ```
 
-```bash
-    implementation("me.ag2s.cronet:core:1+")
-    implementation("me.ag2s.cronet:okhttp:1+")
-    implementation("me.ag2s.cronet:okhttp-kt:1+")
-    implementation("me.ag2s.cronet:glide:1+")
+```groovy
+    def cronet_version = "canary-SNAPSHOT"
+implementation("me.ag2s.cronet:core:$cronet_version")
+implementation("me.ag2s.cronet:okhttp:$cronet_version")
+implementation("me.ag2s.cronet:okhttp-kt:$cronet_version")
+implementation("me.ag2s.cronet:glide:$cronet_version")
 ```
+
+</details>
 
 ```kotlin
 val cronetEngine: CronetEngine by lazy {
