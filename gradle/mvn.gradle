@@ -8,7 +8,12 @@ afterEvaluate {
 
                 group = PROJ_GROUP
                 artifactId = PROJ_ARTIFACTID
-                version = PROJ_VERSION
+                if (PROJ_VERSION.contains("local") || PROJ_VERSION.contains("SNAPSHOT")) {
+                    version = PROJ_VERSION
+                } else {
+                    version = CronetVersion
+                }
+
 
 //                pom {
 //                    name = PROJ_NAME
