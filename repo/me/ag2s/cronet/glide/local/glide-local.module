@@ -1,0 +1,130 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "glide",
+    "version": "local",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.5.1"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "local"
+          }
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "4.14.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "glide-local.aar",
+          "url": "glide-local.aar",
+          "size": 11747,
+          "sha512": "251b1dbb030442909ce86b5b0f38a4e6dd5a5078b48f1b6e30880a1e0268d65b85dfa4168ec82ae1796720e517faa252639e4cd76c6ad92549cd90ff451d29fa",
+          "sha256": "5234414ecb70d317311657e3936e6d8892fc024821f9e18cce80b3dc52d208bd",
+          "sha1": "3447ff11a774b798c15347cd4c58d0c86e6e6925",
+          "md5": "4b4da361230434810b63f6acede7a717"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "local"
+          }
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "4.14.2"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "glide-local.aar",
+          "url": "glide-local.aar",
+          "size": 11747,
+          "sha512": "251b1dbb030442909ce86b5b0f38a4e6dd5a5078b48f1b6e30880a1e0268d65b85dfa4168ec82ae1796720e517faa252639e4cd76c6ad92549cd90ff451d29fa",
+          "sha256": "5234414ecb70d317311657e3936e6d8892fc024821f9e18cce80b3dc52d208bd",
+          "sha1": "3447ff11a774b798c15347cd4c58d0c86e6e6925",
+          "md5": "4b4da361230434810b63f6acede7a717"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "glide-local-sources.jar",
+          "url": "glide-local-sources.jar",
+          "size": 6235,
+          "sha512": "f270aa31792a72ad382f06914c2b653c515af602dc3e83e3a40d186c7f631d0dde79fdd5683be252b1b7bfc26b9cc1011d7b35a1a36412b975a6967f6b14aefe",
+          "sha256": "f230149e0eeda21776d875f433eadd9496b7c6052cb08063af99f952365c9824",
+          "sha1": "a545598ac02bb338048915aa7aedd0d6b61bb53b",
+          "md5": "0a6ce77a351e33eb0920da6bb713b1b2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseJavaDocPublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "javadoc",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "glide-local-javadoc.jar",
+          "url": "glide-local-javadoc.jar",
+          "size": 294113,
+          "sha512": "5140b1d1a615099aeb8ada2c2a2842482035d7af0fed9f6af4a63ea83871bd819f637dcca5dcd6bf1701d929cefd3029117a8fd357022ede4b72ee308cdd5297",
+          "sha256": "3b5764bd23f6745d18280af7109b377bbcf27b7b5e419a976acd11fadff18109",
+          "sha1": "a12a1bc73a0603b4f1be17171abd88fb5f572373",
+          "md5": "95ee57187a5c6aad17691d20f09c37fd"
+        }
+      ]
+    }
+  ]
+}
