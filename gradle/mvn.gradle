@@ -13,6 +13,7 @@ afterEvaluate {
                     version = PROJ_VERSION
                 } else {
                     group = 'com.github.ag2s20150909'
+                    version = PROJ_VERSION
                 }
 
 
