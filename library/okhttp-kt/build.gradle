@@ -4,7 +4,7 @@ plugins {
 }
 apply from: "$rootDir/gradle/mvn.gradle"
 android {
-    namespace 'me.ag2s.cronet.okhttp-kt'
+    namespace 'me.ag2s.cronet.okhttp'
     compileSdk 33
 
     defaultConfig {
