@@ -42,11 +42,16 @@ afterEvaluate {
         }
 
         repositories {
-            mavenLocal()
-            maven {
-                name = 'myrepo'
-                url = "${rootDir}/repo"
+
+            if (PROJ_VERSION.contains("local") || PROJ_VERSION.contains("SNAPSHOT")) {
+                maven {
+                    name = 'myrepo'
+                    url = "${rootDir}/repo"
+                }
+            } else {
+                mavenLocal()
             }
+
         }
     }
 }

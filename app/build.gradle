@@ -6,7 +6,7 @@ plugins {
 
 android {
     compileSdk 33
-
+    namespace 'me.ag2s.cronet.test'
     defaultConfig {
         applicationId "me.ag2s.cronet.test"
         minSdk 21
@@ -50,7 +50,7 @@ android {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
         }
     }
-    namespace 'me.ag2s.cronet.test'
+
 }
 
 dependencies {
