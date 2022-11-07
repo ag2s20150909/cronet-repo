@@ -21,7 +21,16 @@ maven { url 'https://jitpack.io' }
 ```
 
 ```groovy
-implementation 'com.github.ag2s20150909.cronet-repo:benchmark:41bf98d8ae'
+dependencies {
+    //All in once
+    implementation 'com.github.ag2s20150909:cronet-repo:107.0.5304.91'
+
+    //or implementation you need
+    implementation 'com.github.ag2s20150909.cronet-repo:core:107.0.5304.91'
+    implementation 'com.github.ag2s20150909.cronet-repo:okhttp:107.0.5304.91'
+    implementation 'com.github.ag2s20150909.cronet-repo:okhttp-kt:107.0.5304.91'
+    implementation 'com.github.ag2s20150909.cronet-repo:glide:107.0.5304.91'
+}
 ```
 
 Get it from Github Action
