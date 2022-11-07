@@ -261,10 +261,10 @@ object OkhttpUtils {
     }
 
 
-    private val PcUserAgent =
+    val PcUserAgent =
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + ImplVersion.getCronetVersion()
             .toString() + " Safari / 537.36"
-    private val UA =
+    val UA =
         "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + ImplVersion.getCronetVersion()
             .toString() + " Mobile Safari/537.36"
 }

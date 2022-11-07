@@ -39,11 +39,13 @@ object Http {
             .connectionSpecs(specs)
             .followRedirects(true)
             .followSslRedirects(true)
-            .build()
+            .build().also {
+                CronetHolder.setExecutor(it.dispatcher.executorService)
+            }
     }
 
 
-    private val cronetEngine: CronetEngine by lazy {
+    val cronetEngine: CronetEngine by lazy {
         val builder = MyCronetEngine.Builder(appCtx).apply {
             setStoragePath(appCtx.externalCacheDir?.absolutePath)//设置缓存路径
             enableHttpCache(HTTP_CACHE_DISK, (1024 * 1024 * 50).toLong())//设置50M的磁盘缓存

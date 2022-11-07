@@ -8,11 +8,13 @@ import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
-import me.ag2s.cronet.DirectExecutor;
+import me.ag2s.cronet.CronetHolder;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Headers;
@@ -31,7 +33,7 @@ public class CronetHelper {
         String url = request.url().toString();
 
 
-        UrlRequest.Builder requestBuilder = engine.newUrlRequestBuilder(url, callback, DirectExecutor.INSTANCE);
+        UrlRequest.Builder requestBuilder = engine.newUrlRequestBuilder(url, callback, CronetHolder.getExecutor());
         requestBuilder.setHttpMethod(request.method());
         requestBuilder.allowDirectExecutor();
 
@@ -71,5 +73,24 @@ public class CronetHelper {
             }
         }
         return sb.toString();
+    }
+
+    static void closeAll(OutputStream out, WritableByteChannel channel) {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (out != null) {
+            try {
+                out.flush();
+                out.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 }

@@ -18,12 +18,12 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-class CronetCallBackNew extends AbsCronetCallback {
+class CronetCallBackNewMemory extends AbsCronetMemoryCallback {
 
     private final CompletableFuture<Response> responseFuture = new CompletableFuture<>();
 
 
-    CronetCallBackNew(Request request, Call call) {
+    CronetCallBackNewMemory(Request request, Call call) {
         super(request, call);
     }
 

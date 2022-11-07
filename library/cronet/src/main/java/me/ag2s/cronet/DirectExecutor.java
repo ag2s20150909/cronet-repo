@@ -2,7 +2,7 @@ package me.ag2s.cronet;
 
 import java.util.concurrent.Executor;
 
-public enum DirectExecutor implements Executor {
+enum DirectExecutor implements Executor {
     INSTANCE;
 
     @Override

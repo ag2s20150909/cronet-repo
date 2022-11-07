@@ -6,13 +6,36 @@ import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.MyCronetEngine;
 import org.json.JSONObject;
 
+import java.util.concurrent.Executor;
+
 @SuppressWarnings("unused")
 public class CronetHolder {
+    private static final Object lock = new Object();
     private static volatile ExperimentalCronetEngine engine;
+    private static volatile Executor executorService;
+
+    public static Executor getExecutor() {
+        if (executorService == null) {
+            synchronized (lock) {
+                if (executorService == null) {
+                    executorService = createDefaultExecutorService();
+                }
+            }
+        }
+        return executorService;
+    }
+
+    public static void setExecutor(Executor executorService) {
+        CronetHolder.executorService = executorService;
+    }
+
+    private static Executor createDefaultExecutorService() {
+        return DirectExecutor.INSTANCE;
+    }
 
     public static ExperimentalCronetEngine getEngine() {
         if (engine == null) {
-            synchronized (CronetHolder.class) {
+            synchronized (lock) {
                 if (engine == null) {
                     engine = createDefaultCronetEngine(CronetInitializer.getCtx());
                 }
@@ -23,6 +46,7 @@ public class CronetHolder {
 
     public static void setEngine(ExperimentalCronetEngine engine) {
         CronetHolder.engine = engine;
+        Runtime.getRuntime().gc();
     }
 
     private static String getExperimentalOptions() {

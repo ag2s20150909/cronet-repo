@@ -33,12 +33,14 @@ android {
     publishing {
         singleVariant('release') {
             withSourcesJar()
+            withJavadocJar()
         }
     }
 
 }
 
 dependencies {
+    //noinspection GradleDependency
     api "com.squareup.okhttp3:okhttp:$okhttp_version"
     api project(path: ':core')
     testImplementation 'junit:junit:4.13.2'

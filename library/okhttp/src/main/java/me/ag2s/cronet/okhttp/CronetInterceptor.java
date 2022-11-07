@@ -63,11 +63,11 @@ public class CronetInterceptor implements okhttp3.Interceptor {
 
     private Response proceedWithCronet(CronetEngine engine, Request request, Call call) throws IOException {
         try {
-            AbsCronetCallback callback;
+            AbsCronetMemoryCallback callback;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                callback = new CronetCallBackNew(request, call);
+                callback = new CronetCallBackNewMemory(request, call);
             } else {
-                callback = new CronetCallBackOld(request, call);
+                callback = new CronetCallBackOldMemory(request, call);
             }
             UrlRequest urlRequest = CronetHelper.buildRequest(engine, request, callback);
             urlRequest.start();

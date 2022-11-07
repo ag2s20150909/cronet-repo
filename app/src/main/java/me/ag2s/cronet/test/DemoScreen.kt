@@ -68,11 +68,7 @@ fun DemoScreen() {
 //                )
             }
             composable(Screen.Response.route) {
-                Editor(
-                    navController = navController,
-                    screen = Screen.Response,
-                    viewModel = viewModel
-                )
+              DownloadFileScreen()
             }
         }
     }

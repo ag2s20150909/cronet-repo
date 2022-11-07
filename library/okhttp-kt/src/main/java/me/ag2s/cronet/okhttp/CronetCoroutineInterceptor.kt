@@ -45,22 +45,27 @@ class CronetCoroutineInterceptor(
         request: Request,
         call: Call
     ): Response =
-        suspendCancellableCoroutine {
-            val cb = object : AbsCronetCallback(request, call) {
+        suspendCancellableCoroutine { continuation ->
+            val cb = object : AbsCronetMemoryCallback(request, call) {
                 override fun waitForDone(urlRequest: UrlRequest): Response {
                     TODO("Not yet implemented")
                 }
 
                 override fun onSuccess(response: Response) {
-                    it.resume(response)
+                    continuation.resume(response)
                 }
 
                 override fun onError(error: IOException) {
-                    it.resumeWithException(error)
+                    continuation.resumeWithException(error)
                 }
 
             }
-            CronetHelper.buildRequest(engine, request, cb).start()
+            val urlRequest = CronetHelper.buildRequest(engine, request, cb)
+            continuation.invokeOnCancellation {
+                urlRequest.cancel()
+                call.cancel()
+            }
+            urlRequest.start()
 
 
         }

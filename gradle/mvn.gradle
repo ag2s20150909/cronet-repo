@@ -42,6 +42,7 @@ afterEvaluate {
         }
 
         repositories {
+            mavenLocal()
             maven {
                 name = 'myrepo'
                 url = "${rootDir}/repo"

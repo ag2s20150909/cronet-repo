@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import me.ag2s.cronet.CronetHolder;
-import me.ag2s.cronet.DirectExecutor;
 
 
 public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T>, AutoCloseable {
@@ -35,7 +34,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
     public CronetDataFetcher(ByteBufferParser<T> parser, GlideUrl url) {
         this.url = url;
         this.parser = parser;
-        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, DirectExecutor.INSTANCE);
+        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, CronetHolder.getExecutor());
 
 
     }
@@ -50,6 +49,9 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
         if (url != null) {
             for (Map.Entry<String, String> headerEntry : url.getHeaders().entrySet()) {
                 String key = headerEntry.getKey();
+                if ("Accept-Encoding".equalsIgnoreCase(key)) {
+                    continue;
+                }
                 builder.addHeader(key, headerEntry.getValue());
             }
         }

@@ -26,7 +26,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 @SuppressWarnings("unused")
-abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoCloseable {
+abstract class AbsCronetMemoryCallback extends UrlRequest.Callback {
     private static final String TAG = "Callback";
 
     private static final int MAX_FOLLOW_COUNT = 20;
@@ -49,7 +49,7 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
     //public final Buffer buffer = new Buffer();
 
 
-    AbsCronetCallback(Request request, Call call) {
+    AbsCronetMemoryCallback(Request request, Call call) {
         originalRequest = request;
 
         mCall = call;
@@ -214,12 +214,13 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
     public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
         IOException e = new IOException(Objects.requireNonNull(error.getMessage()).substring(31), error);
         onError(e);
+        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
 
     }
 
     @Override
     public void onCanceled(UrlRequest request, UrlResponseInfo info) {
-        onError(new IOException("CronetClient Request Canceled"));
+        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
     }
 
     @Override
@@ -234,13 +235,10 @@ abstract class AbsCronetCallback extends UrlRequest.Callback implements AutoClos
                         .url(info.getUrl()).build())
                 .build();
         onSuccess(mResponse);
+        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
 
 
     }
 
-    @Override
-    public void close() {
-        //buffer.close();
 
-    }
 }

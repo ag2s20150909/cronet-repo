@@ -4,8 +4,7 @@ import android.os.ConditionVariable
 import androidx.benchmark.junit4.BenchmarkRule
 import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +28,7 @@ class CronetBenchmark {
         fun start() {
             val value = "HHHHHHH"
             lock.withLock {
-                condition.await(500, TimeUnit.MILLISECONDS)
+                condition.await(1000, TimeUnit.MILLISECONDS)
             }
             res = value
             onSuccess(value)
@@ -37,7 +36,7 @@ class CronetBenchmark {
         }
     }
 
-    class Cb1 : AbsCB() {
+    class CompletableFutureNoTimeOut : AbsCB() {
         private val responseFuture = CompletableFuture<String>()
 
         override fun getResult(): String {
@@ -50,7 +49,20 @@ class CronetBenchmark {
 
     }
 
-    class Cb2 : AbsCB() {
+    class CompletableFutureWithTimeOut : AbsCB() {
+        private val responseFuture = CompletableFuture<String>()
+
+        override fun getResult(): String {
+            return responseFuture.get(500, TimeUnit.MILLISECONDS)
+        }
+
+        override fun onSuccess(result: String) {
+            responseFuture.complete(result)
+        }
+
+    }
+
+    class ConditionVariableNoTimeout : AbsCB() {
         private val mResponseCondition = ConditionVariable()
         override fun getResult(): String {
             mResponseCondition.block()
@@ -63,7 +75,20 @@ class CronetBenchmark {
 
     }
 
-    suspend fun tes3(): String = suspendCancellableCoroutine {
+    class ConditionVariableWithTimeout : AbsCB() {
+        private val mResponseCondition = ConditionVariable()
+        override fun getResult(): String {
+            mResponseCondition.block(500)
+            return res
+        }
+
+        override fun onSuccess(result: String) {
+            mResponseCondition.open()
+        }
+
+    }
+
+    suspend fun CoroutineNoTimeout(): String = suspendCancellableCoroutine {
         val cb = object : AbsCB() {
             override fun getResult(): String {
                 TODO("Not yet implemented")
@@ -81,27 +106,43 @@ class CronetBenchmark {
     val benchmarkRule = BenchmarkRule()
 
     @Test
-    fun testAAAA() {
-        val cb = Cb1()
+    fun testCompletableFutureNoTimeOut() {
+        val cb = CompletableFutureNoTimeOut()
         benchmarkRule.measureRepeated {
             cb.start()
         }
     }
 
     @Test
-    fun testBBBB() {
-        val cb = Cb2()
+    fun testCompletableFutureWithTimeOut() {
+        val cb = CompletableFutureWithTimeOut()
         benchmarkRule.measureRepeated {
             cb.start()
         }
     }
 
     @Test
-    fun testCCCC() {
+    fun testConditionVariableNoTimeout() {
+        val cb = ConditionVariableNoTimeout()
+        benchmarkRule.measureRepeated {
+            cb.start()
+        }
+    }
+
+    @Test
+    fun testConditionVariableWithTimeout() {
+        val cb = ConditionVariableWithTimeout()
+        benchmarkRule.measureRepeated {
+            cb.start()
+        }
+    }
+
+    @Test
+    fun testCoroutineWithoutTimeout() {
 
         benchmarkRule.measureRepeated {
 
-            runBlocking { tes3() }
+            runBlocking { CoroutineNoTimeout() }
         }
     }
 

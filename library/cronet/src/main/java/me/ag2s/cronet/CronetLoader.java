@@ -155,7 +155,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
         return !(isGMS || includeCronetSo);
     }
 
-    public JSONObject initJson(Context context) {
+    private JSONObject initJson(Context context) {
         StringBuilder stringBuilder = new StringBuilder();
         try {
             //获取assets资源管理器

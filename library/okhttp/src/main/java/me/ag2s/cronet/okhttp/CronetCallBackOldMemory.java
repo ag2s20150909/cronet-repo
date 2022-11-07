@@ -13,12 +13,12 @@ import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
 
-class CronetCallBackOld extends AbsCronetCallback {
+class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
     private final ConditionVariable mResponseCondition = new ConditionVariable();
     @Nullable
     private IOException mException;
 
-    CronetCallBackOld(Request request, Call call) {
+    CronetCallBackOldMemory(Request request, Call call) {
         super(request, call);
     }
 
