@@ -23,10 +23,14 @@ afterEvaluate {
 
         repositories {
 
-                maven {
-                    name = 'myrepo'
-                    url = "${rootDir}/repo"
-                }
+            if ("true" == System.env.JITPACK) {
+                mavenLocal()
+
+            }
+            maven {
+                name = 'myrepo'
+                url = "${rootDir}/repo"
+            }
 
 
         }
