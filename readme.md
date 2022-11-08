@@ -24,10 +24,10 @@ maven { url 'https://jitpack.io' }
 ```groovy
 dependencies {
     //All in once
-    implementation 'com.github.ag2s20150909:cronet-repo:107.0.5304.91'
+    implementation('com.github.ag2s20150909:cronet-repo:107.0.5304.91') { exclude(group: "org.chromium.net") }
 
     //or implementation you need
-    implementation 'com.github.ag2s20150909.cronet-repo:core:107.0.5304.91'
+    implementation('com.github.ag2s20150909.cronet-repo:core:107.0.5304.91') { exclude(group: "org.chromium.net") }
     implementation 'com.github.ag2s20150909.cronet-repo:okhttp:107.0.5304.91'
     implementation 'com.github.ag2s20150909.cronet-repo:okhttp-kt:107.0.5304.91'
     implementation 'com.github.ag2s20150909.cronet-repo:glide:107.0.5304.91'
