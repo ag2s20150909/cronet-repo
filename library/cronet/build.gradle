@@ -1,3 +1,5 @@
+import org.gradle.api.internal.project.ProjectInternal
+
 plugins {
     id 'com.android.library'
 //    id 'maven-publish'
@@ -55,6 +57,7 @@ android {
 
 configurations.all {
     exclude group: 'org.chromium.net'
+    attributes.attribute(ProjectInternal.STATUS_ATTRIBUTE, "integration")
 }
 
 dependencies {
