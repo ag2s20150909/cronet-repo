@@ -6,6 +6,7 @@ plugins {
 
 android {
     compileSdk 33
+    buildToolsVersion '33.0.0'
     namespace 'me.ag2s.cronet.test'
     defaultConfig {
         applicationId "me.ag2s.cronet.test"
