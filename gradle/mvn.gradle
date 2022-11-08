@@ -8,7 +8,8 @@ afterEvaluate {
 
 
                 artifactId = PROJ_ARTIFACTID
-                if (PROJ_VERSION.contains("local") || PROJ_VERSION.contains("SNAPSHOT")) {
+                if (PROJ_VERSION.contains("stable-") || PROJ_VERSION.contains("beta-") ||
+                        PROJ_VERSION.contains("dev-") || PROJ_VERSION.contains("canary-")) {
                     group = PROJ_GROUP
                     version = PROJ_VERSION
                 } else {

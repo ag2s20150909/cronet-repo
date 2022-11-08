@@ -50,6 +50,10 @@ android {
     }
 }
 
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
+}
+
 configurations.all {
     exclude group: 'org.chromium.net'
 }
