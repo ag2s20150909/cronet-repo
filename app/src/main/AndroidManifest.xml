@@ -13,7 +13,7 @@
         android:theme="@style/Theme.Cronet"
         tools:targetApi="n">
         <meta-data
-            android:name="prefSo"
+            android:name="prefCronetSo"
             android:value="true" />
 
         <activity

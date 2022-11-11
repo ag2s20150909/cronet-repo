@@ -41,6 +41,8 @@ import java.util.concurrent.Executors;
  * CronetClient soLoader
  */
 public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
+
+    public static final String PREF_CRONET_SO = "prefCronetSo";
     /**
      * 打包时是否包含Cronet so
      * Whether the aar package include cronet so when package,
@@ -79,7 +81,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
 
         try {
             ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
-            prefSo = appInfo.metaData.getBoolean("prefSo", false);
+            prefSo = appInfo.metaData.getBoolean(PREF_CRONET_SO, false);
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
