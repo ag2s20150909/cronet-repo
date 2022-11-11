@@ -28,11 +28,7 @@
                 android:value="androidx.startup" />
         </provider>
 
-        <!--        <provider-->
-        <!--            android:name=".CronetContentProvider"-->
-        <!--            android:authorities="${applicationId}.CronetContentProvider"-->
-        <!--            android:enabled="true"-->
-        <!--            android:exported="false" />-->
+
     </application>
 
 </manifest>

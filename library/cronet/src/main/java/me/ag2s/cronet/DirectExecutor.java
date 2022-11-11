@@ -1,8 +1,10 @@
 package me.ag2s.cronet;
 
+import androidx.annotation.NonNull;
+
 import java.util.concurrent.Executor;
 
-enum DirectExecutor implements Executor {
+public enum DirectExecutor implements Executor {
     INSTANCE;
 
     @Override
@@ -10,6 +12,7 @@ enum DirectExecutor implements Executor {
         command.run();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "MoreExecutors.directExecutor()";

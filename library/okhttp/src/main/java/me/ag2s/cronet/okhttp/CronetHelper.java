@@ -3,7 +3,6 @@ package me.ag2s.cronet.okhttp;
 import androidx.annotation.NonNull;
 
 import org.chromium.net.CronetEngine;
-import org.chromium.net.UploadDataProviders;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 
@@ -22,7 +21,6 @@ import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okio.Buffer;
 
 public class CronetHelper {
 
@@ -48,13 +46,12 @@ public class CronetHelper {
         RequestBody requestBody = request.body();
         if (requestBody != null) {
             requestBuilder.allowDirectExecutor();
+
             MediaType contentType = requestBody.contentType();
             if (contentType != null) {
                 requestBuilder.addHeader("Content-Type", contentType.toString());
             }
-            Buffer buffer = new Buffer();
-            requestBody.writeTo(buffer);
-            requestBuilder.setUploadDataProvider(UploadDataProviders.create(buffer.readByteArray()), uploadExecutor);
+            requestBuilder.setUploadDataProvider(new RequestBodyUploadProvider(requestBody), uploadExecutor);
         }
 
         return requestBuilder.build();

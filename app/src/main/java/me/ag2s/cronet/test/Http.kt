@@ -56,6 +56,7 @@ object Http {
             addQuicHint("http3.is", 443, 443)
             setExperimentalOptions(options)
             enableNetworkQualityEstimator(true)
+            setUserAgent(OkhttpUtils.PcUserAgent)
         }
         builder.build().also {
             it.addRttListener(object :

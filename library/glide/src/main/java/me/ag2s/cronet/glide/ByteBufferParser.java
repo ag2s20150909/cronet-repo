@@ -1,5 +1,7 @@
 package me.ag2s.cronet.glide;
 
+import androidx.annotation.NonNull;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -11,7 +13,7 @@ interface ByteBufferParser<T> {
     /**
      * Returns the required type of data parsed from the given {@link ByteBuffer}.
      */
-    T parse(ByteBuffer byteBuffer);
+    T parse(@NonNull ByteBuffer byteBuffer);
 
     /**
      * Returns the {@link Class} of the data that will be parsed from {@link ByteBuffer}s.

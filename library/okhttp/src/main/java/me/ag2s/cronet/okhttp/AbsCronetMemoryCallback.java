@@ -49,7 +49,7 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback {
     //public final Buffer buffer = new Buffer();
 
 
-    AbsCronetMemoryCallback(Request request, Call call) {
+    AbsCronetMemoryCallback(@NonNull Request request, @NonNull Call call) {
         originalRequest = request;
 
         mCall = call;

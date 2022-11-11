@@ -53,7 +53,7 @@ public class CronetUrlLoader<T> implements ModelLoader<GlideUrl, T> {
         }
 
         @Override
-        public InputStream parse(ByteBuffer byteBuffer) {
+        public InputStream parse(@NonNull ByteBuffer byteBuffer) {
             try {
                 return ByteBufferUtil.toStream(byteBuffer);
             } finally {
@@ -89,7 +89,7 @@ public class CronetUrlLoader<T> implements ModelLoader<GlideUrl, T> {
         }
 
         @Override
-        public ByteBuffer parse(ByteBuffer byteBuffer) {
+        public ByteBuffer parse(@NonNull ByteBuffer byteBuffer) {
             return byteBuffer;
         }
 

@@ -18,8 +18,6 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 @GlideModule
@@ -34,7 +32,6 @@ public final class CronetLibraryGlideModule extends LibraryGlideModule {
         GLIDE_TO_CHROMIUM_PRIORITY.put(Priority.LOW, UrlRequest.Builder.REQUEST_PRIORITY_LOWEST);
     }
 
-    public static final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Override
     public void registerComponents(@NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {

@@ -23,7 +23,6 @@ import me.ag2s.cronet.CronetHolder;
 public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T>, AutoCloseable {
 
 
-    private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
     private final GlideUrl url;
     private final UrlRequest.Builder builder;
     private final ByteBufferParser<T> parser;
@@ -31,7 +30,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
     private DataCallback<? super T> dataCallback;
     private BufferQueue.Builder bufferQueue;
 
-    public CronetDataFetcher(ByteBufferParser<T> parser, GlideUrl url) {
+    public CronetDataFetcher(@NonNull ByteBufferParser<T> parser, @NonNull GlideUrl url) {
         this.url = url;
         this.parser = parser;
         builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, CronetHolder.getExecutor());

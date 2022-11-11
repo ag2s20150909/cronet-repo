@@ -2,6 +2,8 @@ package me.ag2s.cronet;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.MyCronetEngine;
 import org.json.JSONObject;
@@ -14,6 +16,7 @@ public class CronetHolder {
     private static volatile ExperimentalCronetEngine engine;
     private static volatile Executor executorService;
 
+    @NonNull
     public static Executor getExecutor() {
         if (executorService == null) {
             synchronized (lock) {
@@ -25,14 +28,16 @@ public class CronetHolder {
         return executorService;
     }
 
-    public static void setExecutor(Executor executorService) {
+    public static void setExecutor(@NonNull Executor executorService) {
         CronetHolder.executorService = executorService;
     }
 
+    @NonNull
     private static Executor createDefaultExecutorService() {
         return DirectExecutor.INSTANCE;
     }
 
+    @NonNull
     public static ExperimentalCronetEngine getEngine() {
         if (engine == null) {
             synchronized (lock) {
@@ -44,11 +49,12 @@ public class CronetHolder {
         return engine;
     }
 
-    public static void setEngine(ExperimentalCronetEngine engine) {
+    public static void setEngine(@NonNull ExperimentalCronetEngine engine) {
         CronetHolder.engine = engine;
         Runtime.getRuntime().gc();
     }
 
+    @NonNull
     private static String getExperimentalOptions() {
         JSONObject options = new JSONObject();
 
@@ -68,6 +74,7 @@ public class CronetHolder {
         return options.toString();
     }
 
+    @NonNull
     private static ExperimentalCronetEngine createDefaultCronetEngine(Context context) {
         MyCronetEngine.Builder builder = new MyCronetEngine.Builder(context)
                 .enableHttp2(true)

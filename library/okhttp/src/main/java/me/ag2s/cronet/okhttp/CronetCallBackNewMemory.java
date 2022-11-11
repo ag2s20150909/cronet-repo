@@ -23,7 +23,7 @@ class CronetCallBackNewMemory extends AbsCronetMemoryCallback {
     private final CompletableFuture<Response> responseFuture = new CompletableFuture<>();
 
 
-    CronetCallBackNewMemory(Request request, Call call) {
+    CronetCallBackNewMemory(@NonNull Request request, @NonNull Call call) {
         super(request, call);
     }
 

@@ -3,6 +3,7 @@ package me.ag2s.cronet;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Build;
 import android.text.TextUtils;
@@ -67,7 +68,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
     /**
      * 优先下载so
      */
-    private boolean prefSo = true;
+    private boolean prefSo = false;
     /**
      * 缓存是否安装成功的结果
      */
@@ -75,6 +76,13 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
 
     CronetLoader() {
         mContext = CronetInitializer.getCtx();
+
+        try {
+            ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
+            prefSo = appInfo.metaData.getBoolean("prefSo", false);
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
         soUrl = "https://storage.googleapis.com/chromium-cronet/android/"
                 + ApiVersion.getCronetVersion() + "/Release/cronet/libs/"
                 + getCpuAbi(mContext) + "/" + soName;
@@ -117,29 +125,26 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
             return;
         }
         download = true;
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                boolean result = downloadFileIfNotExist(url, downloadTempFile);
-                Log.e(TAG, "download result:" + result);
-                //文件md5再次校验
-                String fileMD5 = getFileMD5(downloadTempFile);
-                if (md5 != null && !md5.equalsIgnoreCase(fileMD5)) {
-                    boolean delete = downloadTempFile.delete();
-                    if (!delete) {
-                        downloadTempFile.deleteOnExit();
-                    }
-                    download = false;
-                    return;
+        executor.execute(() -> {
+            boolean result = downloadFileIfNotExist(url, downloadTempFile);
+            Log.e(TAG, "download result:" + result);
+            //文件md5再次校验
+            String fileMD5 = getFileMD5(downloadTempFile);
+            if (md5 != null && !md5.equalsIgnoreCase(fileMD5)) {
+                boolean delete = downloadTempFile.delete();
+                if (!delete) {
+                    downloadTempFile.deleteOnExit();
                 }
-                Log.e(TAG, "download success, copy to " + destSuccessFile);
-                //下载成功拷贝文件
-                copyFile(downloadTempFile, destSuccessFile);
-                //文件变动后重新计算MD5
-                CronetLoaderHolder.instance.ins = CronetState.Native;
-                File parentFile = downloadTempFile.getParentFile();
-                deleteHistoryFile(parentFile, null);
+                download = false;
+                return;
             }
+            Log.e(TAG, "download success, copy to " + destSuccessFile);
+            //下载成功拷贝文件
+            copyFile(downloadTempFile, destSuccessFile);
+            //文件变动后重新计算MD5
+            CronetLoaderHolder.instance.ins = CronetState.Native;
+            File parentFile = downloadTempFile.getParentFile();
+            deleteHistoryFile(parentFile, null);
         });
 
     }
@@ -199,7 +204,6 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      */
     public boolean checkCronetNative() {
         if (md5 == null || md5.length() != 32 || !soFile.exists()) {
-            //ins = CronetState.Java;
             return false;
         }
         return md5.equals(getFileMD5(soFile));
@@ -228,7 +232,6 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
             downloadSo();
         }
 
-
         if (isGMS) {
             CronetProviderInstaller.installProvider(mContext);
         } else {
@@ -255,18 +258,15 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
     }
 
     private void downloadSo() {
-        executor.execute(new Runnable() {
-            @Override
-            public void run() {
-                if (soFile.exists() && Objects.equals(md5, getFileMD5(soFile))) {
-                    Log.e(TAG, "So 库已存在");
-                    ins = CronetState.Native;
-                } else {
-                    download(soUrl, md5, downloadFile, soFile);
-                }
-
-                Log.e(TAG, soName);
+        executor.execute(() -> {
+            if (soFile.exists() && Objects.equals(md5, getFileMD5(soFile))) {
+                Log.e(TAG, "So 库已存在");
+                ins = CronetState.Native;
+            } else {
+                download(soUrl, md5, downloadFile, soFile);
             }
+
+            Log.e(TAG, soName);
         });
     }
 

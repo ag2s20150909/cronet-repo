@@ -18,7 +18,7 @@ class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
     @Nullable
     private IOException mException;
 
-    CronetCallBackOldMemory(Request request, Call call) {
+    CronetCallBackOldMemory(@NonNull Request request, @NonNull Call call) {
         super(request, call);
     }
 

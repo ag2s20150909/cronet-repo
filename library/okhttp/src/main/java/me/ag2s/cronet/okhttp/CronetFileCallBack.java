@@ -46,7 +46,7 @@ public abstract class CronetFileCallBack extends UrlRequest.Callback {
     }
 
     /**
-     * Returns the numerical value of the Content-Header length, or 32 if not set or invalid.
+     * Returns the numerical value of the Content-Header length, or -1 if not set or invalid.
      */
     private static long getBodyLength(@NonNull UrlResponseInfo info) {
         List<String> contentLengthHeader = info.getAllHeaders().get(CONTENT_LENGTH_HEADER_NAME);
@@ -60,12 +60,27 @@ public abstract class CronetFileCallBack extends UrlRequest.Callback {
         }
     }
 
+    /**
+     * Notify  download completed and success
+     */
     public abstract void onSuccess();
 
+    /**
+     * Notify  download Progress
+     *
+     * @param write bytes written to file
+     * @param total Total bytes the file download,if server headers don't have Content-Header ,it will be -1.
+     */
     public abstract void onProgress(long write, long total);
 
+    /**
+     * Notify  download header info
+     */
     public abstract void onHeaders(UrlResponseInfo urlResponseInfo);
 
+    /**
+     * Notify  download error
+     */
     public abstract void onError(@NonNull IOException error);
 
     @Override
