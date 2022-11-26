@@ -46,6 +46,7 @@ class CronetCoroutineInterceptor(
         call: Call
     ): Response =
         suspendCancellableCoroutine { continuation ->
+
             val cb = object : AbsCronetMemoryCallback(request, call) {
                 override fun waitForDone(urlRequest: UrlRequest): Response {
                     TODO("Not yet implemented")
@@ -60,12 +61,15 @@ class CronetCoroutineInterceptor(
                 }
 
             }
-            val urlRequest = CronetHelper.buildRequest(engine, request, cb)
-            continuation.invokeOnCancellation {
-                urlRequest.cancel()
-                call.cancel()
+
+            cb.use {
+                val urlRequest = CronetHelper.buildRequest(engine, request, cb)
+                continuation.invokeOnCancellation {
+                    urlRequest.cancel()
+                    call.cancel()
+                }
+                urlRequest.start()
             }
-            urlRequest.start()
 
 
         }

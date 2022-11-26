@@ -60,6 +60,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
     @Override
     public void cleanup() {
+
         //bytesReceived.reset();
     }
 

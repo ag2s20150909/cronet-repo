@@ -26,7 +26,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 @SuppressWarnings("unused")
-abstract class AbsCronetMemoryCallback extends UrlRequest.Callback {
+abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements AutoCloseable {
     private static final String TAG = "Callback";
 
     private static final int MAX_FOLLOW_COUNT = 20;
@@ -240,5 +240,8 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback {
 
     }
 
-
+    @Override
+    public void close() throws Exception {
+        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+    }
 }

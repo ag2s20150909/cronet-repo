@@ -60,14 +60,16 @@ public class CronetInterceptor implements okhttp3.Interceptor {
 
     }
 
+    private static AbsCronetMemoryCallback getCb(@NonNull Request request, @NonNull Call call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return new CronetCallBackNewMemory(request, call);
+        } else {
+            return new CronetCallBackOldMemory(request, call);
+        }
+    }
+
     private Response proceedWithCronet(@NonNull CronetEngine engine, @NonNull Request request, @NonNull Call call) throws IOException {
-        try {
-            AbsCronetMemoryCallback callback;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                callback = new CronetCallBackNewMemory(request, call);
-            } else {
-                callback = new CronetCallBackOldMemory(request, call);
-            }
+        try (AbsCronetMemoryCallback callback = getCb(request, call)) {
             UrlRequest urlRequest = CronetHelper.buildRequest(engine, request, callback);
             urlRequest.start();
             return callback.waitForDone(urlRequest);

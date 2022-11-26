@@ -13,9 +13,10 @@ import okio.Buffer;
 
 public class RequestBodyUploadProvider extends UploadDataProvider implements AutoCloseable {
     private final RequestBody body;
-    Buffer buffer = new Buffer();
+    private final Buffer buffer;
 
     public RequestBodyUploadProvider(@NonNull RequestBody body) {
+        buffer = new Buffer();
         this.body = body;
         try {
             body.writeTo(buffer);
