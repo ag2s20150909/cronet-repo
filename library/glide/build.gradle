@@ -5,8 +5,8 @@ apply from: "$rootDir/gradle/mvn.gradle"
 
 android {
     namespace 'me.ag2s.cronet.glide'
-    buildToolsVersion '33.0.0'
-    compileSdk 33
+    compileSdk compile_sdk_version
+    buildToolsVersion = build_tool_version
 
     defaultConfig {
         minSdk 21

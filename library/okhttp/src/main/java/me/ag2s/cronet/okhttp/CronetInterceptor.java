@@ -9,6 +9,7 @@ import org.chromium.net.UrlRequest;
 
 import java.io.IOException;
 
+import me.ag2s.cronet.CronetHolder;
 import me.ag2s.cronet.CronetLoader;
 import okhttp3.Call;
 import okhttp3.Cookie;
@@ -27,6 +28,10 @@ public class CronetInterceptor implements okhttp3.Interceptor {
 
     public CronetInterceptor(@NonNull CronetEngine engine) {
         this(engine, CookieJar.NO_COOKIES);
+    }
+
+    public CronetInterceptor() {
+        this(CronetHolder.getEngine(), CookieJar.NO_COOKIES);
     }
 
     @NonNull

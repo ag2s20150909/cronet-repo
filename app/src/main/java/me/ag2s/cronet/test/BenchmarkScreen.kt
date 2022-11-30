@@ -37,7 +37,7 @@ fun BenchmarkScreen() {
                 Text(text = result)
             }
             2 -> {
-                FF(20)
+                FF(200)
             }
         }
 

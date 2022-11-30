@@ -3,6 +3,7 @@ package me.ag2s.cronet.okhttp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import me.ag2s.cronet.CronetHolder
 import me.ag2s.cronet.CronetLoader
 import okhttp3.*
 import org.chromium.net.CronetEngine
@@ -13,7 +14,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CronetCoroutineInterceptor(
-    private val engine: CronetEngine,
+    private val engine: CronetEngine = CronetHolder.getEngine(),
     private val cookieJar: CookieJar = CookieJar.NO_COOKIES,
     private val context: CoroutineContext = Dispatchers.IO
 ) : Interceptor {

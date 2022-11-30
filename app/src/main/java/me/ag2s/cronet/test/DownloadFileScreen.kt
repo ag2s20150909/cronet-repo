@@ -146,7 +146,7 @@ class DownloadFileViewModel : ViewModel() {
                 }
 
                 override fun onProgress(write: Long, total: Long) {
-                    result.tryEmit("${write}  ${total}")
+                    result.tryEmit("$write  $total")
                 }
 
                 override fun onError(error: IOException) {

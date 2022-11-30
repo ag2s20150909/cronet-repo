@@ -12,28 +12,29 @@ import com.bumptech.glide.load.model.GlideUrl;
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
-import org.chromium.net.impl.ImplVersion;
 
 import java.nio.ByteBuffer;
 import java.util.Map;
 
 import me.ag2s.cronet.CronetHolder;
+import me.ag2s.cronet.DirectExecutor;
 
 
 public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T>, AutoCloseable {
 
 
+    @NonNull
     private final GlideUrl url;
     private final UrlRequest.Builder builder;
     private final ByteBufferParser<T> parser;
     private UrlRequest urlRequest;
     private DataCallback<? super T> dataCallback;
-    private BufferQueue.Builder bufferQueue;
+    private BufferQueue bufferQueue;
 
     public CronetDataFetcher(@NonNull ByteBufferParser<T> parser, @NonNull GlideUrl url) {
         this.url = url;
         this.parser = parser;
-        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, CronetHolder.getExecutor());
+        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, DirectExecutor.INSTANCE);
 
 
     }
@@ -44,22 +45,29 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
         builder.setPriority(CronetLibraryGlideModule.GLIDE_TO_CHROMIUM_PRIORITY.get(priority));
         builder.allowDirectExecutor();
 
-        builder.addHeader("Cronet", ImplVersion.getCronetVersion());
-        if (url != null) {
-            for (Map.Entry<String, String> headerEntry : url.getHeaders().entrySet()) {
-                String key = headerEntry.getKey();
-                if ("Accept-Encoding".equalsIgnoreCase(key)) {
-                    continue;
-                }
-                builder.addHeader(key, headerEntry.getValue());
+        //builder.addHeader("Cronet", ImplVersion.getCronetVersion());
+        for (Map.Entry<String, String> headerEntry : url.getHeaders().entrySet()) {
+            String key = headerEntry.getKey();
+            if ("Accept-Encoding".equalsIgnoreCase(key)) {
+                continue;
             }
+            builder.addHeader(key, headerEntry.getValue());
         }
+
         urlRequest = builder.build();
         urlRequest.start();
     }
 
     @Override
     public void cleanup() {
+        if (bufferQueue != null) {
+            try {
+                bufferQueue.close();
+                bufferQueue = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         //bytesReceived.reset();
     }
@@ -121,7 +129,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
     @Override
     public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
         try {
-            dataCallback.onDataReady(parser.parse(bufferQueue.build().coalesceToBuffer()));
+            dataCallback.onDataReady(parser.parse(bufferQueue.coalesceToBuffer()));
         } catch (Exception e) {
             dataCallback.onLoadFailed(e);
         }
@@ -136,7 +144,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
     @Override
     public void close() throws Exception {
-
+        bufferQueue = null;
     }
 
 }

@@ -8,31 +8,30 @@ import org.chromium.net.ExperimentalCronetEngine;
 import org.chromium.net.MyCronetEngine;
 import org.json.JSONObject;
 
-import java.lang.ref.WeakReference;
 import java.util.concurrent.Executor;
 
 @SuppressWarnings("unused")
 public class CronetHolder {
     private static final Object lock = new Object();
 
-    private static volatile WeakReference<ExperimentalCronetEngine> engine;
-    private static volatile WeakReference<Executor> executorService;
+    private static volatile ExperimentalCronetEngine engine;
+    private static volatile Executor executorService;
 
     @NonNull
     public static Executor getExecutor() {
-        if (executorService == null || executorService.get() == null) {
+        if (executorService == null) {
             synchronized (lock) {
-                if (executorService == null || executorService.get() == null) {
+                if (executorService == null) {
 
-                    executorService = new WeakReference<>(createDefaultExecutorService());
+                    executorService = createDefaultExecutorService();
                 }
             }
         }
-        return executorService.get();
+        return executorService;
     }
 
     public static void setExecutor(@NonNull Executor executorService) {
-        CronetHolder.executorService = new WeakReference<>(executorService);
+        CronetHolder.executorService = executorService;
     }
 
     @NonNull
@@ -42,18 +41,18 @@ public class CronetHolder {
 
     @NonNull
     public static ExperimentalCronetEngine getEngine() {
-        if (engine == null || engine.get() == null) {
+        if (engine == null) {
             synchronized (lock) {
-                if (engine == null || engine.get() == null) {
-                    engine = new WeakReference<>(createDefaultCronetEngine(CronetInitializer.getCtx()));
+                if (engine == null) {
+                    engine = createDefaultCronetEngine(CronetInitializer.getCtx());
                 }
             }
         }
-        return engine.get();
+        return engine;
     }
 
     public static void setEngine(@NonNull ExperimentalCronetEngine engine) {
-        CronetHolder.engine = new WeakReference<>(engine);
+        CronetHolder.engine = engine;
         Runtime.getRuntime().gc();
     }
 

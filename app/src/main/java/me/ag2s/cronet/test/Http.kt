@@ -66,7 +66,6 @@ object Http {
                 }
 
             })
-            CronetHolder.setEngine(it)
         }
     }
 

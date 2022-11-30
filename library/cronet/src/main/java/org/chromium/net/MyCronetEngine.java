@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import me.ag2s.cronet.CronetHolder;
 import me.ag2s.cronet.CronetLoader;
 
 /**
@@ -300,7 +301,9 @@ public abstract class MyCronetEngine extends ExperimentalCronetEngine {
 
         @Override
         public ExperimentalCronetEngine build() {
-            return mBuilderDelegate.build();
+            ExperimentalCronetEngine engine = mBuilderDelegate.build();
+            CronetHolder.setEngine(engine);
+            return engine;
         }
     }
 

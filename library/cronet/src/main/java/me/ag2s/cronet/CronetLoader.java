@@ -74,7 +74,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
     /**
      * 缓存是否安装成功的结果
      */
-    private CronetState ins = CronetState.Java;
+    private volatile CronetState ins = CronetState.Java;
 
     CronetLoader() {
         mContext = CronetInitializer.getCtx();
