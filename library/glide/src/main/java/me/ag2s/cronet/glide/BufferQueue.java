@@ -26,7 +26,6 @@ final class BufferQueue implements AutoCloseable {
     private WritableByteChannel mResponseBodyChannel;
 
     private BufferQueue() {
-
     }
 
     /**

@@ -17,7 +17,6 @@ import java.nio.ByteBuffer;
 import java.util.Map;
 
 import me.ag2s.cronet.CronetHolder;
-import me.ag2s.cronet.DirectExecutor;
 
 
 public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T>, AutoCloseable {
@@ -34,7 +33,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
     public CronetDataFetcher(@NonNull ByteBufferParser<T> parser, @NonNull GlideUrl url) {
         this.url = url;
         this.parser = parser;
-        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, DirectExecutor.INSTANCE);
+        builder = CronetHolder.getEngine().newUrlRequestBuilder(url.toStringUrl(), this, CronetHolder.getExecutor());
 
 
     }
@@ -44,6 +43,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
         this.dataCallback = dataCallback;
         builder.setPriority(CronetLibraryGlideModule.GLIDE_TO_CHROMIUM_PRIORITY.get(priority));
         builder.allowDirectExecutor();
+
 
         //builder.addHeader("Cronet", ImplVersion.getCronetVersion());
         for (Map.Entry<String, String> headerEntry : url.getHeaders().entrySet()) {
@@ -109,6 +109,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
             request.read(bufferQueue.getFirstBuffer(info));
         } catch (Exception e) {
             dataCallback.onLoadFailed(e);
+            request.cancel();
         }
 
 
@@ -120,6 +121,7 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
             request.read(bufferQueue.getNextBuffer(byteBuffer));
         } catch (Exception e) {
             dataCallback.onLoadFailed(e);
+            request.cancel();
         }
 
 
@@ -144,7 +146,15 @@ public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFet
 
     @Override
     public void close() throws Exception {
-        bufferQueue = null;
+        if (bufferQueue != null) {
+            try {
+                bufferQueue.close();
+                bufferQueue = null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
 }

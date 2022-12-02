@@ -3,6 +3,7 @@ package me.ag2s.cronet.okhttp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeout
 import me.ag2s.cronet.CronetHolder
 import me.ag2s.cronet.CronetLoader
 import okhttp3.*
@@ -12,6 +13,8 @@ import java.io.IOException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 class CronetCoroutineInterceptor(
     private val engine: CronetEngine = CronetHolder.getEngine(),
@@ -35,9 +38,19 @@ class CronetCoroutineInterceptor(
                 builder.header("Cookie", cookieString)
             }
         }
-        val copy: Request = builder.build()
+
+
         return runBlocking(context) {
-            proceedWithCronet(engine = engine, copy, chain.call())
+            val copy: Request = builder.build()
+            val timeout = chain.call().timeout().timeoutNanos().toDuration(DurationUnit.NANOSECONDS)
+            if (timeout.isPositive()) {
+                withTimeout(timeout) {
+                    proceedWithCronet(engine = engine, copy, chain.call())
+                }
+            } else {
+                proceedWithCronet(engine = engine, copy, chain.call())
+            }
+
         }
     }
 
