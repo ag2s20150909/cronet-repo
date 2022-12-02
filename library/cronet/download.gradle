@@ -156,6 +156,10 @@ task downloadCronet() {
 
 }
 
+task getLastestStableVersion() {
+
+}
+
 
 private static String runCommands(String... commands) {
     def process = new ProcessBuilder(commands).redirectErrorStream(true).start()
