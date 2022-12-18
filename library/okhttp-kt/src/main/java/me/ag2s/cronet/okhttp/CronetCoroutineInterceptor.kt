@@ -26,7 +26,7 @@ class CronetCoroutineInterceptor(
         chain.connectTimeoutMillis()
 
 
-        if (!CronetLoader.getInstance().install()) {
+        if (!CronetLoader.getInstance().isJavaImplement) {
             return chain.proceed(request)
         }
         val builder: Request.Builder = request.newBuilder()

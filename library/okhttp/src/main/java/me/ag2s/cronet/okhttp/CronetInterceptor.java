@@ -43,7 +43,7 @@ public class CronetInterceptor implements okhttp3.Interceptor {
         chain.connectTimeoutMillis();
 
 
-        if ((!CronetLoader.getInstance().install())) {
+        if ((CronetLoader.getInstance().isJavaImplement())) {
             return chain.proceed(request);
         }
         Request.Builder builder = request.newBuilder();

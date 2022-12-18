@@ -158,7 +158,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      * @return
      */
 
-    public boolean need() {
+    private boolean need() {
         return !(isGMS || includeCronetSo);
     }
 
@@ -193,16 +193,16 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      *
      * @return true or false
      */
-    public boolean install() {
+    public boolean isJavaImplement() {
         ins = getInstallType();
-        return !ins.equals(CronetState.Java);
+        return ins.equals(CronetState.Java);
 
     }
 
     /**
      * 检测Cronet So 是否存在
      *
-     * @return
+     * @return boolean
      */
     public boolean checkCronetNative() {
         if (md5 == null || md5.length() != 32 || !soFile.exists()) {
