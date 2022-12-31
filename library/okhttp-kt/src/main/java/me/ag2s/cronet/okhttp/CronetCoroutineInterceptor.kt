@@ -21,12 +21,11 @@ class CronetCoroutineInterceptor(
     private val cookieJar: CookieJar = CookieJar.NO_COOKIES,
     private val context: CoroutineContext = Dispatchers.IO
 ) : Interceptor {
+    @Throws(IOException::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
-        chain.connectTimeoutMillis()
 
-
-        if (!CronetLoader.getInstance().isJavaImplement) {
+        if (CronetLoader.getInstance().isJavaImplement) {
             return chain.proceed(request)
         }
         val builder: Request.Builder = request.newBuilder()
@@ -54,6 +53,7 @@ class CronetCoroutineInterceptor(
         }
     }
 
+    @Throws(IOException::class)
     private suspend fun proceedWithCronet(
         engine: CronetEngine,
         request: Request,
@@ -71,7 +71,9 @@ class CronetCoroutineInterceptor(
                 }
 
                 override fun onError(error: IOException) {
+                    error.printStackTrace()
                     continuation.resumeWithException(error)
+                    //row error
                 }
 
             }

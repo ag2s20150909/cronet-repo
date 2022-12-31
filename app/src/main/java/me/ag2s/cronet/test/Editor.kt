@@ -17,10 +17,7 @@ private val ELEMENT_HEIGHT = 48.dp
 
 @Composable
 fun Editor(navController: NavController, screen: Screen, viewModel: TestViewModel) {
-    val txt by viewModel.txt.collectAsState()
-    val host by viewModel.url.collectAsState()
-    val method by viewModel.httpMethod.collectAsState()
-    val protocol by viewModel.protocol.collectAsState()
+
 
 
     LaunchedEffect(Unit) {
@@ -31,9 +28,13 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
 
 
     Column(modifier = Modifier.fillMaxSize()) {
+        val txt by viewModel.txt.collectAsState()
 
 
         Row(modifier = Modifier.fillMaxWidth()) {
+
+            val method by viewModel.httpMethod.collectAsState()
+
             Text(text = "Request Method", modifier = Modifier.weight(1.0f))
 
 
@@ -49,7 +50,8 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-
+            val host by viewModel.url.collectAsState()
+            val protocol by viewModel.protocol.collectAsState()
             DropDownSpinner(
                 modifier = Modifier.width(110.dp),
                 selectedItem = protocol,
@@ -66,6 +68,10 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
                     viewModel.changeHost(view)
 
                 })
+            Button(onClick = { viewModel.getHtml() }) {
+                Text(text = "Go")
+
+            }
         }
         NetImage(
             model = OkhttpUtils.getRandomImgLink(),
