@@ -1,13 +1,16 @@
 package me.ag2s.cronet.test
 
+import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material.Button
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
@@ -18,8 +21,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
-import me.ag2s.cronet.okhttp.CronetFileCallBack
 import me.ag2s.cronet.okhttp.CronetHelper
+import me.ag2s.cronet.okhttp.CronetOutputStreamCallBack
+import me.ag2s.cronet.okhttp.CronetParcelFileDescriptorCallback
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -37,6 +41,38 @@ fun DownloadFileScreen() {
     val viewModel: DownloadFileViewModel = viewModel()
     val result by viewModel.result.collectAsState()
     val context = LocalContext.current
+
+//    val requestSinglePermission =
+//        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
+//            if (permissionGranted) {
+//                viewModel.setMessage("Single permission is granted.")
+//            } else {
+//                viewModel.setMessage("Single permission is denied.")
+//            }
+//        }
+//
+//    LaunchedEffect(Unit){
+//        requestSinglePermission.launch("android.permission.WRITE_EXTERNAL_STORAGE")
+//    }
+
+
+    val createFile =
+        rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
+            Log.e("SS", "created file URI ${activityResult.data?.data}")
+            if (activityResult.resultCode != RESULT_OK) {
+                return@rememberLauncherForActivityResult
+            }
+            activityResult.data?.data?.let { uri ->
+
+                val takeFlags: Int = Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+// Check for the freshest data.
+                appCtx.contentResolver.takePersistableUriPermission(uri, takeFlags)
+                viewModel.downloadFile(uri)
+
+
+            }
+        }
 
     val chooseFile = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent()
@@ -58,6 +94,18 @@ fun DownloadFileScreen() {
     Column() {
 
         Button(onClick = { viewModel.speedTest() }) { Text(text = "Download") }
+        Button(onClick = {
+
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = "*/*"
+                putExtra(Intent.EXTRA_TITLE, "test.bin")
+
+            }
+            createFile.launch(intent)
+
+
+        }) { Text(text = "ChooseFileDownload") }
         Button(onClick = { chooseFile.launch("*/*") }) { Text(text = "Upload") }
 
 
@@ -68,7 +116,16 @@ fun DownloadFileScreen() {
 }
 
 class DownloadFileViewModel : ViewModel() {
+
     val result = MutableStateFlow("")
+
+
+    fun setMessage(msg: String?) {
+        viewModelScope.launch {
+            msg?.let { result.emit(it) }
+        }
+    }
+
     var speedTestJob: Job? = null
     fun speedTest() {
         speedTestJob?.cancel()
@@ -89,7 +146,7 @@ class DownloadFileViewModel : ViewModel() {
                 )
 
                 val outFile = File(appCtx.externalCacheDir, "test.bin")
-                val cb = object : CronetFileCallBack(outFile) {
+                val cb = object : CronetOutputStreamCallBack(outFile) {
                     override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
                         result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
                     }
@@ -119,6 +176,63 @@ class DownloadFileViewModel : ViewModel() {
         }
     }
 
+    var downloadFileJob: Job? = null
+
+    @SuppressLint("Recycle")
+    fun downloadFile(uri: Uri) {
+        downloadFileJob?.cancel()
+        downloadFileJob = viewModelScope.launch {
+            suspendCancellableCoroutine<Unit> {
+
+                val requestBuilder = Request.Builder()
+                    .url("http://test.ustc.edu.cn/backend/garbage.php?r${Math.random()}&ckSize=100")
+                    .get()
+                requestBuilder.header("Dnt", "1")
+                requestBuilder.removeHeader("User-Agent")
+                requestBuilder.header("User-Agent", OkhttpUtils.PcUserAgent)
+                requestBuilder.header("Sec-Ch-Ua-Mobile", "?1")
+                requestBuilder.header("Sec-GPC", "1")
+                requestBuilder.header("Upgrade-Insecure-Requests", "1");
+                requestBuilder.header(
+                    "Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5"
+                )
+
+
+
+                appCtx.contentResolver.openFileDescriptor(uri, "w")?.let { pfd ->
+                    val cb = object : CronetParcelFileDescriptorCallback(pfd) {
+                        override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
+                            result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
+                        }
+
+
+                        override fun onSuccess() {
+                            result.tryEmit("下载完成")
+                            pfd.close()
+                        }
+
+                        override fun onProgress(write: Long, total: Long) {
+                            result.tryEmit("${write}  ${total}")
+                        }
+
+                        override fun onError(error: IOException) {
+                            result.tryEmit(error.stackTraceToString())
+                        }
+                    }
+                    val urlRequest =
+                        CronetHelper.buildRequest(Http.cronetEngine, requestBuilder.build(), cb)
+                    urlRequest.start()
+                    it.invokeOnCancellation {
+                        urlRequest.cancel()
+                    }
+                    result.tryEmit("下载开始")
+                }
+
+
+            }
+        }
+    }
+
     var uploadFileJob: Job? = null
 
     fun uploadFile(ins: InputStream, fileName: String) {
@@ -136,7 +250,7 @@ class DownloadFileViewModel : ViewModel() {
 
 
             val outFile = File(appCtx.externalCacheDir, "temp.bin")
-            val cb = object : CronetFileCallBack(outFile) {
+            val cb = object : CronetOutputStreamCallBack(outFile) {
                 override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
                     result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
                 }

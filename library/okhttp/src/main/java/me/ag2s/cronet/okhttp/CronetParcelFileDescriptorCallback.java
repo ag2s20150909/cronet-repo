@@ -1,49 +1,54 @@
 package me.ag2s.cronet.okhttp;
 
+import android.content.ContentResolver;
+import android.net.Uri;
+import android.os.ParcelFileDescriptor;
+import android.system.Os;
+
 import androidx.annotation.NonNull;
 
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
-public abstract class CronetFileCallBack extends UrlRequest.Callback {
+public abstract class CronetParcelFileDescriptorCallback extends UrlRequest.Callback {
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
     private static final int BYTE_BUFFER_CAPACITY = 64 * 1024;
-    private final OutputStream outputStream;
-    private final WritableByteChannel mResponseBodyChannel;
+    @NotNull
+    private final ParcelFileDescriptor pfd;
     private long length = 0;
     private long total = -1;
 
-    public CronetFileCallBack(@NonNull OutputStream outputStream) {
-        this.outputStream = outputStream;
-        this.mResponseBodyChannel = Channels.newChannel(this.outputStream);
+    /**
+     * 警告：在写入完成之前不要关闭ParcelFileDescriptor
+     * Warning: Do not close ParcelFileDescriptor until writing is complete
+     *
+     * @param pfd
+     */
+    public CronetParcelFileDescriptorCallback(@NonNull ParcelFileDescriptor pfd) {
+        this.pfd = pfd;
     }
 
-    public CronetFileCallBack(@NonNull File file) throws FileNotFoundException {
-        this.outputStream = new FileOutputStream(file);
-        this.mResponseBodyChannel = Channels.newChannel(this.outputStream);
+    public CronetParcelFileDescriptorCallback(@NonNull ContentResolver contentResolver, @NonNull Uri uri) throws FileNotFoundException {
+        this.pfd = contentResolver.openFileDescriptor(uri, "w");
     }
 
-    public CronetFileCallBack(@NonNull String path) throws FileNotFoundException {
-        this.outputStream = new FileOutputStream(path);
-        this.mResponseBodyChannel = Channels.newChannel(this.outputStream);
+    public CronetParcelFileDescriptorCallback(@NonNull File file) throws FileNotFoundException {
+        this.pfd = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_WRITE_ONLY);
     }
 
-    public CronetFileCallBack(@NonNull FileDescriptor fd) throws FileNotFoundException {
-        this.outputStream = new FileOutputStream(fd);
-        this.mResponseBodyChannel = Channels.newChannel(this.outputStream);
+    public CronetParcelFileDescriptorCallback(@NonNull FileDescriptor fd) throws IOException {
+        this.pfd = ParcelFileDescriptor.dup(fd);
     }
+
 
     /**
      * Returns the numerical value of the Content-Header length, or -1 if not set or invalid.
@@ -92,19 +97,35 @@ public abstract class CronetFileCallBack extends UrlRequest.Callback {
     public void onResponseStarted(UrlRequest urlRequest, UrlResponseInfo urlResponseInfo) throws Exception {
         onHeaders(urlResponseInfo);
         total = getBodyLength(urlResponseInfo);
+        if (checkPfd()) {
+            onError(new IOException("pfd closed"));
+            urlRequest.cancel();
+        } else if (total > 0) {
+            //Extend file to target size
+            Os.ftruncate(pfd.getFileDescriptor(), total);
+        } else {
+            //empty old File
+            Os.ftruncate(pfd.getFileDescriptor(), 0);
+        }
         urlRequest.read(ByteBuffer.allocateDirect(BYTE_BUFFER_CAPACITY));
     }
 
     @Override
     public void onReadCompleted(UrlRequest urlRequest, UrlResponseInfo urlResponseInfo, ByteBuffer byteBuffer) throws Exception {
         byteBuffer.flip();
-        try {
-            length += mResponseBodyChannel.write(byteBuffer);
-            onProgress(length, total);
+        if (checkPfd()) {
+            onError(new IOException("pfd closed"));
+            urlRequest.cancel();
+        } else {
+            try {
+                length += Os.write(pfd.getFileDescriptor(), byteBuffer);
+                onProgress(length, total);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-            onError(e);
+            } catch (IOException e) {
+                e.printStackTrace();
+                onError(e);
+            }
+
         }
 
         byteBuffer.clear();
@@ -116,20 +137,35 @@ public abstract class CronetFileCallBack extends UrlRequest.Callback {
     @Override
     public void onSucceeded(UrlRequest urlRequest, UrlResponseInfo urlResponseInfo) {
         onSuccess();
-        CronetHelper.closeAll(outputStream, mResponseBodyChannel);
+        closePfd();
     }
 
     @Override
     public void onFailed(UrlRequest urlRequest, UrlResponseInfo urlResponseInfo, CronetException e) {
         onError(e);
-        CronetHelper.closeAll(outputStream, mResponseBodyChannel);
+        closePfd();
 
     }
 
     @Override
     public void onCanceled(UrlRequest request, UrlResponseInfo info) {
         super.onCanceled(request, info);
-        CronetHelper.closeAll(outputStream, mResponseBodyChannel);
+        closePfd();
     }
 
+    private boolean checkPfd() {
+        return !pfd.getFileDescriptor().valid();
+
+    }
+
+
+    private void closePfd() {
+        try {
+            pfd.close();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }
