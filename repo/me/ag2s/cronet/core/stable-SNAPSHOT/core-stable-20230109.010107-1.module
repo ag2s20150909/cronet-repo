@@ -1,0 +1,147 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "core",
+    "version": "stable-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.6"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.1.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-stable-SNAPSHOT.aar",
+          "url": "core-stable-SNAPSHOT.aar",
+          "size": 467333,
+          "sha512": "ad9985fb12f24b8d530bdc8db7fda06adde562d0c64955d5d9d9bbd1755dc27477c6c5d7ddcbb3cc6d24fbc7d57b8c9b621e1a7651f93c41753eaafba3e1092d",
+          "sha256": "88ecb85d9ef117d5ef05ef885c7a27401673d39b8256439f4be667280ac1b02e",
+          "sha1": "d7bf5e7b28eb4a3159e3e0d94519a93cf30713e7",
+          "md5": "e311f080a7d88ebf5de6862468bd029e"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.startup",
+          "module": "startup-runtime",
+          "version": {
+            "requires": "1.1.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.1.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-stable-SNAPSHOT.aar",
+          "url": "core-stable-SNAPSHOT.aar",
+          "size": 467333,
+          "sha512": "ad9985fb12f24b8d530bdc8db7fda06adde562d0c64955d5d9d9bbd1755dc27477c6c5d7ddcbb3cc6d24fbc7d57b8c9b621e1a7651f93c41753eaafba3e1092d",
+          "sha256": "88ecb85d9ef117d5ef05ef885c7a27401673d39b8256439f4be667280ac1b02e",
+          "sha1": "d7bf5e7b28eb4a3159e3e0d94519a93cf30713e7",
+          "md5": "e311f080a7d88ebf5de6862468bd029e"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "core-stable-SNAPSHOT-sources.jar",
+          "url": "core-stable-SNAPSHOT-sources.jar",
+          "size": 14550,
+          "sha512": "3ebcd30014f50e04d7e86343b3e4f2f583b25acf946bf282dd1ed3ea05d53adf9362883676ed8683b797f6ee8de3b46f2f178574a4af2a848c5b8331d1fc7428",
+          "sha256": "41f132b434b3f4801d7b934742cef1866344bf61f59b3546d897ebd9560c3ed0",
+          "sha1": "263b02f77ef3612a6385f7a036905fc0c4af9235",
+          "md5": "e0503b9844081e730723599089f0ec61"
+        }
+      ]
+    }
+  ]
+}
