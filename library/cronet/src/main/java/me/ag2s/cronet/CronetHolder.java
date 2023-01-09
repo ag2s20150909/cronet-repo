@@ -55,11 +55,7 @@ public class CronetHolder {
 
 
         synchronized (lock) {
-            if (CronetHolder.engine!=null){
-                CronetHolder.engine.shutdown();
-            }
             CronetHolder.engine = engine;
-
         }
         Runtime.getRuntime().gc();
 
