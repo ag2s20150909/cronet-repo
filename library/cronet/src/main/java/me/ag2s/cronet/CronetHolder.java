@@ -52,8 +52,12 @@ public class CronetHolder {
     }
 
     public static void setEngine(@NonNull CronetEngine engine) {
-        CronetHolder.engine.shutdown();
+
+
         synchronized (lock) {
+            if (CronetHolder.engine!=null){
+                CronetHolder.engine.shutdown();
+            }
             CronetHolder.engine = engine;
 
         }
