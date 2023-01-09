@@ -29,6 +29,8 @@ import me.ag2s.cronet.CronetHolder;
 
 public class CronetDataFetcher<T> extends UrlRequest.Callback implements DataFetcher<T> {
 
+
+
     private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
     @NonNull
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";

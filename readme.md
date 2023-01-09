@@ -17,6 +17,11 @@ here:[ChromiumDash](https://chromiumdash.appspot.com/releases?platform=Android)
 
 Get it from Jitpack
 
+110 version is broken and 111 version need add 
+```groovy
+implementation 'com.google.protobuf:protobuf-javalite:3.21.12'
+```
+
 ```groovy
 maven { url 'https://jitpack.io' }
 ```
@@ -24,13 +29,13 @@ maven { url 'https://jitpack.io' }
 ```groovy
 dependencies {
     //All in once
-    implementation('com.github.ag2s20150909:cronet-repo:107.0.5304.91') { exclude(group: "org.chromium.net") }
+    implementation('com.github.ag2s20150909:cronet-repo:108.0.5359.128') { exclude(group: "org.chromium.net") }
 
     //or implementation you need
-    implementation('com.github.ag2s20150909.cronet-repo:core:107.0.5304.91') { exclude(group: "org.chromium.net") }
-    implementation 'com.github.ag2s20150909.cronet-repo:okhttp:107.0.5304.91'
-    implementation 'com.github.ag2s20150909.cronet-repo:okhttp-kt:107.0.5304.91'
-    implementation 'com.github.ag2s20150909.cronet-repo:glide:107.0.5304.91'
+    implementation('com.github.ag2s20150909.cronet-repo:core:108.0.5359.128') { exclude(group: "org.chromium.net") }
+    implementation 'com.github.ag2s20150909.cronet-repo:okhttp:108.0.5359.128'
+    implementation 'com.github.ag2s20150909.cronet-repo:okhttp-kt:108.0.5359.128'
+    implementation 'com.github.ag2s20150909.cronet-repo:glide:108.0.5359.128'
 }
 ```
 

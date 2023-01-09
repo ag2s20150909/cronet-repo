@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -24,16 +25,13 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import me.ag2s.cronet.okhttp.CronetHelper
 import me.ag2s.cronet.okhttp.CronetOutputStreamCallBack
 import me.ag2s.cronet.okhttp.CronetParcelFileDescriptorCallback
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import me.ag2s.cronet.okhttp.FileDescriptorRequestBody
 import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import org.chromium.net.UrlResponseInfo
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
-import java.io.InputStream
 
 
 @Composable
@@ -82,8 +80,7 @@ fun DownloadFileScreen() {
             if (file != null) {
                 val name = file.name
                 viewModel.uploadFile(
-                    context.contentResolver.openInputStream(fileUri)!!,
-                    name.toString()
+                    fileUri, name.toString()
                 )
             }
 
@@ -235,57 +232,57 @@ class DownloadFileViewModel : ViewModel() {
 
     var uploadFileJob: Job? = null
 
-    fun uploadFile(ins: InputStream, fileName: String) {
+    fun uploadFile(uri: Uri, fileName: String) {
         uploadFileJob?.cancel()
         uploadFileJob = viewModelScope.launch(Dispatchers.IO) {
-
-            val testUpFile = File(appCtx.externalCacheDir, "testUp.bin")
-            val outputStream = FileOutputStream(testUpFile)
-
-            ins.copyTo(outputStream)
-
-            ins.close()
-            outputStream.flush()
-            outputStream.close()
-
-
-            val outFile = File(appCtx.externalCacheDir, "temp.bin")
-            val cb = object : CronetOutputStreamCallBack(outFile) {
-                override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
-                    result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
+            suspendCancellableCoroutine<Unit> { continuation ->
+                val pfd: ParcelFileDescriptor? = appCtx.contentResolver.openFileDescriptor(uri, "r")
+                if (pfd == null) {
+                    continuation.cancel()
+                    return@suspendCancellableCoroutine
                 }
 
-                override fun onSuccess() {
-                    result.tryEmit("上传完成")
+                val outFile = File(appCtx.externalCacheDir, "temp.bin")
+                val cb = object : CronetOutputStreamCallBack(outFile) {
+                    override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
+                        result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
+                    }
+
+                    override fun onSuccess() {
+                        result.tryEmit("上传完成")
+                    }
+
+                    override fun onProgress(write: Long, total: Long) {
+                        result.tryEmit("$write  $total")
+                    }
+
+                    override fun onError(error: IOException) {
+                        result.tryEmit(error.stackTraceToString())
+                    }
                 }
 
-                override fun onProgress(write: Long, total: Long) {
-                    result.tryEmit("$write  $total")
+                val requestBody: RequestBody = MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
+                    .addFormDataPart(
+                        "myFile", fileName,
+                        FileDescriptorRequestBody(pfd)
+                    )
+                    .build()
+                val request: Request = Request.Builder()
+                    .url("https://192.168.1.4:8888/upload")
+                    .post(requestBody)
+                    .build()
+
+                val urlRequest = CronetHelper.buildRequest(Http.cronetEngine, request, cb)
+                result.tryEmit("上传开始")
+                urlRequest.start()
+
+                continuation.invokeOnCancellation {
+                    pfd.close()
                 }
 
-                override fun onError(error: IOException) {
-                    result.tryEmit(error.stackTraceToString())
-                }
+
             }
-
-            val requestBody: RequestBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("username", "test")
-                .addFormDataPart("password", "test")
-                .addFormDataPart(
-                    "file", fileName,
-                    testUpFile.asRequestBody("application/octet-stream".toMediaTypeOrNull())
-                )
-                .build()
-            val request: Request = Request.Builder()
-                .url("https://192.168.1.4:8888/upload")
-                .post(requestBody)
-                .build()
-
-            val urlRequest = CronetHelper.buildRequest(Http.cronetEngine, request, cb)
-            result.tryEmit("上传开始")
-            urlRequest.start()
-
 
         }
     }

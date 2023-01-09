@@ -4,8 +4,9 @@ import android.content.Context;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.net.ExperimentalCronetEngine;
+import org.chromium.net.CronetEngine;
 import org.chromium.net.MyCronetEngine;
+import org.chromium.net.MyCronetHelper;
 import org.json.JSONObject;
 
 import java.util.concurrent.Executor;
@@ -14,7 +15,7 @@ import java.util.concurrent.Executor;
 public class CronetHolder {
     private static final Object lock = new Object();
 
-    private static volatile ExperimentalCronetEngine engine;
+    private static volatile CronetEngine engine;
     private static volatile Executor executorService;
 
     @NonNull
@@ -22,7 +23,6 @@ public class CronetHolder {
         if (executorService == null) {
             synchronized (lock) {
                 if (executorService == null) {
-
                     executorService = createDefaultExecutorService();
                 }
             }
@@ -40,7 +40,7 @@ public class CronetHolder {
     }
 
     @NonNull
-    public static ExperimentalCronetEngine getEngine() {
+    public static CronetEngine getEngine() {
         if (engine == null) {
             synchronized (lock) {
                 if (engine == null) {
@@ -51,9 +51,14 @@ public class CronetHolder {
         return engine;
     }
 
-    public static void setEngine(@NonNull ExperimentalCronetEngine engine) {
-        CronetHolder.engine = engine;
+    public static void setEngine(@NonNull CronetEngine engine) {
+        CronetHolder.engine.shutdown();
+        synchronized (lock) {
+            CronetHolder.engine = engine;
+
+        }
         Runtime.getRuntime().gc();
+
     }
 
     @NonNull
@@ -77,12 +82,14 @@ public class CronetHolder {
     }
 
     @NonNull
-    private static ExperimentalCronetEngine createDefaultCronetEngine(Context context) {
-        MyCronetEngine.Builder builder = new MyCronetEngine.Builder(context)
+    private static CronetEngine createDefaultCronetEngine(Context context) {
+
+        CronetEngine.Builder builder = new MyCronetEngine.Builder(MyCronetHelper.createBuilderDelegate(context))
+                .setExperimentalOptions(getExperimentalOptions())
+                .enableHttpCache(CronetEngine.Builder.HTTP_CACHE_IN_MEMORY,100)
                 .enableHttp2(true)
                 .enableQuic(true)//设置支持http/3
-                .enableHttp2(true)  //设置支持http/2
-                .setExperimentalOptions(getExperimentalOptions());
+                .enableHttp2(true);//设置支持http/2
         builder.enableBrotli(true);//Brotli压缩
 
         return builder.build();

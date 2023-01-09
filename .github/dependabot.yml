@@ -26,6 +26,12 @@ registries:
     password: dummy
     username: dummy
 
+  maven-gradle:
+    type: maven-repository
+    url: https://plugins.gradle.org/m2/
+    password: dummy
+    username: dummy
+
 updates:
   - package-ecosystem: gradle
     directory: "app"

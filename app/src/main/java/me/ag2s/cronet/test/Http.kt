@@ -55,17 +55,17 @@ object Http {
             addQuicHint("storage.googleapis.com", 443, 443)
             addQuicHint("http3.is", 443, 443)
             setExperimentalOptions(options)
-            enableNetworkQualityEstimator(true)
+            //enableNetworkQualityEstimator(true)
             setUserAgent(OkhttpUtils.PcUserAgent)
         }
         builder.build().also {
-            it.addRttListener(object :
-                NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
-                override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
-                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
-                }
-
-            })
+//            it.addRttListener(object :
+//                NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
+//                override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
+//                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
+//                }
+//
+//            })
         }
     }
 

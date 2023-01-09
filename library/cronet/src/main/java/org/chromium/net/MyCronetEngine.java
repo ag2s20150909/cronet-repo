@@ -5,18 +5,9 @@ import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.net.impl.NativeCronetProvider;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.lang.reflect.Method;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
-
-import me.ag2s.cronet.CronetHolder;
-import me.ag2s.cronet.CronetLoader;
 
 /**
  * {@link CronetEngine} that exposes experimental features. To obtain an
@@ -29,30 +20,31 @@ import me.ag2s.cronet.CronetLoader;
  * <p>
  * {@hide since this class exposes experimental features that should be hidden.}
  */
-public abstract class MyCronetEngine extends ExperimentalCronetEngine {
+public abstract class MyCronetEngine extends CronetEngine {
     private static final String TAG = "MyCronetEngine";
 
 
     /**
-     * A version of {@link CronetEngine.Builder} that exposes experimental
-     * features. Instances of this class are not meant for general use, but
-     * instead only to access experimental features. Experimental features
-     * may be deprecated in the future. Use at your own risk.
+     * A builder for {@link CronetEngine}s, which allows runtime configuration of {@code
+     * CronetEngine}. Configuration options are set on the builder and then {@link #build} is called
+     * to create the {@code CronetEngine}.
      */
-    public static class Builder extends ExperimentalCronetEngine.Builder {
+    // NOTE(kapishnikov): In order to avoid breaking the existing API clients, all future methods
+    // added to this class and other API classes must have default implementation.
+    public static class Builder extends CronetEngine.Builder {
+        private static final String TAG = "CronetEngine.Builder";
+
+
         /**
-         * Constructs a {@link Builder} object that facilitates creating a
-         * {@link CronetEngine}. The default configuration enables HTTP/2 and
-         * disables QUIC, SDCH and the HTTP cache.
+         * Constructs a {@link Builder} object that facilitates creating a {@link CronetEngine}. The
+         * default configuration enables HTTP/2 and QUIC, but disables the HTTP cache.
          *
-         * @param context Android {@link Context}, which is used by
-         *                {@link Builder} to retrieve the application
-         *                context. A reference to only the application
-         *                context will be kept, so as to avoid extending
-         *                the lifetime of {@code context} unnecessarily.
+         * @param context Android {@link Context}, which is used by {@link Builder} to retrieve the
+         * application context. A reference to only the application context will be kept, so as to
+         * avoid extending the lifetime of {@code context} unnecessarily.
          */
         public Builder(Context context) {
-            super(createBuilderDelegate(context));
+            this(MyCronetHelper.createBuilderDelegate(context));
         }
 
         /**
@@ -61,145 +53,144 @@ public abstract class MyCronetEngine extends ExperimentalCronetEngine {
          * implementation.
          *
          * @param builderDelegate delegate that provides the actual implementation.
-         *                        <p>
-         *                        {@hide}
+         * <p>{@hide}
          */
         public Builder(ICronetEngineBuilder builderDelegate) {
             super(builderDelegate);
         }
 
 
-        /**
-         * Creates an implementation of {@link ICronetEngineBuilder} that can be used
-         * to delegate the builder calls to. The method uses {@link CronetProvider}
-         * to obtain the list of available providers.
-         *
-         * @param context Android Context to use.
-         * @return the created {@code ICronetEngineBuilder}.
-         */
-        private static ICronetEngineBuilder createBuilderDelegate(Context context) {
-            CronetLoader cronetLoader = CronetLoader.getInstance();
-            List<CronetProvider> providers =
-                    new ArrayList<>(MyCronetProvider.getAllProviders(context));
-            CronetProvider provider = getEnabledCronetProviders(context, cronetLoader, providers).get(0);
-
-            Log.e(TAG, String.format("Using '%s' provider for creating CronetEngine.Builder.", provider));
-            ICronetEngineBuilder iCronetEngineBuilder = provider.createBuilder().mBuilderDelegate;
-            if (provider.getClass() == NativeCronetProvider.class && cronetLoader.checkCronetNative()) {
-                iCronetEngineBuilder.setLibraryLoader(cronetLoader);
-            }
-            return iCronetEngineBuilder;
-        }
 
         /**
-         * Returns the list of available and enabled {@link CronetProvider}. The returned list
-         * is sorted based on the provider versions and types.
+         * Overrides the User-Agent header for all requests. An explicitly set User-Agent header
+         * (set using {@link UrlRequest.Builder#addHeader}) will override a value set using this
+         * function.
          *
-         * @param context   Android Context to use.
-         * @param providers the list of enabled and disabled providers to filter out and sort.
-         * @return the sorted list of enabled providers. The list contains at least one provider.
-         * @throws RuntimeException is the list of providers is empty or all of the providers
-         *                          are disabled.
-         */
-        @VisibleForTesting
-        static List<CronetProvider> getEnabledCronetProviders(
-                Context context, CronetLoader loader, List<CronetProvider> providers) {
-            // Check that there is at least one available provider.
-            if (providers.size() == 0) {
-                throw new RuntimeException("Unable to find any Cronet provider."
-                        + " Have you included all necessary jars?");
-            }
-
-            // Exclude disabled providers from the list.
-            for (Iterator<CronetProvider> i = providers.iterator(); i.hasNext(); ) {
-                CronetProvider provider = i.next();
-                if (!provider.isEnabled()) {
-                    i.remove();
-                } else if (provider.getClass() == NativeCronetProvider.class && !loader.checkCronetNative()) {
-                    i.remove();
-                }
-            }
-
-            // Check that there is at least one enabled provider.
-            if (providers.size() == 0) {
-                throw new RuntimeException("All available Cronet providers are disabled."
-                        + " A provider should be enabled before it can be used.");
-            }
-
-            // Sort providers based on version and type.
-            Collections.sort(providers, new Comparator<CronetProvider>() {
-                @Override
-                public int compare(CronetProvider p1, CronetProvider p2) {
-                    // The fallback provider should always be at the end of the list.
-                    if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p1.getName())) {
-                        return 1;
-                    }
-                    if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(p2.getName())) {
-                        return -1;
-                    }
-                    // A provider with higher version should go first.
-                    return -compareVersions(p1.getVersion(), p2.getVersion());
-                }
-            });
-            return providers;
-        }
-
-        /**
-         * Compares two strings that contain versions. The string should only contain
-         * dot-separated segments that contain an arbitrary number of digits digits [0-9].
-         *
-         * @param s1 the first string.
-         * @param s2 the second string.
-         * @return -1 if s1<s2, +1 if s1>s2 and 0 if s1=s2. If two versions are equal, the
-         * version with the higher number of segments is considered to be higher.
-         * @throws IllegalArgumentException if any of the strings contains an illegal
-         *                                  version number.
-         */
-        @VisibleForTesting
-        static int compareVersions(String s1, String s2) {
-            if (s1 == null || s2 == null) {
-                throw new IllegalArgumentException("The input values cannot be null");
-            }
-            String[] s1segments = s1.split("\\.");
-            String[] s2segments = s2.split("\\.");
-            for (int i = 0; i < s1segments.length && i < s2segments.length; i++) {
-                try {
-                    int s1segment = Integer.parseInt(s1segments[i]);
-                    int s2segment = Integer.parseInt(s2segments[i]);
-                    if (s1segment != s2segment) {
-                        return Integer.signum(s1segment - s2segment);
-                    }
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("Unable to convert version segments into"
-                            + " integers: " + s1segments[i] + " & " + s2segments[i],
-                            e);
-                }
-            }
-            return Integer.signum(s1segments.length - s2segments.length);
-        }
-
-
-        /**
-         * Enables the network quality estimator, which collects and reports
-         * measurements of round trip time (RTT) and downstream throughput at
-         * various layers of the network stack. After enabling the estimator,
-         * listeners of RTT and throughput can be added with
-         * {@link #addRttListener} and {@link #addThroughputListener} and
-         * removed with {@link #removeRttListener} and
-         * {@link #removeThroughputListener}. The estimator uses memory and CPU
-         * only when enabled.
-         *
-         * @param value {@code true} to enable network quality estimator,
-         *              {@code false} to disable.
+         * @param userAgent the User-Agent string to use for all requests.
          * @return the builder to facilitate chaining.
          */
-        public Builder enableNetworkQualityEstimator(boolean value) {
-            mBuilderDelegate.enableNetworkQualityEstimator(value);
+        @Override
+        public Builder setUserAgent(String userAgent) {
+            mBuilderDelegate.setUserAgent(userAgent);
             return this;
         }
 
         /**
-         * Sets experimental options to be used in Cronet.
+         * Sets directory for HTTP Cache and Cookie Storage. The directory must exist.
+         *
+         * <p><b>NOTE:</b> Do not use the same storage directory with more than one {@code
+         * CronetEngine} at a time. Access to the storage directory does not support concurrent
+         * access by multiple {@code CronetEngine}s.
+         *
+         * @param value path to existing directory.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder setStoragePath(String value) {
+            mBuilderDelegate.setStoragePath(value);
+            return this;
+        }
+
+        /**
+         * Sets a {@link LibraryLoader} to be used to load the native library. If not set, the
+         * library will be loaded using {@link System#loadLibrary}.
+         *
+         * @param loader {@code LibraryLoader} to be used to load the native library.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder setLibraryLoader(LibraryLoader loader) {
+            mBuilderDelegate.setLibraryLoader(loader);
+            return this;
+        }
+
+        /**
+         * Sets whether <a href="https://www.chromium.org/quic">QUIC</a> protocol is enabled.
+         * Defaults to enabled. If QUIC is enabled, then QUIC User Agent Id containing application
+         * name and Cronet version is sent to the server.
+         *
+         * @param value {@code true} to enable QUIC, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder enableQuic(boolean value) {
+            mBuilderDelegate.enableQuic(value);
+            return this;
+        }
+
+        /**
+         * Sets whether <a href="https://tools.ietf.org/html/rfc7540">HTTP/2</a> protocol is
+         * enabled. Defaults to enabled.
+         *
+         * @param value {@code true} to enable HTTP/2, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder enableHttp2(boolean value) {
+            mBuilderDelegate.enableHttp2(value);
+            return this;
+        }
+
+        /**
+         * @deprecated SDCH is deprecated in Cronet M63. This method is a no-op. {@hide exclude from
+         * JavaDoc}.
+         */
+        @Override
+        @Deprecated
+        public Builder enableSdch(boolean value) {
+            return this;
+        }
+
+        /**
+         * Sets whether <a href="https://tools.ietf.org/html/rfc7932">Brotli</a> compression is
+         * enabled. If enabled, Brotli will be advertised in Accept-Encoding request headers.
+         * Defaults to disabled.
+         *
+         * @param value {@code true} to enable Brotli, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder enableBrotli(boolean value) {
+            mBuilderDelegate.enableBrotli(value);
+            return this;
+        }
+
+
+
+        /**
+         * Enables or disables caching of HTTP data and other information like QUIC server
+         * information.
+         *
+         * @param cacheMode control location and type of cached data. Must be one of {@link
+         * #HTTP_CACHE_DISABLED HTTP_CACHE_*}.
+         * @param maxSize maximum size in bytes used to cache data (advisory and maybe exceeded at
+         * times).
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder enableHttpCache(int cacheMode, long maxSize) {
+            mBuilderDelegate.enableHttpCache(cacheMode, maxSize);
+            return this;
+        }
+
+        /**
+         * Adds hint that {@code host} supports QUIC. Note that {@link #enableHttpCache
+         * enableHttpCache}
+         * ({@link #HTTP_CACHE_DISK}) is needed to take advantage of 0-RTT connection establishment
+         * between sessions.
+         *
+         * @param host hostname of the server that supports QUIC.
+         * @param port host of the server that supports QUIC.
+         * @param alternatePort alternate port to use for QUIC.
+         * @return the builder to facilitate chaining.
+         */
+        @Override
+        public Builder addQuicHint(String host, int port, int alternatePort) {
+            mBuilderDelegate.addQuicHint(host, port, alternatePort);
+            return this;
+        }
+
+        /** Sets experimental options to be used in Cronet.
          *
          * @param options JSON formatted experimental options.
          * @return the builder to facilitate chaining.
@@ -210,15 +201,72 @@ public abstract class MyCronetEngine extends ExperimentalCronetEngine {
         }
 
         /**
+         * Pins a set of public keys for a given host. By pinning a set of public keys, {@code
+         * pinsSha256}, communication with {@code hostName} is required to authenticate with a
+         * certificate with a public key from the set of pinned ones. An app can pin the public key
+         * of the root certificate, any of the intermediate certificates or the end-entry
+         * certificate. Authentication will fail and secure communication will not be established if
+         * none of the public keys is present in the host's certificate chain, even if the host
+         * attempts to authenticate with a certificate allowed by the device's trusted store of
+         * certificates.
+         *
+         * <p>Calling this method multiple times with the same host name overrides the previously
+         * set pins for the host.
+         *
+         * <p>More information about the public key pinning can be found in <a
+         * href="https://tools.ietf.org/html/rfc7469">RFC 7469</a>.
+         *
+         * @param hostName name of the host to which the public keys should be pinned. A host that
+         * consists only of digits and the dot character is treated as invalid.
+         * @param pinsSha256 a set of pins. Each pin is the SHA-256 cryptographic hash of the
+         * DER-encoded ASN.1 representation of the Subject Public Key Info (SPKI) of the host's
+         * X.509 certificate. Use {@link java.security.cert.Certificate#getPublicKey()
+         * Certificate.getPublicKey()} and {@link java.security.Key#getEncoded() Key.getEncoded()}
+         * to obtain DER-encoded ASN.1 representation of the SPKI. Although, the method does not
+         * mandate the presence of the backup pin that can be used if the control of the primary
+         * private key has been lost, it is highly recommended to supply one.
+         * @param includeSubdomains indicates whether the pinning policy should be applied to
+         *         subdomains
+         * of {@code hostName}.
+         * @param expirationDate specifies the expiration date for the pins.
+         * @return the builder to facilitate chaining.
+         * @throws NullPointerException if any of the input parameters are {@code null}.
+         * @throws IllegalArgumentException if the given host name is invalid or {@code pinsSha256}
+         * contains a byte array that does not represent a valid SHA-256 hash.
+         */
+        public Builder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
+                                        boolean includeSubdomains, Date expirationDate) {
+            mBuilderDelegate.addPublicKeyPins(
+                    hostName, pinsSha256, includeSubdomains, expirationDate);
+            return this;
+        }
+
+        /**
+         * Enables or disables public key pinning bypass for local trust anchors. Disabling the
+         * bypass for local trust anchors is highly discouraged since it may prohibit the app from
+         * communicating with the pinned hosts. E.g., a user may want to send all traffic through an
+         * SSL enabled proxy by changing the device proxy settings and adding the proxy certificate
+         * to the list of local trust anchor. Disabling the bypass will most likely prevent the app
+         * from sending any traffic to the pinned hosts. For more information see 'How does key
+         * pinning interact with local proxies and filters?' at
+         * https://www.chromium.org/Home/chromium-security/security-faq
+         *
+         * @param value {@code true} to enable the bypass, {@code false} to disable.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean value) {
+            mBuilderDelegate.enablePublicKeyPinningBypassForLocalTrustAnchors(value);
+            return this;
+        }
+
+        /**
          * Sets the thread priority of Cronet's internal thread.
          *
-         * @param priority the thread priority of Cronet's internal thread.
-         *                 A Linux priority level, from -20 for highest scheduling
-         *                 priority to 19 for lowest scheduling priority. For more
-         *                 information on values, see
-         *                 {@link android.os.Process#setThreadPriority(int, int)} and
-         *                 {@link android.os.Process#THREAD_PRIORITY_DEFAULT
-         *                 THREAD_PRIORITY_*} values.
+         * @param priority the thread priority of Cronet's internal thread. A Linux priority level,
+         *         from
+         * -20 for highest scheduling priority to 19 for lowest scheduling priority. For more
+         * information on values, see {@link android.os.Process#setThreadPriority(int, int)} and
+         * {@link android.os.Process#THREAD_PRIORITY_DEFAULT THREAD_PRIORITY_*} values.
          * @return the builder to facilitate chaining.
          */
         public Builder setThreadPriority(int priority) {
@@ -227,85 +275,68 @@ public abstract class MyCronetEngine extends ExperimentalCronetEngine {
         }
 
         /**
-         * Returns delegate, only for testing.
+         * Enables the network quality estimator, which collects and reports measurements of round
+         * trip time (RTT) and downstream throughput at various layers of the network stack. After
+         * enabling the estimator, listeners of RTT and throughput can be added with {@link
+         * #addRttListener} and
+         * {@link #addThroughputListener} and removed with {@link #removeRttListener} and {@link
+         * #removeThroughputListener}. The estimator uses memory and CPU only when enabled.
          *
-         * @hide
+         * @param value {@code true} to enable network quality estimator, {@code false} to disable.
+         * @return the builder to facilitate chaining.
          */
-        @VisibleForTesting
-        public ICronetEngineBuilder getBuilderDelegate() {
-            return mBuilderDelegate;
-        }
-
-        // To support method chaining, override superclass methods to return an
-        // instance of this class instead of the parent.
-
-        @Override
-        public Builder setUserAgent(String userAgent) {
-            super.setUserAgent(userAgent);
+        public Builder enableNetworkQualityEstimator(boolean value) {
+            mBuilderDelegate.enableNetworkQualityEstimator(value);
             return this;
         }
 
-        @Override
-        public Builder setStoragePath(String value) {
-            super.setStoragePath(value);
-            return this;
+        /**
+         * Build a {@link CronetEngine} using this builder's configuration.
+         *
+         * @return constructed {@link CronetEngine}.
+         */
+        public CronetEngine build() {
+            int implLevel = getImplementationApiLevel();
+            if (implLevel != -1 && implLevel < getMaximumApiLevel()) {
+                Log.w(TAG,
+                        "The implementation version is lower than the API version. Calls to "
+                                + "methods added in API " + (implLevel + 1) + " and newer will "
+                                + "likely have no effect.");
+            }
+
+            return mBuilderDelegate.build();
         }
 
-        @Override
-        public Builder setLibraryLoader(LibraryLoader loader) {
-            super.setLibraryLoader(loader);
-            return this;
+
+
+        private int getMaximumApiLevel() {
+            return ApiVersion.getMaximumAvailableApiLevel();
         }
 
-        @Override
-        public Builder enableQuic(boolean value) {
-            super.enableQuic(value);
-            return this;
+        /**
+         * Returns the implementation version, the implementation being represented by the delegate
+         * builder, or {@code -1} if the version couldn't be retrieved.
+         */
+        private int getImplementationApiLevel() {
+            try {
+                ClassLoader implClassLoader = mBuilderDelegate.getClass().getClassLoader();
+                Class<?> implVersionClass =
+                        implClassLoader.loadClass("org.chromium.net.impl.ImplVersion");
+                Method getApiLevel = implVersionClass.getMethod("getApiLevel");
+                int implementationApiLevel = (Integer) getApiLevel.invoke(null);
+
+                return implementationApiLevel;
+            } catch (Exception e) {
+                // Any exception in the block above isn't critical, don't bother the app about it.
+                return -1;
+            }
         }
 
-        @Override
-        public Builder enableHttp2(boolean value) {
-            super.enableHttp2(value);
-            return this;
-        }
 
-        @Override
-        public Builder enableSdch(boolean value) {
-            return this;
-        }
-
-        @Override
-        public Builder enableHttpCache(int cacheMode, long maxSize) {
-            super.enableHttpCache(cacheMode, maxSize);
-            return this;
-        }
-
-        @Override
-        public Builder addQuicHint(String host, int port, int alternatePort) {
-            super.addQuicHint(host, port, alternatePort);
-            return this;
-        }
-
-        @Override
-        public Builder addPublicKeyPins(String hostName, Set<byte[]> pinsSha256,
-                                        boolean includeSubdomains, Date expirationDate) {
-            super.addPublicKeyPins(hostName, pinsSha256, includeSubdomains, expirationDate);
-            return this;
-        }
-
-        @Override
-        public Builder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean value) {
-            super.enablePublicKeyPinningBypassForLocalTrustAnchors(value);
-            return this;
-        }
-
-        @Override
-        public ExperimentalCronetEngine build() {
-            ExperimentalCronetEngine engine = mBuilderDelegate.build();
-            CronetHolder.setEngine(engine);
-            return engine;
-        }
     }
+
+
+
 
 
 }

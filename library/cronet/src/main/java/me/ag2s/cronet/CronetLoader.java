@@ -32,9 +32,12 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.MessageDigest;
+import java.util.Enumeration;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Cronet的so加载工具类
@@ -48,6 +51,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      * Whether the aar package include cronet so when package,
      */
     public final boolean includeCronetSo = BuildConfig.includeCronetSo;
+    public final boolean includeCronetApkSo;
 
     private final Context mContext;
     private final String soName = "libcronet." + ImplVersion.getCronetVersion() + ".so";
@@ -98,10 +102,15 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
 
         downloadFile = new File(mContext.getCacheDir() + "/so_download", soName);
 
+        includeCronetApkSo=checkApk();
+
         json = initJson(mContext);
         md5 = getMd5(CPU_ABI);
         Log.e(TAG, "isGMS:" + isGMS);
         Log.e(TAG, "isHMS:" + isHMS);
+        Log.e(TAG, "prefSo:" + prefSo);
+        Log.e(TAG, "includeCronetSo:" + includeCronetSo);
+        Log.e(TAG, "includeCronetApkSo:" + includeCronetApkSo);
         Log.e(TAG, "md5:" + json);
         Log.e(TAG, "soName+:" + soName);
         Log.e(TAG, "destSuccessFile:" + soFile);
@@ -159,7 +168,7 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      */
 
     private boolean need() {
-        return !(isGMS || includeCronetSo);
+        return !(isGMS || includeCronetSo||includeCronetApkSo);
     }
 
     private JSONObject initJson(Context context) {
@@ -205,6 +214,9 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
      * @return boolean
      */
     public boolean checkCronetNative() {
+        if(includeCronetSo||includeCronetApkSo){
+            return true;
+        }
         if (md5 == null || md5.length() != 32 || !soFile.exists()) {
             return false;
         }
@@ -212,15 +224,38 @@ public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
     }
 
     public CronetState getInstallType() {
+
         if (!ins.equals(CronetState.Java)) {
             return ins;
         }
-        if (isGMS) {
+        if (includeCronetSo||includeCronetApkSo){
+            ins=CronetState.Native;
+        }else if (isGMS) {
             ins = CronetProviderInstaller.isInstalled() ? CronetState.GMS : CronetState.Java;
         } else {
             ins = checkCronetNative() ? CronetState.Native : CronetState.Java;
         }
         return ins;
+
+    }
+
+    public boolean checkApk(){
+        try {
+            ZipFile zf=new ZipFile(mContext.getPackageResourcePath());
+            Enumeration<? extends ZipEntry> zes = zf.entries();
+            while (zes.hasMoreElements()) {
+                ZipEntry ze = zes.nextElement();
+                if(ze.getName().contains("libcronet")){
+                    return true;
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return false;
 
     }
 

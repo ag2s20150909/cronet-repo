@@ -1,5 +1,7 @@
 package me.ag2s.cronet.test
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,9 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.asFlow
 
 @Composable
 fun BenchmarkScreen() {
@@ -26,7 +28,10 @@ fun BenchmarkScreen() {
     Column() {
 
         Button(onClick = { viewModel.test1() }) { Text(text = "图片") }
-        Button(onClick = { viewModel.test2() }) { Text(text = "并发") }
+        Button(onClick = {
+            viewModel.test2()
+
+        }) { Text(text = "并发") }
 
         when (type) {
             0 -> {
@@ -75,16 +80,35 @@ class BenchmarkViewModel : ViewModel() {
         }
     }
 
+
     fun test2() {
         viewModelScope.launch(Dispatchers.IO) {
             type.emit(1)
             OkhttpUtils.setOkhttpClent(Http.okHttpClient1)
             val startTime = System.currentTimeMillis()
-            (1..10).map {
-                OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
+            (1..10).pmap {
+                try {
+                    OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
+                }catch (e:Exception){
+                    e.printStackTrace()
+                   result.emit(e.stackTraceToString())
+                }
             }
             result.emit("test2:${System.currentTimeMillis() - startTime}\n${result.value}")
+            //{
+//                try {
+//                    OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
+//                }catch (e:Exception){
+//                    result.emit(e.stackTraceToString())
+//                }
+//
+//            }
+            //result.emit("test2:${System.currentTimeMillis() - startTime}\n${result.value}")
         }
     }
 
+}
+
+suspend fun <A, B> Iterable<A>.pmap(f: suspend (A) -> B): Unit = coroutineScope {
+    map { async { f(it) } }.awaitAll()
 }

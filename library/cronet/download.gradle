@@ -5,7 +5,10 @@ apply plugin: 'de.undercouch.download'
 def BASE_PATH = "https://storage.googleapis.com/chromium-cronet/android/" + CronetVersion + "/Release/cronet/"
 def assetsDir = projectDir.toString() + "/src/main/assets"
 def libPath = projectDir.toString() + "/libs"
+def sourcePath = projectDir.toString() + "/source"
+
 def soPath = projectDir.toString() + "/so"
+def nativePath = projectDir.toString() + "/../native/src/main/jniLibs"
 def jniPath = projectDir.toString() + "/src/main/jniLibs"
 def cronetPath = rootDir.toString() + "/cronet/" + CronetVersion
 
@@ -34,9 +37,20 @@ task downloadJar(type: Download) {
     overwrite true
     onlyIfModified false
 }
+task downloadSourceJar(type: Download) {
+    src([
+            BASE_PATH + "cronet_api-src.jar",
+            BASE_PATH + "cronet_impl_common_java-src.jar",
+            BASE_PATH + "cronet_impl_native_java-src.jar",
+            BASE_PATH + "cronet_impl_platform_java-src.jar",
+    ])
+    dest sourcePath
+    overwrite true
+    onlyIfModified false
+}
 //
 task copyJars(type: Copy) {
-    dependsOn downloadJar
+    dependsOn downloadJar,downloadSourceJar
     from libPath
     into "../../cronet/" + CronetVersion + "/libs"
 }
@@ -44,24 +58,28 @@ task downloadARM64(type: Download) {
     src BASE_PATH + "libs/arm64-v8a/libcronet." + CronetVersion + ".so"
     dest soPath + "/arm64-v8a.so"
     overwrite true
+    useETag true
     onlyIfModified true
 }
 task downloadARMv7(type: Download) {
     src BASE_PATH + "libs/armeabi-v7a/libcronet." + CronetVersion + ".so"
     dest soPath + "/armeabi-v7a.so"
     overwrite true
+    useETag true
     onlyIfModified true
 }
 task downloadX86_64(type: Download) {
     src BASE_PATH + "libs/x86_64/libcronet." + CronetVersion + ".so"
     dest soPath + "/x86_64.so"
     overwrite true
+    useETag true
     onlyIfModified true
 }
 task downloadX86(type: Download) {
     src BASE_PATH + "libs/x86/libcronet." + CronetVersion + ".so"
     dest soPath + "/x86.so"
     overwrite true
+    useETag true
     onlyIfModified true
 }
 
@@ -71,22 +89,42 @@ task cleanSo(type: Delete, description: "清除so") {
 task cleanOld(type: Delete, description: "清除so") {
     delete "../../cronet/"
 }
-task copyJnilibs(type: Copy) {
-    from soPath
+task syncJnilibs(type: Sync) {
+    from cronetPath
     into jniPath
     include '**/*.so'
-    rename { String fileName ->
-        fileName.replace('.so', '/libcronet.' + CronetVersion + '.so')
-    }
+    exclude("libs/**")
+//    rename { String fileName ->
+//        fileName.replace('.so', '/libcronet.' + CronetVersion + '.so')
+//    }
 }
+
+task syncSoFile(type: Sync) {
+    //dependsOn syncMappingFile
+    from cronetPath
+    into nativePath
+    include '**/*.so'
+    exclude("libs/**")
+//    exclude("logs/**")
+//    exclude("sdk-dependencies/**")
+//    //保护下面的不会被删除
+//    preserve{
+//        include("mapping/**")
+//    }
+}
+
+
 
 task copySo(type: Copy) {
     dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86
 
+    finalizedBy syncSoFile
+
     from soPath
     println includeCronetSo
-    if (includeCronetSo == "true") {
-        dependsOn copyJnilibs
+    if ("true".equalsIgnoreCase(includeCronetSo)) {
+        finalizedBy syncJnilibs
+        print "hhhhh"
     }
 
     into cronetPath
@@ -95,6 +133,7 @@ task copySo(type: Copy) {
         fileName.replace('.so', '/libcronet.' + CronetVersion + '.so')
     }
     doLast {
+
         def files = new File(soPath).listFiles(new FileFilter() {
             @Override
             boolean accept(File pathname) {
@@ -121,6 +160,7 @@ task copySo(type: Copy) {
 task downloadCronet() {
     task _cleanOld(type: Delete, description: "清除so") {
         delete "../../cronet/"
+        delete jniPath
     }
     dependsOn copySo
     dependsOn copyJars

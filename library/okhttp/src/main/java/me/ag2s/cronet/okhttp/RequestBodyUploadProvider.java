@@ -1,5 +1,7 @@
 package me.ag2s.cronet.okhttp;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import org.chromium.net.UploadDataProvider;
@@ -38,6 +40,7 @@ public class RequestBodyUploadProvider extends UploadDataProvider implements Aut
             int read;
             for (int bytesRead = 0; bytesRead == 0; bytesRead += read) {
                 read = buffer.read(byteBuffer);
+                Log.e("Cronet","Cronrt write "+read+" to request");
             }
             uploadDataSink.onReadSucceeded(false);
         }
@@ -45,7 +48,14 @@ public class RequestBodyUploadProvider extends UploadDataProvider implements Aut
 
     @Override
     public void rewind(@NonNull UploadDataSink uploadDataSink) throws IOException {
-        uploadDataSink.onRewindSucceeded();
+        if(body.isOneShot()){
+            uploadDataSink.onRewindError(new IOException("body is oneShot"));
+        }else {
+            buffer.clear();
+            body.writeTo(buffer);
+            uploadDataSink.onRewindSucceeded();
+        }
+
     }
 
     @Override
