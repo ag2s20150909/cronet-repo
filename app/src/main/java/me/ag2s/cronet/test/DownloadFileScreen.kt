@@ -130,7 +130,7 @@ class DownloadFileViewModel : ViewModel() {
             suspendCancellableCoroutine<Unit> {
 
                 val requestBuilder = Request.Builder()
-                    .url("http://test.ustc.edu.cn/backend/garbage.php?r${Math.random()}&ckSize=100")
+                    .url("https://doh.local/test.mp4?r${Math.random()}&ckSize=100")
                     .get()
                 requestBuilder.header("Dnt", "1")
                 requestBuilder.removeHeader("User-Agent")
@@ -269,7 +269,7 @@ class DownloadFileViewModel : ViewModel() {
                     )
                     .build()
                 val request: Request = Request.Builder()
-                    .url("https://192.168.1.4:8888/upload")
+                    .url("https://doh.local/upload")
                     .post(requestBody)
                     .build()
 

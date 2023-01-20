@@ -56,6 +56,10 @@ public class FileDescriptorRequestBody extends RequestBody {
         }
     }
 
+    public ParcelFileDescriptor getPfd(){
+        return pfd;
+    }
+
     @Override
     public void writeTo(@NonNull BufferedSink bufferedSink) throws IOException {
         if (checkPfd()) {
@@ -73,7 +77,7 @@ public class FileDescriptorRequestBody extends RequestBody {
 
             while (pos < size) {
                 int read= Os.read(pfd.getFileDescriptor(), byteBuffer,0,byteBuffer.length);
-                Log.e("Cronet","read11  "+read+" to request");
+                //Log.e("Cronet","read11  "+read+" to request");
                 read= (int)(Os.lseek(pfd.getFileDescriptor(),0,OsConstants.SEEK_CUR)-pos);
                 //Log.e("Cronet", new String(byteBuffer, Charset.forName("GBK")));
                 Log.e("Cronet","read12 "+read+" to request");

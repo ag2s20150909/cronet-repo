@@ -295,7 +295,7 @@ public abstract class MyCronetEngine extends CronetEngine {
          *
          * @return constructed {@link CronetEngine}.
          */
-        public CronetEngine build() {
+        public ExperimentalCronetEngine build() {
             int implLevel = getImplementationApiLevel();
             if (implLevel != -1 && implLevel < getMaximumApiLevel()) {
                 Log.w(TAG,

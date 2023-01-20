@@ -54,18 +54,19 @@ object Http {
             enableBrotli(true)//Brotli压缩
             addQuicHint("storage.googleapis.com", 443, 443)
             addQuicHint("http3.is", 443, 443)
+            addQuicHint("doh.local",443,443)
             setExperimentalOptions(options)
-            //enableNetworkQualityEstimator(true)
+            enableNetworkQualityEstimator(true)
             setUserAgent(OkhttpUtils.PcUserAgent)
         }
         builder.build().also {
-//            it.addRttListener(object :
-//                NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
-//                override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
-//                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
-//                }
-//
-//            })
+            it.addRttListener(object :
+                NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
+                override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
+                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
+                }
+
+            })
         }
     }
 
@@ -74,9 +75,9 @@ object Http {
 
         //设置域名映射规则
         //MAP hostname ip,MAP hostname ip
-//    val host = JSONObject()
-//    host.put("host_resolver_rules","")
-//    options.put("HostResolverRules", host)
+    val host = JSONObject()
+    host.put("host_resolver_rules","MAP doh.local 192.168.1.4")
+    options.put("HostResolverRules", host)
 
         //启用DnsHttpsSvcb更容易迁移到http3
         val dnsSvcb = JSONObject()

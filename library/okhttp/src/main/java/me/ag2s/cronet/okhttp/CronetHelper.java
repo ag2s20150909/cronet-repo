@@ -3,7 +3,9 @@ package me.ag2s.cronet.okhttp;
 import androidx.annotation.NonNull;
 
 import org.chromium.net.CronetEngine;
+import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
+import org.chromium.net.apihelpers.UploadDataProviders;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 
 import java.io.IOException;
@@ -23,8 +25,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class CronetHelper {
-
-    private static final Executor uploadExecutor = Executors.newFixedThreadPool(4);
+    static final Executor uploadExecutor = Executors.newFixedThreadPool(4);
 
     @NonNull
     public static UrlRequest buildRequest(@NonNull CronetEngine engine, @NonNull Request request, @NonNull UrlRequest.Callback callback) throws IOException {
@@ -51,7 +52,13 @@ public class CronetHelper {
             if (contentType != null) {
                 requestBuilder.addHeader("Content-Type", contentType.toString());
             }
-            requestBuilder.setUploadDataProvider(new RequestBodyUploadProvider(requestBody), uploadExecutor);
+            if(requestBody instanceof FileDescriptorRequestBody){
+                UploadDataProvider provider=UploadDataProviders.create(((FileDescriptorRequestBody) requestBody).getPfd());
+                requestBuilder.setUploadDataProvider(provider,uploadExecutor);
+            }else {
+                requestBuilder.setUploadDataProvider(new RequestBodyUploadProvider(requestBody), uploadExecutor);
+            }
+
         }
 
         return requestBuilder.build();
