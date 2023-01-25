@@ -1,6 +1,7 @@
 jdk:
   - openjdk11
 install:
+  - git gc --prune now
   - echo "Running a custom install command"
   - chmod +x gradlew
   - ./gradlew clean
