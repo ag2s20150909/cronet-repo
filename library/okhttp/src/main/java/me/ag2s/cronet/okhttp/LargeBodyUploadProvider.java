@@ -11,30 +11,39 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import okhttp3.RequestBody;
-import okio.Buffer;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
+import okio.Pipe;
 
-public class RequestBodyUploadProvider extends UploadDataProvider {
+class LargeBodyUploadProvider extends UploadDataProvider {
     private final RequestBody body;
-    private final Buffer buffer;
-    private volatile boolean filled=false;
+    private volatile boolean filled = false;
+    private final Pipe pipe = new Pipe(AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY);
+    private final BufferedSource source=Okio.buffer(pipe.source());
 
 
+    public LargeBodyUploadProvider(@NonNull RequestBody body) {
 
-    public RequestBodyUploadProvider(@NonNull RequestBody body) {
-
-        buffer = new Buffer();
+        //buffer = new Buffer();
         this.body = body;
     }
 
-    private void fillBuffer(){
-        try {
+    private synchronized void fillBuffer() {
+        CronetHelper.uploadExecutor.execute(() -> {
 
-            buffer.clear();
-            filled=true;
-            body.writeTo(buffer);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            try {
+                filled = true;
+                BufferedSink sink = Okio.buffer(pipe.sink());
+                //buffer.clear();
+                body.writeTo(sink);
+                sink.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+
     }
 
     @Override
@@ -44,27 +53,20 @@ public class RequestBodyUploadProvider extends UploadDataProvider {
 
     @Override
     public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer) throws IOException {
-        if (!filled){
+        if (!filled) {
             fillBuffer();
         }
-
-
 
         if (!byteBuffer.hasRemaining()) {
             throw new IllegalStateException("Cronet passed a buffer with no bytes remaining");
         } else {
             int read = 0;
-            while (read==0){
-                read = buffer.read(byteBuffer);
-                Log.e("Cronet","Cronrt write "+read+" to request");
+            while (read <= 0) {
+                read = source.read(byteBuffer);
             }
             uploadDataSink.onReadSucceeded(false);
-//            for (int bytesRead = 0; bytesRead == 0; bytesRead += read) {
-//                read = buffer.read(byteBuffer);
-//                Log.e("Cronet","Cronrt write "+read+" to request");
-//            }
-//            uploadDataSink.onReadSucceeded(false);
         }
+
     }
 
     @Override
@@ -80,7 +82,7 @@ public class RequestBodyUploadProvider extends UploadDataProvider {
 
     @Override
     public void close() throws IOException {
-        buffer.close();
+        //.pipe.cancel();
         super.close();
     }
 }

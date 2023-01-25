@@ -269,7 +269,7 @@ class DownloadFileViewModel : ViewModel() {
                     )
                     .build()
                 val request: Request = Request.Builder()
-                    .url("https://doh.local/upload")
+                    .url("http://192.168.1.4:8080/upload")
                     .post(requestBody)
                     .build()
 

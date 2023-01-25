@@ -19,7 +19,6 @@ import okio.ByteString;
 
 public class FileDescriptorRequestBody extends RequestBody {
 
-    private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
     private final ParcelFileDescriptor pfd;
     private final MediaType mediaType;
     private long size = -1;
@@ -72,7 +71,7 @@ public class FileDescriptorRequestBody extends RequestBody {
             }
             Os.lseek(pfd.getFileDescriptor(), 0, OsConstants.SEEK_SET);
             Log.e("Cronet","file size is  "+size+"");
-            byte[] byteBuffer = new byte[Math.min((int) size, BYTE_BUFFER_CAPACITY)];
+            byte[] byteBuffer = new byte[(int) Math.min( size, AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY)];
             long pos = 0;
 
             while (pos < size) {
@@ -80,7 +79,7 @@ public class FileDescriptorRequestBody extends RequestBody {
                 //Log.e("Cronet","read11  "+read+" to request");
                 read= (int)(Os.lseek(pfd.getFileDescriptor(),0,OsConstants.SEEK_CUR)-pos);
                 //Log.e("Cronet", new String(byteBuffer, Charset.forName("GBK")));
-                Log.e("Cronet","read12 "+read+" to request");
+                //Log.e("Cronet","read12 "+read+" to request");
                 bufferedSink.write(byteBuffer,0,read);
                 pos=Os.lseek(pfd.getFileDescriptor(),0,OsConstants.SEEK_CUR);
             }

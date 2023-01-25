@@ -5,7 +5,6 @@ import androidx.annotation.NonNull;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.apihelpers.UploadDataProviders;
 import org.chromium.net.urlconnection.CronetHttpURLConnection;
 
 import java.io.IOException;
@@ -52,12 +51,21 @@ public class CronetHelper {
             if (contentType != null) {
                 requestBuilder.addHeader("Content-Type", contentType.toString());
             }
-            if(requestBody instanceof FileDescriptorRequestBody){
-                UploadDataProvider provider=UploadDataProviders.create(((FileDescriptorRequestBody) requestBody).getPfd());
-                requestBuilder.setUploadDataProvider(provider,uploadExecutor);
+            if(requestBody.contentLength()> AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY){
+                try( UploadDataProvider provider=new LargeBodyUploadProvider(requestBody)) {
+                    requestBuilder.setUploadDataProvider(provider,uploadExecutor);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }else {
-                requestBuilder.setUploadDataProvider(new RequestBodyUploadProvider(requestBody), uploadExecutor);
+                try( UploadDataProvider provider=new BodyUploadProvider(requestBody)) {
+                    requestBuilder.setUploadDataProvider(provider,uploadExecutor);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
+
+
 
         }
 

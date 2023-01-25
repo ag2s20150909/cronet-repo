@@ -30,7 +30,7 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
     private static final String TAG = "Callback";
 
     private static final int MAX_FOLLOW_COUNT = 20;
-    private static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
+    public static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
 
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
     // See ArrayList.MAX_ARRAY_SIZE for reasoning.
@@ -183,14 +183,19 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
             onError(new IOException("Request Canceled"));
             request.cancel();
         }
-        long bodyLength = getBodyLength(info);
-        if (bodyLength > MAX_ARRAY_SIZE) {
-            throw new IllegalArgumentException(
-                    "The body is too large and wouldn't fit in a byte array!");
+        if(originalRequest.method().equalsIgnoreCase("HEAD")){
+            onSuccess(mResponse);
+        }else {
+            long bodyLength = getBodyLength(info);
+            if (bodyLength > MAX_ARRAY_SIZE) {
+                throw new IllegalArgumentException(
+                        "The body is too large and wouldn't fit in a byte array!");
+            }
+            mResponseBodyStream = new ByteArrayOutputStream((int) bodyLength);
+            mResponseBodyChannel = Channels.newChannel(mResponseBodyStream);
+            request.read(ByteBuffer.allocateDirect((int) Math.min(BYTE_BUFFER_CAPACITY,bodyLength)));
         }
-        mResponseBodyStream = new ByteArrayOutputStream((int) bodyLength);
-        mResponseBodyChannel = Channels.newChannel(mResponseBodyStream);
-        request.read(ByteBuffer.allocateDirect(BYTE_BUFFER_CAPACITY));
+
 
     }
 
