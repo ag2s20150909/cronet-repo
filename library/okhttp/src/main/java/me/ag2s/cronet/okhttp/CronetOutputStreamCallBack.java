@@ -142,7 +142,6 @@ public abstract class CronetOutputStreamCallBack extends UrlRequest.Callback {
     public void onFailed(UrlRequest urlRequest, UrlResponseInfo urlResponseInfo, CronetException e) {
         onError(e);
         CronetHelper.closeAll(outputStream, mResponseBodyChannel);
-
     }
 
     @Override
