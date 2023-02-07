@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>glide</artifactId>
+  <version>stable-SNAPSHOT</version>
+  <versioning>
+    <snapshot>
+      <timestamp>20230207.010243</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <lastUpdated>20230207010243</lastUpdated>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>aar</extension>
+        <value>stable-20230207.010243-1</value>
+        <updated>20230207010243</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>stable-20230207.010243-1</value>
+        <updated>20230207010243</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>stable-20230207.010243-1</value>
+        <updated>20230207010243</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>sources</classifier>
+        <extension>jar</extension>
+        <value>stable-20230207.010243-1</value>
+        <updated>20230207010243</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+</metadata>
