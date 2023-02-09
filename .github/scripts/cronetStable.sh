@@ -20,7 +20,13 @@ function checkVersionExit() {
     statusCode=$(curl -s -I -w %{http_code} "$jar_url" -o /dev/null)
     if [ $statusCode == "404" ];then
         echo "storage.googleapis.com return 404 for cronet $lastest_cronet_version"
-        exit
+        lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=1" | jq .[0].version -r`
+        jar_url="https://storage.googleapis.com/chromium-cronet/android/$lastest_cronet_version/Release/cronet/cronet_api.jar"
+        statusCode=$(curl -s -I -w %{http_code} "$jar_url" -o /dev/null)
+    fi
+
+    if [ $statusCode == "404" ];then
+        echo "storage.googleapis.com return 404 for cronet $lastest_cronet_version"
     fi
 }
 
