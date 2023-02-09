@@ -3,7 +3,7 @@ echo "fetch release info from https://chromiumdash.appspot.com ..."
 
 
 echo "$1"
-branch="Stable"
+branch="$1"
 
 lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=0" | jq .[0].version -r`
 lastest_cronet_main_version=${lastest_cronet_version%%\.*}.0.0.0
