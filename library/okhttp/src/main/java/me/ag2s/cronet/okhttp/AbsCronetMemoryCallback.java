@@ -89,7 +89,7 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
     @SuppressWarnings("deprecation")
     private static Protocol protocolFromNegotiatedProtocol(UrlResponseInfo responseInfo) {
         String negotiatedProtocol = responseInfo.getNegotiatedProtocol().toLowerCase();
-        Log.e(TAG, negotiatedProtocol + responseInfo.getUrl());
+        //Log.e(TAG, negotiatedProtocol + responseInfo.getUrl());
 
         if (negotiatedProtocol.contains("h3")) {
             return Protocol.QUIC;

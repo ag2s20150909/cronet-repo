@@ -197,6 +197,11 @@ class DownloadFileViewModel : ViewModel() {
 
 
                 appCtx.contentResolver.openFileDescriptor(uri, "w")?.let { pfd ->
+
+
+
+
+                    Log.e("SS",android.system.Os.fstat(pfd.fileDescriptor).toString())
                     val cb = object : CronetParcelFileDescriptorCallback(pfd) {
                         override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
                             result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
