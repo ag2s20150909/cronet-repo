@@ -7,8 +7,9 @@ branch="Stable"
 
 lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=0" | jq .[0].version -r`
 lastest_cronet_main_version=${lastest_cronet_version%%\.*}.0.0.0
-lastest_cronet_pre_patch_veraion=${lastest_cronet_version%%*\.}
 lastest_cronet_patch_veraion=${lastest_cronet_version##*\.}
+lastest_cronet_pre_patch_veraion=${lastest_cronet_version%\.*}
+
 echo "lastest_cronet_version: $lastest_cronet_version"
 echo "lastest_cronet_main_version: $lastest_cronet_main_version"
 echo "lastest_cronet_pre_patch_veraion: $lastest_cronet_pre_patch_veraion"
