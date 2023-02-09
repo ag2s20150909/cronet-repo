@@ -1,7 +1,5 @@
 package me.ag2s.cronet.okhttp;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 
 import org.chromium.net.UploadDataProvider;

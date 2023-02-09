@@ -1,7 +1,6 @@
 package me.ag2s.cronet.test
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -27,7 +26,8 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
 
 
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier
+        .fillMaxSize()) {
         val txt by viewModel.txt.collectAsState()
 
 
@@ -46,7 +46,8 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
 
         }
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
@@ -79,7 +80,12 @@ fun Editor(navController: NavController, screen: Screen, viewModel: TestViewMode
                 .size(200.dp)
                 .align(Alignment.CenterHorizontally)
         )
-        Text(text = txt)
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())) {
+            Text(text = txt)
+        }
+
 
 
     }
