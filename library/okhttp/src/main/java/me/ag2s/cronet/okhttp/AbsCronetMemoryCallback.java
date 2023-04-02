@@ -183,7 +183,7 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
             onError(new IOException("Request Canceled"));
             request.cancel();
         }
-        if(originalRequest.method().equalsIgnoreCase("HEAD")){
+        if(originalRequest.method().equalsIgnoreCase("HEAD")||originalRequest.header(CronetHelper.CRONET_NOBODY)!=null){
             onSuccess(mResponse);
         }else {
             long bodyLength = getBodyLength(info);

@@ -24,6 +24,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class CronetHelper {
+    public static final String CRONET_NOBODY="cronet_nobody";
     static final Executor uploadExecutor = Executors.newFixedThreadPool(4);
 
     @NonNull
@@ -39,7 +40,10 @@ public class CronetHelper {
         Headers headers = request.headers();
         //Log.e("Cronet", headers.toString());
         for (int i = 0; i < headers.size(); i += 1) {
-            requestBuilder.addHeader(headers.name(i), headers.value(i));
+            if (!headers.name(i).equals(CRONET_NOBODY)){
+                requestBuilder.addHeader(headers.name(i), headers.value(i));
+            }
+
         }
 
 
