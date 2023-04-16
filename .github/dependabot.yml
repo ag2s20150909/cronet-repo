@@ -34,12 +34,7 @@ registries:
 
 updates:
   - package-ecosystem: gradle
-    directory: "app"
-    schedule:
-      interval: "daily"
-    registries: "*"
-  - package-ecosystem: gradle
-    directory: "library"
+    directory: "/"
     schedule:
       interval: "daily"
     registries: "*"
