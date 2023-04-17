@@ -94,7 +94,7 @@ dependencies {
     //annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     //kapt "com.github.bumptech.glide:compiler:$glide_version"
     ksp "com.github.bumptech.glide:ksp:$glide_version"
-    implementation "com.github.bumptech.glide:compose:1.0.0-alpha.3"
+    implementation "com.github.bumptech.glide:compose:4.14.0"
 
     //implementation 'com.github.skydoves:landscapist-glide:2.0.1'
 
