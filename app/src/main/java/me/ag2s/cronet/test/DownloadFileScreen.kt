@@ -40,19 +40,6 @@ fun DownloadFileScreen() {
     val result by viewModel.result.collectAsState()
     val context = LocalContext.current
 
-//    val requestSinglePermission =
-//        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
-//            if (permissionGranted) {
-//                viewModel.setMessage("Single permission is granted.")
-//            } else {
-//                viewModel.setMessage("Single permission is denied.")
-//            }
-//        }
-//
-//    LaunchedEffect(Unit){
-//        requestSinglePermission.launch("android.permission.WRITE_EXTERNAL_STORAGE")
-//    }
-
 
     val createFile =
         rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { activityResult ->
@@ -130,7 +117,7 @@ class DownloadFileViewModel : ViewModel() {
             suspendCancellableCoroutine<Unit> {
 
                 val requestBuilder = Request.Builder()
-                    .url("https://doh.local/test.mp4?r${Math.random()}&ckSize=100")
+                    .url("http://test.ustc.edu.cn/backend/garbage.php?r${Math.random()}&ckSize=100")
                     .get()
                 requestBuilder.header("Dnt", "1")
                 requestBuilder.removeHeader("User-Agent")

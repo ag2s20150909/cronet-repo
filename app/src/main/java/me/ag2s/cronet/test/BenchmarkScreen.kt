@@ -88,7 +88,7 @@ class BenchmarkViewModel : ViewModel() {
             val startTime = System.currentTimeMillis()
             (1..10).pmap {
                 try {
-                    OkhttpUtils.httpGet("https://doh.local/test")
+                    OkhttpUtils.httpGet(OkhttpUtils.getRandomImgLink())
                 }catch (e:Exception){
                     e.printStackTrace()
                    result.emit(e.stackTraceToString())

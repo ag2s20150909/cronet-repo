@@ -13,7 +13,6 @@ class MyGlideModule : AppGlideModule() {
         super.applyOptions(context, builder)
 
         builder.setMemoryCache(LruResourceCache(1024 * 1024 * 50))
-            .useLifecycleInsteadOfInjectingFragments(true)
             .setLogRequestOrigins(true)
             .setLogLevel(Log.VERBOSE)
             .setImageDecoderEnabledForBitmaps(true)
