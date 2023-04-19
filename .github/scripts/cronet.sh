@@ -5,46 +5,66 @@ echo "fetch release info from https://chromiumdash.appspot.com ..."
 echo "$1"
 branch="$1"
 
-lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=0" | jq .[0].version -r`
-lastest_cronet_main_version=${lastest_cronet_version%%\.*}.0.0.0
-lastest_cronet_patch_veraion=${lastest_cronet_version##*\.}
-lastest_cronet_pre_patch_veraion=${lastest_cronet_version%\.*}
+#api 最大偏移
+max_offset=3
 
-echo "lastest_cronet_version: $lastest_cronet_version"
-echo "lastest_cronet_main_version: $lastest_cronet_main_version"
-echo "lastest_cronet_pre_patch_veraion: $lastest_cronet_pre_patch_veraion"
-echo "lastest_cronet_patch_version: $lastest_cronet_patch_veraion"
 
-function checkVersionExit() {
+offset=0
+
+function fetch_version() {
+    # 获取最新cronet版本
+    lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=$offset" | jq .[0].version -r`
+    echo "lastest_cronet_version: $lastest_cronet_version"
+    #lastest_cronet_version=100.0.4845.0
+    lastest_cronet_main_version=${lastest_cronet_version%%\.*}.0.0.0
+    check_version_exit
+}
+function check_version_exit() {
+    # 检查版本是否存在
     local jar_url="https://storage.googleapis.com/chromium-cronet/android/$lastest_cronet_version/Release/cronet/cronet_api.jar"
     statusCode=$(curl -s -I -w %{http_code} "$jar_url" -o /dev/null)
-    if [ $statusCode == "404" ];then
+    if [ $statusCode == "404" ]; then
         echo "storage.googleapis.com return 404 for cronet $lastest_cronet_version"
-        lastest_cronet_version=`curl -s "https://chromiumdash.appspot.com/fetch_releases?channel=$branch&platform=Android&num=1&offset=1" | jq .[0].version -r`
-        jar_url="https://storage.googleapis.com/chromium-cronet/android/$lastest_cronet_version/Release/cronet/cronet_api.jar"
-        statusCode=$(curl -s -I -w %{http_code} "$jar_url" -o /dev/null)
+        if [[ $max_offset > $offset ]]; then
+            offset=$(expr $offset + 1)
+            echo "retry with offset $offset"
+            fetch_version
+        else
+            exit
+        fi
     fi
-
-    if [ $statusCode == "404" ];then
-        echo "storage.googleapis.com return 404 for cronet $lastest_cronet_version"
+}
+function version_compare() {
+    # 版本号比较 本地版本小于远程版本时返回0
+    local local_version=$1
+    local remote_version=$2
+    if [[ $local_version == $remote_version ]]; then
+        return 1
+    fi
+    if [[ $(printf '%s\n' "$1" "$2" | sort -V | head -n1) == $remote_version ]]; then
+        return 1
+    else
+        return 0
     fi
 }
 
+
+##########
+# 获取本地cronet版本
 path=$GITHUB_WORKSPACE/gradle.properties
-ls
-echo "path: $path"
 current_cronet_version=`cat $path | grep CronetVersion | sed s/CronetVersion=//`
 echo "current_cronet_version: $current_cronet_version"
+echo "fetch $branch release info from https://chromiumdash.appspot.com ..."
+fetch_version
 
-if [[  $current_cronet_version == $lastest_cronet_version ]];then
-    echo "cronet is already latest"
-else
-    checkVersionExit
+if version_compare $current_cronet_version $lastest_cronet_version; then
+    # 更新gradle.properties
     sed -i s/CronetVersion=.*/CronetVersion=$lastest_cronet_version/ $path
     sed -i s/PROJ_VERSION=.*/PROJ_VERSION="$branch-SNAPSHOT"/ $path
-    #sed "15a* 更新cronet: $lastest_cronet_version" -i $GITHUB_WORKSPACE/app/src/main/assets/updateLog.md
+    sed -i s/CronetMainVersion=.*/CronetMainVersion=$lastest_cronet_main_version/ $path
     echo "start download latest cronet"
     chmod +x gradlew
     ./gradlew downloadCronet
     ./gradlew publish
 fi
+
