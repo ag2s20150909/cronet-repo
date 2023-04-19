@@ -24,8 +24,7 @@ public class MyCronetHelper {
     public static ICronetEngineBuilder createBuilderDelegate(Context context) {
 
 
-        List<CronetProvider> providers =
-                new ArrayList<>(CronetProvider.getAllProviders(context));
+        List<CronetProvider> providers = new ArrayList<>(CronetProvider.getAllProviders(context));
 
         CronetLoader cronetLoader = CronetLoader.getInstance();
 

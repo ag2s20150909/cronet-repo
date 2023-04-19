@@ -1,4 +1,5 @@
 import java.security.MessageDigest
+import java.util.zip.ZipFile
 
 apply plugin: 'de.undercouch.download'
 
@@ -50,7 +51,7 @@ task downloadSourceJar(type: Download) {
 }
 //
 task copyJars(type: Copy) {
-    dependsOn downloadJar,downloadSourceJar
+    dependsOn downloadJar, downloadSourceJar
     from libPath
     into "../../cronet/" + CronetVersion + "/libs"
 }
@@ -114,7 +115,6 @@ task syncSoFile(type: Sync) {
 }
 
 
-
 task copySo(type: Copy) {
     dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86
 
@@ -157,6 +157,32 @@ task copySo(type: Copy) {
     }
 }
 
+/**
+ * 自动生成MyCronetEngine
+ */
+task createMyCronetEngine() {
+    def inName="org/chromium/net/ExperimentalCronetEngine.java"
+    def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
+    def fileWriter = new FileWriter(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
+    BufferedReader br = new BufferedReader(new InputStreamReader(zipfile.getInputStream(zipfile.getEntry(inName))));
+    String line = null;
+    while ((line = br.readLine()) != null) {
+        line=line.replace("super(context);","super(MyCronetHelper.createBuilderDelegate(context));")
+        line=line.replace("@deprecated","")
+        line=line.replace("@Deprecated","")
+        line=line.replace("ExperimentalCronetEngine extends CronetEngine","MyCronetEngine extends CronetEngine")
+        fileWriter.write(line)
+        fileWriter.write("\r\n")
+        System.out.println(line)
+    }
+    fileWriter.flush()
+
+    br.close();
+    fileWriter.close()
+
+
+}
+
 task downloadCronet() {
     task _cleanOld(type: Delete, description: "清除so") {
         delete "../../cronet/"
@@ -193,12 +219,16 @@ task downloadCronet() {
 
     }
 
+    finalizedBy createMyCronetEngine
+
 
 }
 
 task getLastestStableVersion() {
 
 }
+
+
 
 
 private static String runCommands(String... commands) {
