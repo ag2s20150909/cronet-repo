@@ -3,7 +3,7 @@ buildscript {
         agp_version='8.0.0'
         kotlin_version = '1.8.20'
         coroutines_version = '1.6.4'
-        compose_bom_version = '2023.04.00'
+        compose_bom_version = '2023.04.01'
         compose_compiler_version = '1.4.5'
         okhttp_version = '4.10.0'
         glide_version = '4.15.1'
