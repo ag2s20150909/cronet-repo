@@ -6,7 +6,7 @@ echo "$1"
 branch="$1"
 
 #api 最大偏移
-max_offset=3
+max_offset=5
 
 
 offset=0
@@ -64,6 +64,7 @@ if version_compare $current_cronet_version $lastest_cronet_version; then
     sed -i s/CronetMainVersion=.*/CronetMainVersion=$lastest_cronet_main_version/ $path
     echo "start download latest cronet"
     chmod +x gradlew
+    ./gradlew wrapper --gradle-version=8.1.1
     ./gradlew downloadCronet
     ./gradlew publish
 fi

@@ -32,6 +32,7 @@ import okhttp3.RequestBody
 import org.chromium.net.UrlResponseInfo
 import java.io.File
 import java.io.IOException
+import kotlin.math.roundToInt
 
 
 @Composable
@@ -117,7 +118,7 @@ class DownloadFileViewModel : ViewModel() {
             suspendCancellableCoroutine<Unit> {
 
                 val requestBuilder = Request.Builder()
-                    .url("http://test.ustc.edu.cn/backend/garbage.php?r${Math.random()}&ckSize=100")
+                    .url("https://speed.cloudflare.com/__down?bytes=10485760&r=${Math.random()}")
                     .get()
                 requestBuilder.header("Dnt", "1")
                 requestBuilder.removeHeader("User-Agent")
@@ -131,6 +132,8 @@ class DownloadFileViewModel : ViewModel() {
 
                 val outFile = File(appCtx.externalCacheDir, "test.bin")
                 val cb = object : CronetOutputStreamCallBack(outFile) {
+                    var lastSize=0L
+                    var lastTime=System.currentTimeMillis()
                     override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
                         result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
                     }
@@ -140,7 +143,11 @@ class DownloadFileViewModel : ViewModel() {
                     }
 
                     override fun onProgress(write: Long, total: Long) {
-                        result.tryEmit("${write}  ${total}")
+                        val now=System.currentTimeMillis()
+                        val speed=((write-lastSize).toDouble()/(now-lastTime)).roundToInt()
+                        lastSize=write
+                        lastTime=now
+                        result.tryEmit("${write}  ${total} ${speed}")
                     }
 
                     override fun onError(error: IOException) {
@@ -169,7 +176,7 @@ class DownloadFileViewModel : ViewModel() {
             suspendCancellableCoroutine<Unit> {
 
                 val requestBuilder = Request.Builder()
-                    .url("http://test.ustc.edu.cn/backend/garbage.php?r${Math.random()}&ckSize=100")
+                    .url("https://speed.cloudflare.com/__down?bytes=104857600&r=${Math.random()}")
                     .get()
                 requestBuilder.header("Dnt", "1")
                 requestBuilder.removeHeader("User-Agent")
@@ -183,13 +190,15 @@ class DownloadFileViewModel : ViewModel() {
 
 
 
-                appCtx.contentResolver.openFileDescriptor(uri, "w")?.let { pfd ->
+                appCtx.contentResolver.openFileDescriptor(uri, "wt")?.let { pfd ->
 
 
 
 
                     Log.e("SS",android.system.Os.fstat(pfd.fileDescriptor).toString())
                     val cb = object : CronetParcelFileDescriptorCallback(pfd) {
+                        var lastSize=0L
+                        var lastTime=System.currentTimeMillis()
                         override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
                             result.tryEmit(urlResponseInfo?.allHeadersAsList.toString())
                         }
@@ -201,7 +210,11 @@ class DownloadFileViewModel : ViewModel() {
                         }
 
                         override fun onProgress(write: Long, total: Long) {
-                            result.tryEmit("${write}  ${total}")
+                            val now=System.currentTimeMillis()
+                            val speed=((write-lastSize).toDouble()/(now-lastTime)).roundToInt()
+                            lastSize=write
+                            lastTime=now
+                            result.tryEmit("${write}  ${total} ${speed}")
                         }
 
                         override fun onError(error: IOException) {
