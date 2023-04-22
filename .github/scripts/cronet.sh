@@ -21,7 +21,7 @@ function fetch_version() {
 }
 function check_version_exit() {
     # 检查版本是否存在
-    local jar_url="https://storage.googleapis.com/chromium-cronet/android/$lastest_cronet_version/Release/cronet/cronet_api.jar"
+    local jar_url="https://storage.googleapis.com/chromium-cronet/android/$lastest_cronet_version/Release/cronet/libs/arm64-v8a/libcronet.$lastest_cronet_version.so"
     statusCode=$(curl -s -I -w %{http_code} "$jar_url" -o /dev/null)
     if [ $statusCode == "404" ]; then
         echo "storage.googleapis.com return 404 for cronet $lastest_cronet_version"
