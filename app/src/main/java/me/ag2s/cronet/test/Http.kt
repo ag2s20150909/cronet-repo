@@ -10,7 +10,7 @@ import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK
-import org.chromium.net.ExperimentalCronetEngine
+import org.chromium.net.MyCronetEngine
 import org.chromium.net.NetworkQualityObservationSource
 import org.chromium.net.NetworkQualityRttListener
 import org.json.JSONObject
@@ -46,7 +46,7 @@ object Http {
 
 
     val cronetEngine: CronetEngine by lazy {
-        val builder = ExperimentalCronetEngine.Builder(appCtx).apply {
+        val builder = MyCronetEngine.Builder(appCtx).apply {
             setStoragePath(appCtx.externalCacheDir?.absolutePath)//设置缓存路径
             enableHttpCache(HTTP_CACHE_DISK, (1024 * 1024 * 50).toLong())//设置50M的磁盘缓存
             enableQuic(true)//设置支持http/3

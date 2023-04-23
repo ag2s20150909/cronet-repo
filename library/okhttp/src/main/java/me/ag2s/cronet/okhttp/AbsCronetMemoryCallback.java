@@ -1,5 +1,6 @@
 package me.ag2s.cronet.okhttp;
 
+import android.util.ArraySet;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -8,14 +9,19 @@ import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
 import org.chromium.net.UrlResponseInfo;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import okhttp3.Call;
 import okhttp3.Headers;
@@ -24,6 +30,10 @@ import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.Okio;
+import okio.Source;
+import okio.Timeout;
 
 @SuppressWarnings("unused")
 abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements AutoCloseable {
@@ -32,15 +42,22 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
     private static final int MAX_FOLLOW_COUNT = 20;
     public static final int BYTE_BUFFER_CAPACITY = 32 * 1024;
 
+    private static final Set<String> ENCODINGS_HANDLED_BY_CRONET = Set.of("br", "deflate", "gzip", "x-gzip");
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
+    private static final String CONTENT_ENCODING_HEADER_NAME = "Content-Encoding";
+    private static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";
     // See ArrayList.MAX_ARRAY_SIZE for reasoning.
-    private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+    //private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
 
-    private ByteArrayOutputStream mResponseBodyStream;
-    private WritableByteChannel mResponseBodyChannel;
 
     private final Request originalRequest;
     protected final Call mCall;
+
+    private final AtomicBoolean finished = new AtomicBoolean(false);
+    private final ArrayBlockingQueue<CallbackResult> callbackResults = new ArrayBlockingQueue<>(2);
+    //private final ArrayList<UrlResponseInfo> urlResponseInfoChain= new ArrayList<>();
+    private UrlRequest request;
+
 
     private int followCount;
     protected Response mResponse;
@@ -107,14 +124,18 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
     }
 
     @NonNull
-    private Headers headersFromResponse(@NonNull UrlResponseInfo responseInfo) {
+    private static Headers headersFromResponse(@NonNull UrlResponseInfo responseInfo, boolean keepEncodingAffectedHeaders) {
         List<Map.Entry<String, String>> headers = responseInfo.getAllHeadersAsList();
 
 
         Headers.Builder headerBuilder = new Headers.Builder();
         for (Map.Entry<String, String> entry : headers) {
+
+            //Log.e(TAG, entry.getKey() + ":" + entry.getValue());
+
+
             try {
-                if (entry.getKey().equalsIgnoreCase("content-encoding")) {
+                if (!keepEncodingAffectedHeaders && (entry.getKey().equalsIgnoreCase(CONTENT_LENGTH_HEADER_NAME) || entry.getKey().equalsIgnoreCase(CONTENT_ENCODING_HEADER_NAME))) {
                     // Strip all content encoding headers as decoding is done handled by cronet
                     continue;
                 }
@@ -129,35 +150,66 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
         return headerBuilder.build();
     }
 
-    /**
-     * Returns the numerical value of the Content-Header length, or 32 if not set or invalid.
-     */
-    private static long getBodyLength(@NonNull UrlResponseInfo info) {
-        List<String> contentLengthHeader = info.getAllHeaders().get(CONTENT_LENGTH_HEADER_NAME);
-        if (contentLengthHeader == null || contentLengthHeader.size() != 1) {
-            return 32;
-        }
-        try {
-            return Long.parseLong(contentLengthHeader.get(0));
-        } catch (NumberFormatException e) {
-            return 32;
-        }
-    }
+
 
     @NonNull
-    private Response responseFromResponse(@NonNull Response response, @NonNull UrlResponseInfo responseInfo) {
+    private static Response responseFromResponse(@NonNull Response response, @NonNull UrlResponseInfo responseInfo, boolean keepEncodingAffectedHeaders) {
         Protocol protocol = protocolFromNegotiatedProtocol(responseInfo);
-        Headers headers = headersFromResponse(responseInfo);
+        Headers headers = headersFromResponse(responseInfo, keepEncodingAffectedHeaders);
 
         return response.newBuilder()
                 .receivedResponseAtMillis(System.currentTimeMillis())
                 .protocol(protocol)
-                .request(mCall.request())
+                //.request()
                 .code(responseInfo.getHttpStatusCode())
                 .message(responseInfo.getHttpStatusText())
                 .headers(headers)
                 .build();
     }
+
+    private static long getContentLength(@NonNull UrlResponseInfo info) {
+        List<String> contentLengthHeader = info.getAllHeaders().get(CONTENT_LENGTH_HEADER_NAME);
+        if (contentLengthHeader == null || contentLengthHeader.size() != 1) {
+            return -1;
+        }
+        try {
+            return Long.parseLong(contentLengthHeader.get(0));
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private static MediaType getMediaType(@NonNull UrlResponseInfo info) {
+        List<String> contentLengthHeader = info.getAllHeaders().get(CONTENT_TYPE_HEADER_NAME);
+        if (contentLengthHeader == null || contentLengthHeader.size() != 1) {
+            return MediaType.parse("text/plain; charset=\"utf-8\"");
+        } else {
+            return MediaType.parse(contentLengthHeader.get(0));
+        }
+
+    }
+
+    private static boolean keepEncodingAffectedHeaders(@NonNull UrlResponseInfo info) {
+        List<String> strings = info.getAllHeaders().get(CONTENT_ENCODING_HEADER_NAME);
+
+        if (strings == null) {
+            return true;
+        }
+
+
+        if (strings.size() == 0) {
+            return true;
+        }
+        Set<String> types = new HashSet<>();
+        for (String s : strings) {
+            types.addAll(Arrays.asList(s.split(",")));
+        }
+
+        return !ENCODINGS_HANDLED_BY_CRONET.containsAll(types);
+
+
+    }
+
 
     @Override
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) {
@@ -168,7 +220,9 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
         }
         if (followCount > MAX_FOLLOW_COUNT) {
             request.cancel();
+            onError(new IOException("Too many redirect"));
         } else {
+            //urlResponseInfoChain.add(info);
             followCount += 1;
             request.followRedirect();
         }
@@ -178,75 +232,162 @@ abstract class AbsCronetMemoryCallback extends UrlRequest.Callback implements Au
 
     @Override
     public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
-        mResponse = responseFromResponse(mResponse, info);
+        this.request = request;
         if (mCall.isCanceled()) {
             onError(new IOException("Request Canceled"));
             request.cancel();
         }
-        if(originalRequest.method().equalsIgnoreCase("HEAD")||originalRequest.header(CronetHelper.CRONET_NOBODY)!=null){
+        boolean keepEncodingAffectedHeaders = keepEncodingAffectedHeaders(info);
+
+        mResponse = responseFromResponse(mResponse, info, keepEncodingAffectedHeaders);
+        if (originalRequest.method().equalsIgnoreCase("HEAD")) {
             onSuccess(mResponse);
-        }else {
-            long bodyLength = getBodyLength(info);
-            if (bodyLength > MAX_ARRAY_SIZE) {
-                throw new IllegalArgumentException(
-                        "The body is too large and wouldn't fit in a byte array!");
-            }
-            mResponseBodyStream = new ByteArrayOutputStream((int) bodyLength);
-            mResponseBodyChannel = Channels.newChannel(mResponseBodyStream);
-            request.read(ByteBuffer.allocateDirect((int) Math.min(BYTE_BUFFER_CAPACITY,bodyLength)));
         }
+
+        long contentLength = getContentLength(info);
+        if (!keepEncodingAffectedHeaders) {
+            contentLength = -1;
+        }
+        MediaType mediaType = getMediaType(info);
+
+
+        //Log.e(TAG, "keepEncodingAffectedHeaders:" + keepEncodingAffectedHeaders + " contentLength:" + contentLength + " mediaType:" + mediaType);
+
+
+        CronetBodySource cronetBodySource = new CronetBodySource();
+
+        ResponseBody responseBody = ResponseBody.create(Okio.buffer(cronetBodySource), mediaType, contentLength);
+        mResponse = mResponse.newBuilder().body(responseBody)
+                .request(originalRequest.newBuilder().url(info.getUrl()).build())
+                .build();
+        onSuccess(mResponse);
 
 
     }
 
     @Override
     public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception {
-        byteBuffer.flip();
-
-        try {
-            //buffer.write(byteBuffer);
-            mResponseBodyChannel.write(byteBuffer);
-        } catch (Exception e) {
-            Log.i(TAG, "IOException during ByteBuffer read. Details: ", e);
-            throw e;
-        }
-
-        byteBuffer.clear();
-        request.read(byteBuffer);
+        callbackResults.add(new CallbackResult(CallbackStep.ON_READ_COMPLETED, byteBuffer));
     }
 
     @Override
     public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
-        IOException e = new IOException(Objects.requireNonNull(error.getMessage()).substring(31), error);
-        onError(e);
-        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+        callbackResults.add(new CallbackResult(CallbackStep.ON_FAILED, null, error));
+        //onError(e);
+        //CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
 
     }
 
     @Override
     public void onCanceled(UrlRequest request, UrlResponseInfo info) {
-        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+        callbackResults.add(new CallbackResult(CallbackStep.ON_CANCELED));
+        //CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
     }
 
     @Override
     public void onSucceeded(UrlRequest request, UrlResponseInfo info) {
 
-
-        String contentTypeString = mResponse.header("content-type");
-        MediaType contentType = MediaType.parse(contentTypeString != null ? contentTypeString : "text/plain; charset=\"utf-8\"");
-        //yteString bytes = buffer.readByteString();
-        mResponse = mResponse.newBuilder().body(ResponseBody.create(mResponseBodyStream.toByteArray(), contentType))
-                .request(originalRequest.newBuilder()
-                        .url(info.getUrl()).build())
-                .build();
-        onSuccess(mResponse);
-        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+        callbackResults.add(new CallbackResult(CallbackStep.ON_SUCCESS));
 
 
     }
 
     @Override
     public void close() throws Exception {
-        CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+        //CronetHelper.closeAll(mResponseBodyStream, mResponseBodyChannel);
+    }
+
+
+    class CronetBodySource implements Source {
+
+        private ByteBuffer buffer = ByteBuffer.allocateDirect(32 * 1024);
+        private boolean closed = false;
+        private final long timeout = timeout().timeoutNanos();
+
+        @Override
+        public void close() throws IOException {
+            if (closed) {
+                return;
+            }
+            closed = true;
+            if (!finished.get()) {
+                if (request != null) {
+                    request.cancel();
+                }
+            }
+
+        }
+
+        @Override
+        public long read(@NonNull Buffer sink, long byteCount) throws IOException {
+            if (mCall.isCanceled()) {
+                if (request != null) {
+                    request.cancel();
+                }
+                throw new IOException("Request Canceled");
+            }
+            if (closed) {
+                throw new IOException("Source Closed");
+            }
+            if (finished.get()) {
+                return -1;
+            }
+            if (byteCount < buffer.limit()) {
+                buffer.limit((int) byteCount);
+            }
+            if (request != null) {
+                request.read(buffer);
+            }
+            try {
+                CallbackResult result = callbackResults.poll(timeout, TimeUnit.NANOSECONDS);
+                if (result == null) {
+                    if (request != null) {
+                        request.cancel();
+                    }
+                    throw new IOException("Request Timeout");
+                }
+
+                switch (result.CallbackStep) {
+                    case ON_FAILED: {
+                        finished.set(true);
+                        buffer = null;
+                        throw new IOException(result.exception);
+                    }
+                    case ON_SUCCESS: {
+                        finished.set(true);
+                        buffer = null;
+                        return -1;
+                    }
+                    case ON_CANCELED: {
+                        buffer = null;
+                        throw new IOException("Request Canceled");
+                    }
+                    case ON_READ_COMPLETED: {
+                        if (result.byteBuffer != null) {
+                            result.byteBuffer.flip();
+                        }
+                        long bytesWritten = sink.write(result.byteBuffer);
+                        result.byteBuffer.clear();
+                        return bytesWritten;
+                    }
+
+                }
+
+
+            } catch (InterruptedException e) {
+                if (request != null) {
+                    request.read(buffer);
+                }
+                throw new IOException("Request Timeout", e);
+            }
+
+            return 0;
+        }
+
+        @NonNull
+        @Override
+        public Timeout timeout() {
+            return mCall.timeout();
+        }
     }
 }
