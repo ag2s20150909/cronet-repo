@@ -5,7 +5,7 @@ buildscript {
         coroutines_version = '1.6.4'
         compose_bom_version = '2023.04.01'
         compose_compiler_version = '1.4.5'
-        okhttp_version = '4.10.0'
+        okhttp_version = '4.11.0'
         glide_version = '4.15.1'
         compile_sdk_version = 33
         build_tool_version = '33.0.2'
