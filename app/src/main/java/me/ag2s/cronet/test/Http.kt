@@ -3,6 +3,7 @@ package me.ag2s.cronet.test
 import android.util.Log
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import me.ag2s.cronet.CronetHolder
 import me.ag2s.cronet.okhttp.CronetCoroutineInterceptor
 import me.ag2s.cronet.okhttp.CronetInterceptor
@@ -10,7 +11,7 @@ import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK
-import org.chromium.net.ExperimentalCronetEngine
+import org.chromium.net.MyCronetEngine
 import org.chromium.net.NetworkQualityObservationSource
 import org.chromium.net.NetworkQualityRttListener
 import org.json.JSONObject
@@ -22,6 +23,7 @@ object Http {
     private val OkhttpDispatcher: CoroutineDispatcher by lazy { bootClient.dispatcher.executorService.asCoroutineDispatcher() }
     fun cancelAll() {
         bootClient.dispatcher.cancelAll()
+        OkhttpDispatcher.cancel()
     }
 
     private val bootClient: OkHttpClient by lazy {
@@ -31,9 +33,9 @@ object Http {
             ConnectionSpec.CLEARTEXT
         )
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
             .callTimeout(60, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
             .connectionSpecs(specs)
@@ -46,7 +48,7 @@ object Http {
 
 
     val cronetEngine: CronetEngine by lazy {
-        val builder = ExperimentalCronetEngine.Builder(appCtx).apply {
+        val builder = MyCronetEngine.Builder(appCtx).apply {
             setStoragePath(appCtx.externalCacheDir?.absolutePath)//设置缓存路径
             enableHttpCache(HTTP_CACHE_DISK, (1024 * 1024 * 50).toLong())//设置50M的磁盘缓存
             enableQuic(true)//设置支持http/3

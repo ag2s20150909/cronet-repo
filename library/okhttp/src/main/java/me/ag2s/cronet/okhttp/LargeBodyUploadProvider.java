@@ -17,7 +17,7 @@ import okio.Pipe;
 class LargeBodyUploadProvider extends UploadDataProvider {
     private final RequestBody body;
     private volatile boolean filled = false;
-    private final Pipe pipe = new Pipe(AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY);
+    private final Pipe pipe = new Pipe(CronetConstants.BYTE_BUFFER_CAPACITY);
     private final BufferedSource source=Okio.buffer(pipe.source());
 
 

@@ -57,7 +57,7 @@ public class CronetInterceptor implements okhttp3.Interceptor {
         }
         final Request copy = builder.build();
 
-        Response response = proceedWithCronet(engine, copy, chain.call());
+        Response response = proceedWithCronet(engine, copy, chain);
         if (mCookieJar != null && mCookieJar != CookieJar.NO_COOKIES) {
             mCookieJar.saveFromResponse(copy.url(), Cookie.parseAll(copy.url(), response.headers()));
         }
@@ -65,18 +65,18 @@ public class CronetInterceptor implements okhttp3.Interceptor {
 
     }
 
-    private static AbsCronetMemoryCallback getCb(@NonNull Request request, @NonNull Call call) {
+    private static AbsStreamCallback getCb(@NonNull Chain chain) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return new CronetCallBackNewMemory(request, call);
+            return new CronetCallBackNewMemory(chain);
         } else {
-            return new CronetCallBackOldMemory(request, call);
+            return new CronetCallBackOldMemory(chain);
         }
     }
 
-    private Response proceedWithCronet(@NonNull CronetEngine engine, @NonNull Request request, @NonNull Call call) throws IOException {
-        try (AbsCronetMemoryCallback callback = getCb(request, call)) {
+    private Response proceedWithCronet(@NonNull CronetEngine engine, @NonNull Request request, @NonNull Chain chain) throws IOException {
+        try  {
+            AbsStreamCallback callback = getCb(chain);
             UrlRequest urlRequest = CronetHelper.buildRequest(engine, request, callback);
-            urlRequest.start();
             return callback.waitForDone(urlRequest);
 
         } catch (Exception e) {

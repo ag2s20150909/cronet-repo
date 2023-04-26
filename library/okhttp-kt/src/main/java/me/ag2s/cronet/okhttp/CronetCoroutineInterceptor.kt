@@ -44,10 +44,10 @@ class CronetCoroutineInterceptor(
             val timeout = chain.call().timeout().timeoutNanos().toDuration(DurationUnit.NANOSECONDS)
             if (timeout.isPositive()) {
                 withTimeout(timeout) {
-                    proceedWithCronet(engine = engine, copy, chain.call())
+                    proceedWithCronet(engine = engine, copy, chain)
                 }
             } else {
-                proceedWithCronet(engine = engine, copy, chain.call())
+                proceedWithCronet(engine = engine, copy, chain)
             }
 
         }
@@ -57,11 +57,11 @@ class CronetCoroutineInterceptor(
     private suspend fun proceedWithCronet(
         engine: CronetEngine,
         request: Request,
-        call: Call
+        chain: Interceptor.Chain
     ): Response =
         suspendCancellableCoroutine { continuation ->
 
-            val cb = object : AbsCronetMemoryCallback(request, call) {
+            val cb = object : AbsStreamCallback(chain) {
                 override fun waitForDone(urlRequest: UrlRequest): Response {
                     TODO("Not yet implemented")
                 }
@@ -78,14 +78,18 @@ class CronetCoroutineInterceptor(
 
             }
 
-            cb.use {
-                val urlRequest = CronetHelper.buildRequest(engine, request, cb)
-                continuation.invokeOnCancellation {
-                    urlRequest.cancel()
-                    call.cancel()
-                }
-                urlRequest.start()
-            }
+
+                   val urlRequest = CronetHelper.buildRequest(engine, request, cb)
+                   continuation.invokeOnCancellation {
+                       urlRequest.cancel()
+                       chain.call().cancel()
+                   }
+                   cb.start(urlRequest)
+
+
+
+
+
 
 
         }

@@ -10,12 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
-import okio.ByteString;
 
 public class FileDescriptorRequestBody extends RequestBody {
 
@@ -71,7 +69,7 @@ public class FileDescriptorRequestBody extends RequestBody {
             }
             Os.lseek(pfd.getFileDescriptor(), 0, OsConstants.SEEK_SET);
             Log.e("Cronet","file size is  "+size+"");
-            byte[] byteBuffer = new byte[(int) Math.min( size, AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY)];
+            byte[] byteBuffer = new byte[(int) Math.min( size, CronetConstants.BYTE_BUFFER_CAPACITY)];
             long pos = 0;
 
             while (pos < size) {

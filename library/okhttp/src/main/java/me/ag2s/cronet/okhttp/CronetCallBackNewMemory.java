@@ -8,37 +8,45 @@ import androidx.annotation.RequiresApi;
 import org.chromium.net.UrlRequest;
 
 import java.io.IOException;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import okhttp3.Call;
-import okhttp3.Request;
+import okhttp3.Interceptor;
 import okhttp3.Response;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
-class CronetCallBackNewMemory extends AbsCronetMemoryCallback {
+class CronetCallBackNewMemory extends AbsStreamCallback {
 
     private final CompletableFuture<Response> responseFuture = new CompletableFuture<>();
 
 
-    CronetCallBackNewMemory(@NonNull Request request, @NonNull Call call) {
-        super(request, call);
+    CronetCallBackNewMemory(@NonNull Interceptor.Chain chain) {
+        super(chain);
     }
 
 
     @Override
-    Response waitForDone(@NonNull UrlRequest urlRequest) throws IOException {
+    public Response waitForDone(@NonNull UrlRequest urlRequest) throws IOException {
+        start(urlRequest);
         try {
-            if (mCall.timeout().timeoutNanos() > 0) {
-                return responseFuture.get(mCall.timeout().timeoutNanos(), TimeUnit.NANOSECONDS);
+            if (mChain.call().timeout().timeoutNanos() > 0) {
+                return responseFuture.get(mChain.call().timeout().timeoutNanos(), TimeUnit.NANOSECONDS);
             } else {
                 return responseFuture.get();
             }
 
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            throw new IOException(e.getMessage(), e.getCause());
+        }
+        catch (CancellationException|InterruptedException cancellationException){
+            throw new IOException("Request was cancelled", cancellationException.getCause());
+        }
+        catch (TimeoutException timeoutException){
+            throw new IOException("Request timeout", timeoutException.getCause());
+        }
+        catch (ExecutionException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
@@ -48,7 +56,7 @@ class CronetCallBackNewMemory extends AbsCronetMemoryCallback {
      * @param response Response
      */
     @Override
-    void onSuccess(@NonNull Response response) {
+    public void onSuccess(@NonNull Response response) {
         responseFuture.complete(response);
     }
 
@@ -58,7 +66,7 @@ class CronetCallBackNewMemory extends AbsCronetMemoryCallback {
      * @param error IOException
      */
     @Override
-    void onError(@NonNull IOException error) {
+    public void onError(@NonNull IOException error) {
         responseFuture.completeExceptionally(error);
     }
 

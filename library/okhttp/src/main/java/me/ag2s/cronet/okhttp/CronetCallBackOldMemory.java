@@ -10,22 +10,24 @@ import org.chromium.net.UrlRequest;
 import java.io.IOException;
 
 import okhttp3.Call;
+import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
-class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
+class CronetCallBackOldMemory extends AbsStreamCallback {
     private final ConditionVariable mResponseCondition = new ConditionVariable();
     @Nullable
     private IOException mException;
 
-    CronetCallBackOldMemory(@NonNull Request request, @NonNull Call call) {
-        super(request, call);
+    CronetCallBackOldMemory(@NonNull Interceptor.Chain chain) {
+        super(chain);
     }
 
     @Override
-    Response waitForDone(@NonNull UrlRequest urlRequest) throws IOException {
+    public Response waitForDone(@NonNull UrlRequest urlRequest) throws IOException {
+        start(urlRequest);
 
-        long timeOutMs = mCall.timeout().timeoutNanos() / 1000000;
+        long timeOutMs = mChain.call().timeout().timeoutNanos() / 1000000;
         //Log.e(TAG, "timeout:" + timeOutMs);
         if (timeOutMs > 0) {
             mResponseCondition.block(timeOutMs);
@@ -42,7 +44,7 @@ class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
             throw mException;
         }
 
-        return mResponse;
+        return mResponseBuilder.build();
     }
 
     /**
@@ -51,7 +53,7 @@ class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
      * @param response Response
      */
     @Override
-    void onSuccess(@NonNull Response response) {
+    public void onSuccess(@NonNull Response response) {
         mResponseCondition.open();
     }
 
@@ -61,7 +63,7 @@ class CronetCallBackOldMemory extends AbsCronetMemoryCallback {
      * @param error IOException
      */
     @Override
-    void onError(@NonNull IOException error) {
+    public void onError(@NonNull IOException error) {
         mException = error;
         mResponseCondition.open();
     }

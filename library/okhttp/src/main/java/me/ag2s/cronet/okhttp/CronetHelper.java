@@ -55,7 +55,7 @@ public class CronetHelper {
             if (contentType != null) {
                 requestBuilder.addHeader("Content-Type", contentType.toString());
             }
-            if(requestBody.contentLength()> AbsCronetMemoryCallback.BYTE_BUFFER_CAPACITY){
+            if(requestBody.contentLength()> CronetConstants.BYTE_BUFFER_CAPACITY){
                 try( UploadDataProvider provider=new LargeBodyUploadProvider(requestBody)) {
                     requestBuilder.setUploadDataProvider(provider,uploadExecutor);
                 }catch (Exception e){

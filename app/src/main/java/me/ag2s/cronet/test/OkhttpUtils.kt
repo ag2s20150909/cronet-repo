@@ -6,9 +6,12 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.chromium.net.impl.ImplVersion
+import java.io.IOException
+import java.lang.IllegalArgumentException
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.jvm.Throws
 
 @Suppress("unused")
 object OkhttpUtils {
@@ -106,11 +109,15 @@ object OkhttpUtils {
         }
     }
 
-    fun httpGet(url: String?, header: Map<String, String> = mapOf()): String {
+    @Throws(IOException::class)
+    fun getResponse(
+        url: String?,
+        header: Map<String, String> = mapOf(),
+        client: OkHttpClient = getOkhttpClient()
+    ): Response {
         if (url == null || !URLUtil.isNetworkUrl(url)) {
-            return HTTP_ERROR + "url is null"
+            throw IllegalArgumentException("url is null or not NetworkUrl")
         }
-        val client: OkHttpClient = getOkhttpClient()
         val requestBuilder: Request.Builder = Request.Builder().get().url(url)
         //requestBuilder.header("Referer", CommonTool.getReferer(url))
         requestBuilder.header("Dnt", "1")
@@ -127,60 +134,19 @@ object OkhttpUtils {
             requestBuilder.addHeader(key, value)
         }
         val request: Request = requestBuilder.build()
-        return try {
-            val response: Response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                response.body!!.string()
-            } else {
-                HTTP_ERROR + response.message + " errorcode:" + response.code
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            HTTP_ERROR + Log.getStackTraceString(e)
-        }
+        return client.newCall(request).execute()
     }
 
-    fun httpCacheGet(url: String?, header: Map<String, String> = mapOf()): String {
-        if (url == null || !URLUtil.isNetworkUrl(url)) {
-            return HTTP_ERROR + "url is null"
-        }
-        val client: OkHttpClient = getOkhttpClient()
-        val requestBuilder: Request.Builder = Request.Builder().get().url(url)
-        //requestBuilder.header("Referer", CommonTool.getReferer(url))
-        requestBuilder.header("Dnt", "1")
-        requestBuilder.removeHeader("User-Agent")
-        requestBuilder.header("User-Agent", UA)
-        requestBuilder.header("Sec-Ch-Ua-Mobile", "?1")
-        requestBuilder.header("Sec-GPC", "1")
-        requestBuilder.header("Upgrade-Insecure-Requests", "1");
-        requestBuilder.header(
-            "Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5"
-        )
-        for ((key, value) in header) {
-            requestBuilder.removeHeader(key)
-            requestBuilder.addHeader(key, value)
-        }
-        val request: Request = requestBuilder.build()
-        return try {
-            val response: Response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                Objects.requireNonNull(response.body!!.string())
-            } else {
-                HTTP_ERROR + response.message + " errorcode:" + response.code
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            HTTP_ERROR + Log.getStackTraceString(e)
-        }
-    }
-
-
-    fun httpPost(
-        url: String,
+    @Throws(IOException::class)
+    fun postResponse(
+        url: String?,
         headers: Map<String, String> = mapOf<String, String>(),
-        body: Map<String, String>
-    ): String {
-        val client: OkHttpClient = getOkhttpClient()
+        body: Map<String, String>,
+        client: OkHttpClient = getOkhttpClient()
+    ): Response {
+        if (url == null || !URLUtil.isNetworkUrl(url)) {
+            throw IllegalArgumentException("url is null or not NetworkUrl")
+        }
         //构建Body
         val params = FormBody.Builder()
         for ((key, value) in body) {
@@ -203,26 +169,20 @@ object OkhttpUtils {
             rbuilder.addHeader(key, value)
         }
         val request: Request = rbuilder.build()
-        return try {
-            val response: Response = client.newCall(request).execute()
-            if (response.isSuccessful) {
-                Objects.requireNonNull(response.body!!.string())
-            } else {
-                HTTP_ERROR + response.message + " errorcode:" + response.code
-            }
-        } catch (e: Exception) {
-
-            HTTP_ERROR + Log.getStackTraceString(e)
-        }
+        return client.newCall(request).execute()
     }
 
-
-    fun httpPostJson(
-        url: String,
+    @Throws(IOException::class)
+    fun postJsonResponse(
+        url: String?,
         data: String,
-        headers: HashMap<String?, String?>? = null
-    ): String {
-        val client: OkHttpClient = getOkhttpClient()
+        headers: Map<String, String> = mapOf<String, String>(),
+        client: OkHttpClient = getOkhttpClient()
+    ): Response {
+        if (url == null || !URLUtil.isNetworkUrl(url)) {
+            throw IllegalArgumentException("url is null or not NetworkUrl")
+        }
+
         val body: RequestBody = data.toRequestBody(JSON)
 
 //构建headers
@@ -248,8 +208,70 @@ object OkhttpUtils {
             }
         }
         val request: Request = rbuilder.build()
+        return client.newCall(request).execute()
+    }
+
+
+    fun httpGet(url: String?, header: Map<String, String> = mapOf()): String {
+
         return try {
-            val response: Response = client.newCall(request).execute()
+            val response: Response = getResponse(url, header, getOkhttpClient())
+            if (response.isSuccessful) {
+                response.body!!.string()
+            } else {
+                HTTP_ERROR + response.message + " errorcode:" + response.code
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            HTTP_ERROR + Log.getStackTraceString(e)
+        }
+    }
+
+    fun httpCacheGet(url: String?, header: Map<String, String> = mapOf()): String {
+
+        return try {
+            val response: Response = getResponse(url, header, getOkhttpClient())
+            if (response.isSuccessful) {
+                Objects.requireNonNull(response.body!!.string())
+            } else {
+                HTTP_ERROR + response.message + " errorcode:" + response.code
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            HTTP_ERROR + Log.getStackTraceString(e)
+        }
+    }
+
+
+    fun httpPost(
+        url: String,
+        headers: Map<String, String> = mapOf<String, String>(),
+        body: Map<String, String>
+    ): String {
+
+        return try {
+            val response: Response = postResponse(url, headers, body)
+            if (response.isSuccessful) {
+                Objects.requireNonNull(response.body!!.string())
+            } else {
+                HTTP_ERROR + response.message + " errorcode:" + response.code
+            }
+        } catch (e: Exception) {
+
+            HTTP_ERROR + Log.getStackTraceString(e)
+        }
+    }
+
+
+    fun httpPostJson(
+        url: String,
+        data: String,
+        headers: Map<String, String> = mapOf<String, String>()
+    ): String {
+        val client: OkHttpClient = getOkhttpClient()
+
+        return try {
+            val response: Response = postJsonResponse(url, data,headers)
             if (response.isSuccessful) {
                 Objects.requireNonNull(response.body!!.string())
             } else {
