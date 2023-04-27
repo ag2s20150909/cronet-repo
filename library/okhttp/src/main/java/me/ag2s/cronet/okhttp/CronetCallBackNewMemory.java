@@ -46,7 +46,14 @@ class CronetCallBackNewMemory extends AbsStreamCallback {
             throw new IOException("Request timeout", timeoutException.getCause());
         }
         catch (ExecutionException e) {
-            throw new RuntimeException(e.getMessage(), e);
+            String msg=e.getMessage();
+
+
+            if (msg != null) {
+                throw new IOException(msg.substring(msg.indexOf(":")+1), e.getCause());
+            }else {
+                throw new IOException("unknown error", e.getCause());
+            }
         }
     }
 

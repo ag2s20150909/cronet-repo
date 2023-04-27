@@ -2,6 +2,7 @@ package me.ag2s.cronet.okhttp;
 
 import static me.ag2s.cronet.okhttp.CronetConstants.BYTE_BUFFER_CAPACITY;
 import static me.ag2s.cronet.okhttp.CronetConstants.MAX_FOLLOW_COUNT;
+import static me.ag2s.cronet.okhttp.CronetConstants.buildPriorResponse;
 import static me.ag2s.cronet.okhttp.CronetConstants.getContentLength;
 import static me.ag2s.cronet.okhttp.CronetConstants.getMediaType;
 import static me.ag2s.cronet.okhttp.CronetConstants.keepEncodingAffectedHeaders;
@@ -78,14 +79,16 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
     public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception {
         if (mCall.isCanceled()) {
             request.cancel();
+            canceled.set(true);
             onError(new IOException("Request Canceled"));
             return;
         }
         if (followCount > MAX_FOLLOW_COUNT) {
+            canceled.set(true);
             request.cancel();
             onError(new IOException("Too many redirect"));
         } else {
-            //urlResponseInfoChain.add(info);
+            urlResponseInfoChain.add(info);
             followCount += 1;
             request.followRedirect();
         }
@@ -93,43 +96,47 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
 
 
     @Override
-    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) throws Exception {
+    public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
         connected.set(true);
         this.request = request;
-        if (mCall.isCanceled()) {
-            canceled.set(true);
-            request.cancel();
-            onError(new IOException("Request Canceled"));
-            return;
-        }
-        if (mChain.connectTimeoutMillis() > 0 && System.currentTimeMillis() - startTime > mChain.connectTimeoutMillis()) {
-            canceled.set(true);
-            request.cancel();
-            onError(new IOException("Request connect timeout"));
-            return;
-        }
-        boolean keepEncodingAffectedHeaders = keepEncodingAffectedHeaders(info);
+        try {
+            if (mCall.isCanceled()) {
+                throw new IOException("Request Canceled");
 
-        mResponseBuilder = responseFromResponse(mResponseBuilder, mChain.call(), info, keepEncodingAffectedHeaders);
-        if (mChain.call().request().method().equalsIgnoreCase("HEAD")) {
+            }
+            if (mChain.connectTimeoutMillis() > 0 && System.currentTimeMillis() - startTime > mChain.connectTimeoutMillis()) {
+                throw new IOException("Request connect timeout");
+            }
+            mResponseBuilder = buildPriorResponse(mResponseBuilder, mChain.request(), urlResponseInfoChain, info.getUrlChain());
+            boolean keepEncodingAffectedHeaders = keepEncodingAffectedHeaders(info);
+
+            mResponseBuilder = responseFromResponse(mResponseBuilder, mChain.call(), info, keepEncodingAffectedHeaders);
+            if (mChain.call().request().method().equalsIgnoreCase("HEAD")) {
+                onSuccess(mResponseBuilder.build());
+                return;
+            }
+
+            long contentLength = getContentLength(info);
+            CronetBodySource cronetBodySource = new CronetBodySource(contentLength);
+            if (!keepEncodingAffectedHeaders) {
+                contentLength = -1;
+            }
+            MediaType mediaType = getMediaType(info);
+
+            ResponseBody responseBody = ResponseBody.create(Okio.buffer(cronetBodySource), mediaType, contentLength);
+            mResponseBuilder.body(responseBody);
             onSuccess(mResponseBuilder.build());
+        } catch (IOException e) {
+            onError(e);
+            canceled.set(true);
+            request.cancel();
         }
 
-        long contentLength = getContentLength(info);
-        CronetBodySource cronetBodySource = new CronetBodySource(contentLength);
-        if (!keepEncodingAffectedHeaders) {
-            contentLength = -1;
-        }
-        MediaType mediaType = getMediaType(info);
-
-        ResponseBody responseBody = ResponseBody.create(Okio.buffer(cronetBodySource), mediaType, contentLength);
-        mResponseBuilder.body(responseBody);
-        onSuccess(mResponseBuilder.build());
 
     }
 
     @Override
-    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception {
+    public void onReadCompleted(UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) {
         if (mCall.isCanceled()) {
             canceled.set(true);
             request.cancel();

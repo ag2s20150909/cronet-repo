@@ -55,7 +55,7 @@ object OkhttpUtils {
     val executor: ExecutorService = Executors.newCachedThreadPool()
     private val JSON: MediaType = "application/json; charset=utf-8".toMediaType()
     private val TAG = OkhttpUtils::class.java.simpleName
-    const val HTTP_ERROR = "error:"
+    private const val HTTP_ERROR = "error:"
     fun cancelAll() {
         Http.cancelAll()
     }

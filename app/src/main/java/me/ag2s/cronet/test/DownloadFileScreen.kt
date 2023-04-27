@@ -132,6 +132,7 @@ class DownloadFileViewModel : ViewModel() {
 
                 val outFile = File(appCtx.externalCacheDir, "test.bin")
                 val cb = object : CronetOutputStreamCallBack(outFile) {
+                    val startTime=System.currentTimeMillis()
                     var lastSize=0L
                     var lastTime=System.currentTimeMillis()
                     override fun onHeaders(urlResponseInfo: UrlResponseInfo?) {
@@ -139,7 +140,7 @@ class DownloadFileViewModel : ViewModel() {
                     }
 
                     override fun onSuccess() {
-                        result.tryEmit("下载完成")
+                        result.tryEmit("下载完成 速度：${(lastSize/(System.currentTimeMillis()-startTime))}KB/s")
                     }
 
                     override fun onProgress(write: Long, total: Long) {

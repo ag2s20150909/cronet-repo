@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 
 import org.chromium.net.UrlResponseInfo;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import okhttp3.Call;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.Protocol;
+import okhttp3.Request;
 import okhttp3.Response;
 import okio.Source;
 
@@ -29,7 +31,6 @@ final class CronetConstants {
     public static final String CONTENT_TYPE_HEADER_NAME = "Content-Type";
 
     public static final Set<String> ENCODINGS_HANDLED_BY_CRONET = Set.of("br", "deflate", "gzip", "x-gzip");
-
 
 
     static Protocol protocolFromNegotiatedProtocol(UrlResponseInfo responseInfo) {
@@ -47,6 +48,30 @@ final class CronetConstants {
         } else {
             return Protocol.HTTP_1_0;
         }
+    }
+
+    static Response.Builder buildPriorResponse(Response.Builder builder, Request request, List<UrlResponseInfo> infoList, List<String> urlChain) throws IOException {
+
+        Response priorResponse = null;
+        if (infoList.size() > 0) {
+            if (urlChain.size() < infoList.size()) {
+                throw new IOException("The number of redirects should be consistent across URLs and headers!");
+            }
+
+            for (int i = 0; i < infoList.size(); i++) {
+                UrlResponseInfo info = infoList.get(i);
+
+                priorResponse=builder.request(request.newBuilder().url(urlChain.get(i)).build())
+                        .code(info.getHttpStatusCode())
+                        .message(info.getHttpStatusText())
+                        .headers(headersFromResponse(info, false)).build();
+                builder.priorResponse(priorResponse);
+
+            }
+        }
+
+
+        return builder;
     }
 
     @NonNull

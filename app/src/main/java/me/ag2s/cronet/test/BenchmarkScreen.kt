@@ -1,5 +1,6 @@
 package me.ag2s.cronet.test
 
+import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -97,10 +98,11 @@ class BenchmarkViewModel : ViewModel() {
             OkhttpUtils.setOkhttpClent(Http.okHttpClient1)
             val startTime = System.currentTimeMillis()
 
-            (1..100).pmap {
+            (1..10).pmap {
                 try {
 
-                    OkhttpUtils.getResponse(url).use { it.peekBody(100).close() }
+                    OkhttpUtils.getResponse(url).use {
+                        Log.e("GG",it.peekBody(100).string())}
 
                 }catch (e:Exception){
                     e.printStackTrace()
