@@ -9,6 +9,7 @@ import me.ag2s.cronet.okhttp.CronetCoroutineInterceptor
 import me.ag2s.cronet.okhttp.CronetInterceptor
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
+import okio.ByteString.Companion.toByteString
 import org.chromium.net.CronetEngine
 import org.chromium.net.CronetEngine.Builder.HTTP_CACHE_DISK
 import org.chromium.net.MyCronetEngine
@@ -20,7 +21,7 @@ import java.util.concurrent.TimeUnit
 
 object Http {
 
-    private val OkhttpDispatcher: CoroutineDispatcher by lazy { bootClient.dispatcher.executorService.asCoroutineDispatcher() }
+    private val OkhttpDispatcher: CoroutineDispatcher by lazy { Executors.newFixedThreadPool(64).asCoroutineDispatcher() }
     fun cancelAll() {
         bootClient.dispatcher.cancelAll()
         OkhttpDispatcher.cancel()
@@ -65,7 +66,7 @@ object Http {
             it.addRttListener(object :
                 NetworkQualityRttListener(Executors.newSingleThreadExecutor()) {
                 override fun onRttObservation(rttMs: Int, whenMs: Long, source: Int) {
-                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)}")
+                    Log.e("RTT", "rtt:${rttMs} time:${whenMs} source:${source2String(source)} ${it.activeRequestCount} ${it.downstreamThroughputKbps} ${it.globalMetricsDeltas.toByteString().utf8()}" )
                 }
 
             })

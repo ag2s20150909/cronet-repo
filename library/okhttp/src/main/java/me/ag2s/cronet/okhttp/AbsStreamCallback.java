@@ -52,6 +52,8 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
     private int followCount;
     protected Response.Builder mResponseBuilder;
 
+    private final long receiveTimeout;
+
     private final ArrayList<UrlResponseInfo> urlResponseInfoChain = new ArrayList<>();
 
 
@@ -59,6 +61,7 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
         mChain = chain;
         mCall = chain.call();
         this.startTime = System.currentTimeMillis();
+        this.receiveTimeout =mChain.connectTimeoutMillis()+mChain.writeTimeoutMillis();
         mResponseBuilder = new Response.Builder()
                 .sentRequestAtMillis(System.currentTimeMillis())
                 .request(chain.request())
@@ -76,37 +79,49 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
     }
 
     @Override
-    public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception {
-        if (mCall.isCanceled()) {
+    public void onRedirectReceived(UrlRequest request, UrlResponseInfo info, String newLocationUrl){
+        try {
+
+            if (!connected.get()&&receiveTimeout > 0 && System.currentTimeMillis() - startTime > receiveTimeout) {
+                throw new IOException("Request connect timeout");
+            }
+            connected.set(true);
+            this.startTime=System.currentTimeMillis();
+            if (mCall.isCanceled()) {
+                request.cancel();
+                canceled.set(true);
+                throw new IOException("Request Canceled");
+
+            }
+            if (followCount > MAX_FOLLOW_COUNT) {
+                canceled.set(true);
+                throw  new IOException("Too many redirect");
+            } else {
+                urlResponseInfoChain.add(info);
+                followCount += 1;
+                request.followRedirect();
+            }
+        } catch (IOException e) {
             request.cancel();
-            canceled.set(true);
-            onError(new IOException("Request Canceled"));
-            return;
+            onError(e);
         }
-        if (followCount > MAX_FOLLOW_COUNT) {
-            canceled.set(true);
-            request.cancel();
-            onError(new IOException("Too many redirect"));
-        } else {
-            urlResponseInfoChain.add(info);
-            followCount += 1;
-            request.followRedirect();
-        }
+
     }
 
 
     @Override
     public void onResponseStarted(UrlRequest request, UrlResponseInfo info) {
-        connected.set(true);
+
         this.request = request;
         try {
             if (mCall.isCanceled()) {
                 throw new IOException("Request Canceled");
 
             }
-            if (mChain.connectTimeoutMillis() > 0 && System.currentTimeMillis() - startTime > mChain.connectTimeoutMillis()) {
+            if (!connected.get()&&receiveTimeout > 0 && System.currentTimeMillis() - startTime > receiveTimeout) {
                 throw new IOException("Request connect timeout");
             }
+            connected.set(true);
             mResponseBuilder = buildPriorResponse(mResponseBuilder, mChain.request(), urlResponseInfoChain, info.getUrlChain());
             boolean keepEncodingAffectedHeaders = keepEncodingAffectedHeaders(info);
 
@@ -180,7 +195,7 @@ abstract class AbsStreamCallback extends UrlRequest.Callback implements AbsCallb
         private final long timeout = timeout().timeoutNanos();
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             if (closed.get()) {
                 return;
             }

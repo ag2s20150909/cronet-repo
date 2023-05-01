@@ -94,11 +94,11 @@ class BenchmarkViewModel : ViewModel() {
     fun test2() {
         viewModelScope.launch(Dispatchers.IO) {
             type.emit(1)
-            Http.cancelAll()
+            //Http.cancelAll()
             OkhttpUtils.setOkhttpClent(Http.okHttpClient1)
             val startTime = System.currentTimeMillis()
 
-            (1..10).pmap {
+            (1..100).pmap {
                 try {
 
                     OkhttpUtils.getResponse(url).use {

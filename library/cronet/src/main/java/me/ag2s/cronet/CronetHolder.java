@@ -15,7 +15,7 @@ import java.util.concurrent.Executor;
 public class CronetHolder {
     private static final Object lock = new Object();
 
-    private static volatile CronetEngine engine;
+    private static volatile CronetEngine engine=null;
     private static volatile Executor executorService;
 
     @NonNull
@@ -41,10 +41,10 @@ public class CronetHolder {
 
     @NonNull
     public static CronetEngine getEngine() {
-        if (engine == null) {
+        if (engine== null) {
             synchronized (lock) {
                 if (engine == null) {
-                    engine = createDefaultCronetEngine(CronetInitializer.getCtx());
+                    engine= createDefaultCronetEngine(CronetInitializer.getCtx());
                 }
             }
         }
@@ -53,9 +53,8 @@ public class CronetHolder {
 
     public static void setEngine(@NonNull CronetEngine engine) {
 
-
         synchronized (lock) {
-            CronetHolder.engine = engine;
+            CronetHolder.engine=engine;
         }
         Runtime.getRuntime().gc();
 

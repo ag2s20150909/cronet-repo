@@ -41,6 +41,7 @@ android {
 dependencies {
 
     api project(':okhttp')
+    implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
 
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version")
     //协程

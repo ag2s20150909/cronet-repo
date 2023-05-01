@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import me.ag2s.cronet.CronetHolder;
 import me.ag2s.cronet.CronetLoader;
-import okhttp3.Call;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Request;
@@ -28,6 +27,9 @@ public class CronetInterceptor implements okhttp3.Interceptor {
 
     public CronetInterceptor(@NonNull CronetEngine engine) {
         this(engine, CookieJar.NO_COOKIES);
+    }
+    public CronetInterceptor(@NonNull CookieJar cookieJar) {
+        this(CronetHolder.getEngine(), cookieJar);
     }
 
     public CronetInterceptor() {

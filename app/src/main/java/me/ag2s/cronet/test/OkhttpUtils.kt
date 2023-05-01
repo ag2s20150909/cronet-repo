@@ -24,7 +24,24 @@ object OkhttpUtils {
         "https://storage.googleapis.com/cronet/moka.jpg",
         "https://storage.googleapis.com/cronet/walnut.jpg"
     )
+
+
+    val PcUserAgent =
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${ImplVersion.getCronetVersion()} Safari / 537.36"
+    val UA =
+        "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${ImplVersion.getCronetVersion()} Mobile Safari/537.36"
     private val r = Random(System.currentTimeMillis())
+
+
+
+    private val defHeaders=Headers.headersOf(
+        "Connection", "keep-alive",
+        "DNT", "1",
+        "Cache-Control", "max-age=0",
+        "Upgrade-Insecure-Requests", "1",
+        "Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5"
+    )
 
     fun getRandomImgLink(): String {
         return imageUrls[r.nextInt(imageUrls.size)] + "?_r=" + System.currentTimeMillis()
@@ -118,17 +135,13 @@ object OkhttpUtils {
         if (url == null || !URLUtil.isNetworkUrl(url)) {
             throw IllegalArgumentException("url is null or not NetworkUrl")
         }
+
         val requestBuilder: Request.Builder = Request.Builder().get().url(url)
-        //requestBuilder.header("Referer", CommonTool.getReferer(url))
-        requestBuilder.header("Dnt", "1")
+
+        requestBuilder.headers(defHeaders)
         requestBuilder.removeHeader("User-Agent")
         requestBuilder.header("User-Agent", UA)
         requestBuilder.header("Sec-Ch-Ua-Mobile", "?1")
-        requestBuilder.header("Sec-GPC", "1")
-        requestBuilder.header("Upgrade-Insecure-Requests", "1")
-        requestBuilder.header(
-            "Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5"
-        )
         for ((key, value) in header) {
             requestBuilder.removeHeader(key)
             requestBuilder.addHeader(key, value)
@@ -157,11 +170,10 @@ object OkhttpUtils {
         //构建headers
         val refer = url.substring(0, url.lastIndexOf("/") + 1)
         val rbuilder: Request.Builder = Request.Builder()
-            .header("Sec-Ch-Ua-Mobile", "?0")
-            .header("Upgrade-Insecure-Requests", "1")
+            .headers(defHeaders)
             .header("Referer", refer)
+            .header("Sec-Ch-Ua-Mobile", "?0")
             .header("User-Agent", PcUserAgent)
-            .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5")
             .url(url)
             .post(params.build())
         for ((key, value) in headers) {
@@ -188,11 +200,10 @@ object OkhttpUtils {
 //构建headers
         val refer = url.substring(0, url.lastIndexOf("/") + 1)
         val rbuilder: Request.Builder = Request.Builder()
+            .headers(defHeaders)
             .header("Sec-Ch-Ua-Mobile", "?0")
-            .header("Upgrade-Insecure-Requests", "1")
             .header("Referer", refer)
             .header("User-Agent", PcUserAgent)
-            .header("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5")
             .url(url)
             .post(body)
         if (headers != null) {
@@ -271,7 +282,7 @@ object OkhttpUtils {
         val client: OkHttpClient = getOkhttpClient()
 
         return try {
-            val response: Response = postJsonResponse(url, data,headers)
+            val response: Response = postJsonResponse(url, data, headers)
             if (response.isSuccessful) {
                 Objects.requireNonNull(response.body!!.string())
             } else {
@@ -283,10 +294,4 @@ object OkhttpUtils {
     }
 
 
-    val PcUserAgent =
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + ImplVersion.getCronetVersion()
-            .toString() + " Safari / 537.36"
-    val UA =
-        "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" + ImplVersion.getCronetVersion()
-            .toString() + " Mobile Safari/537.36"
 }
