@@ -27,6 +27,17 @@ afterEvaluate {
                 mavenLocal()
 
             }
+            if (System.getenv("GITHUB_ACTOR")!=mull&&!System.getenv("GITHUB_ACTOR").isEmpty()){
+                maven {
+                    name = "GitHubPackages"
+                    url = "https://maven.pkg.github.com/octocat/hello-world"
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+
             maven {
                 name = 'myrepo'
                 url = "${rootDir}/repo"
