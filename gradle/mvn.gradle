@@ -30,7 +30,7 @@ afterEvaluate {
             if (System.getenv("GITHUB_ACTOR")!=mull&&!System.getenv("GITHUB_ACTOR").isEmpty()){
                 maven {
                     name = "GitHubPackages"
-                    url = "https://maven.pkg.github.com/octocat/hello-world"
+                    url = "https://maven.pkg.github.com/ag2s20150909/cronet-repo"
                     credentials {
                         username = System.getenv("GITHUB_ACTOR")
                         password = System.getenv("GITHUB_TOKEN")
