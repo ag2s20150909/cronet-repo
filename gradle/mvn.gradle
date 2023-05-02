@@ -27,7 +27,7 @@ afterEvaluate {
                 mavenLocal()
 
             }
-            if (System.getenv("GITHUB_ACTOR")!=mull&&!System.getenv("GITHUB_ACTOR").isEmpty()){
+            if (System.getenv("GITHUB_ACTOR")!=null&&!System.getenv("GITHUB_ACTOR").isEmpty()){
                 maven {
                     name = "GitHubPackages"
                     url = "https://maven.pkg.github.com/ag2s20150909/cronet-repo"
