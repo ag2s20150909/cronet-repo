@@ -1,6 +1,6 @@
 buildscript {
     ext {
-        agp_version='8.0.0'
+        agp_version='8.0.1'
         kotlin_version = '1.8.20'
         coroutines_version = '1.6.4'
         compose_bom_version = '2023.04.01'
