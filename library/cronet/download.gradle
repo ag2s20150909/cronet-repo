@@ -27,7 +27,7 @@ static def generateMD5(final file) {
 }
 
 //下载Cronet相关的jar
-task downloadJar(type: Download) {
+tasks.register('downloadJar', Download) {
     src([
             BASE_PATH + "cronet_api.jar",
             BASE_PATH + "cronet_impl_common_java.jar",
@@ -38,7 +38,7 @@ task downloadJar(type: Download) {
     overwrite true
     onlyIfModified false
 }
-task downloadSourceJar(type: Download) {
+tasks.register('downloadSourceJar', Download) {
     src([
             BASE_PATH + "cronet_api-src.jar",
             BASE_PATH + "cronet_impl_common_java-src.jar",
@@ -50,33 +50,33 @@ task downloadSourceJar(type: Download) {
     onlyIfModified false
 }
 //
-task copyJars(type: Copy) {
+tasks.register('copyJars', Copy) {
     dependsOn downloadJar, downloadSourceJar
     from libPath
     into "../../cronet/" + CronetVersion + "/libs"
 }
-task downloadARM64(type: Download) {
+tasks.register('downloadARM64', Download) {
     src BASE_PATH + "libs/arm64-v8a/libcronet." + CronetVersion + ".so"
     dest soPath + "/arm64-v8a.so"
     overwrite true
     useETag true
     onlyIfModified true
 }
-task downloadARMv7(type: Download) {
+tasks.register('downloadARMv7', Download) {
     src BASE_PATH + "libs/armeabi-v7a/libcronet." + CronetVersion + ".so"
     dest soPath + "/armeabi-v7a.so"
     overwrite true
     useETag true
     onlyIfModified true
 }
-task downloadX86_64(type: Download) {
+tasks.register('downloadX86_64', Download) {
     src BASE_PATH + "libs/x86_64/libcronet." + CronetVersion + ".so"
     dest soPath + "/x86_64.so"
     overwrite true
     useETag true
     onlyIfModified true
 }
-task downloadX86(type: Download) {
+tasks.register('downloadX86', Download) {
     src BASE_PATH + "libs/x86/libcronet." + CronetVersion + ".so"
     dest soPath + "/x86.so"
     overwrite true
@@ -84,13 +84,13 @@ task downloadX86(type: Download) {
     onlyIfModified true
 }
 
-task cleanSo(type: Delete, description: "清除so") {
+tasks.register('cleanSo', Delete) {
     delete jniPath
 }
-task cleanOld(type: Delete, description: "清除so") {
+tasks.register('cleanOld', Delete) {
     delete "../../cronet/"
 }
-task syncJnilibs(type: Sync) {
+tasks.register('syncJnilibs', Sync) {
     from cronetPath
     into jniPath
     include '**/*.so'
@@ -100,7 +100,7 @@ task syncJnilibs(type: Sync) {
 //    }
 }
 
-task syncSoFile(type: Sync) {
+tasks.register('syncSoFile', Sync) {
     //dependsOn syncMappingFile
     from cronetPath
     into nativePath
@@ -115,7 +115,7 @@ task syncSoFile(type: Sync) {
 }
 
 
-task copySo(type: Copy) {
+tasks.register('copySo', Copy) {
     dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86
 
     finalizedBy syncSoFile
@@ -160,20 +160,23 @@ task copySo(type: Copy) {
 /**
  * 自动生成MyCronetEngine
  */
-task createMyCronetEngine() {
-    def inName="org/chromium/net/ExperimentalCronetEngine.java"
+tasks.register('createMyCronetEngine') {
+    def inName = "org/chromium/net/ExperimentalCronetEngine.java"
     def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
+
+    inputs.file(sourcePath + "/cronet_api-src.jar")
+    outputs.file(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
     def fileWriter = new FileWriter(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
     BufferedReader br = new BufferedReader(new InputStreamReader(zipfile.getInputStream(zipfile.getEntry(inName))));
-    String line = null;
+    def line = null;
     while ((line = br.readLine()) != null) {
-        line=line.replace("super(context);","super(MyCronetHelper.createBuilderDelegate(context));")
-        line=line.replace("@deprecated","")
-        line=line.replace("@Deprecated","")
-        line=line.replace("ExperimentalCronetEngine extends CronetEngine","MyCronetEngine extends CronetEngine")
+        line = line.replace("super(context);", "super(MyCronetHelper.createBuilderDelegate(context));")
+        line = line.replace("@deprecated", "")
+        line = line.replace("@Deprecated", "")
+        line = line.replace("ExperimentalCronetEngine extends CronetEngine", "MyCronetEngine extends CronetEngine")
         fileWriter.write(line)
         fileWriter.write("\r\n")
-        System.out.println(line)
+        //System.out.println(line)
     }
     fileWriter.flush()
 
@@ -183,11 +186,12 @@ task createMyCronetEngine() {
 
 }
 
-task downloadCronet() {
-    task _cleanOld(type: Delete, description: "清除so") {
-        delete "../../cronet/"
-        delete jniPath
-    }
+tasks.register('downloadCronet') {
+//    tasks.register('_cleanOld', Delete) {
+//        delete "../../cronet/"
+//        delete jniPath
+//    }
+    dependsOn cleanOld
     dependsOn copySo
     dependsOn copyJars
 
@@ -224,9 +228,7 @@ task downloadCronet() {
 
 }
 
-task getLastestStableVersion() {
 
-}
 
 
 
@@ -250,33 +252,5 @@ static synchronized def RunCmd(String cmd, String name) {
     cmdP.waitFor()
 }
 
-//task test {
-//    //RunCmd("cd $rootDir.absolutePath", "AAAA")
-//    doFirst {
-//        println runCommands("git", "status")
-//        //RunCmd("git branch -D latest_branch", "AAAA")
-//        //println runCommands("git","checkout","-f" ,"--orphan", "latest_branch")
-//        RunCmd("git rev-list HEAD --count", "AAAA")
-//        RunCmd("git checkout --orphan latest_branch", "AAAA")
-//        RunCmd("git add -A", "AAAA")
-//        RunCmd("git commit -am \"Tiny the git and update cronet $CronetVersion\"", "AAAA")
-//        RunCmd("git branch -D main", "AAAA")
-//        RunCmd("git branch -m main", "AAAA")
-//        RunCmd("git tag -d \$(git tag -l)","测试")
-//        RunCmd("git tag -a \"$CronetVersion\" -m \"Cronet Version $CronetVersion\"", "添加TAG")
-//    }
-//
-//    doLast {
-//        //RunCmd("git push -f origin main -- tags","AAAAAAAAA")
-//        println runCommands("git" ,"push", "-f", "origin", "main", "--tags")
-//    }
-//
-//}
 
-
-task uploadToGithub(type: Exec, description: '上传到github') {
-    workingDir rootDir.parent
-    println rootDir.parent
-    commandLine 'cmd', "/c", "download.bat " + CronetVersion
-}
 //     build.dependsOn generateStrings
