@@ -2,7 +2,7 @@ buildscript {
     ext {
         agp_version='8.1.0'
         kotlin_version = '1.9.0'
-        coroutines_version = '1.6.4'
+        coroutines_version = '1.7.3'
         compose_bom_version = '2023.06.01'
         compose_compiler_version = '1.5.0'
         okhttp_version = '4.11.0'
@@ -38,9 +38,9 @@ subprojects { project ->
 //    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
 //        //kotlinOptions.jvmTarget = "11"
 //    }
-    plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
-        //project.apply plugin: "org.gradle.android.cache-fix"
-    }
+//    plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
+//        //project.apply plugin: "org.gradle.android.cache-fix"
+//    }
 
 
 }
