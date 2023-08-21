@@ -6,7 +6,7 @@ buildscript {
         compose_bom_version = '2023.06.01'
         compose_compiler_version = '1.5.0'
         okhttp_version = '4.11.0'
-        glide_version = '4.15.1'
+        glide_version = '4.16.0'
         compile_sdk_version = 33
         build_tool_version = '33.0.2'
     }
