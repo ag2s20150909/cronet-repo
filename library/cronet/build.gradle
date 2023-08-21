@@ -68,7 +68,7 @@ dependencies {
     //HMS
     api('com.huawei.hms:hquic-provider:5.0.2.300') { exclude(group: "org.chromium.net") }
     // add in cronet 111
-    implementation 'com.google.protobuf:protobuf-javalite:3.23.4'
+    implementation 'com.google.protobuf:protobuf-javalite:3.24.1'
 
 
 
