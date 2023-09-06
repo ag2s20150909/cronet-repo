@@ -1,8 +1,12 @@
 plugins {
-    id 'com.android.application'
-    id 'org.jetbrains.kotlin.android'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
+    //id 'com.android.application'
+
+    //id 'org.jetbrains.kotlin.android'
 //    id 'kotlin-kapt'
-    id 'com.google.devtools.ksp'
+    //id 'com.google.devtools.ksp'
 
 }
 
@@ -14,7 +18,7 @@ android {
     defaultConfig {
         applicationId "me.ag2s.cronet.test"
         minSdk 21
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -47,7 +51,7 @@ android {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_compiler_version
+        kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()//compose_compiler_version
     }
     packagingOptions {
         resources {
@@ -64,37 +68,42 @@ dependencies {
     implementation project(path: ':glide')
     implementation project(path: ':okhttp-kt')
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+    implementation(libs.kotlin.std)
+    implementation(libs.androidx.documentfile)
 
-    def composeBom = platform("androidx.compose:compose-bom:$compose_bom_version")
+    //implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+
+    def composeBom = platform(libs.androidx.compose.bom)
+   //platform("androidx.compose:compose-bom:$compose_bom_version")
     implementation composeBom
     androidTestImplementation composeBom
 
     //implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.material:material"
+    implementation(libs.androidx.compose.material) //"androidx.compose.material:material"
 
     // Android Studio Preview support
-    implementation 'androidx.compose.ui:ui-tooling-preview'
-    debugImplementation 'androidx.compose.ui:ui-tooling'
+    implementation(libs.androidx.compose.ui.tooling.preview) ///'androidx.compose.ui:ui-tooling-preview'
+    debugImplementation(libs.androidx.compose.ui.tooling) //'androidx.compose.ui:ui-tooling'
 
     // UI Tests
-    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
-    debugImplementation 'androidx.compose.ui:ui-test-manifest'
+    androidTestImplementation(libs.androidx.compose.ui.test.junit4) //'androidx.compose.ui:ui-test-junit4'
+    debugImplementation(libs.androidx.compose.ui.test.manifest) //'androidx.compose.ui:ui-test-manifest'
 
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
-    implementation 'androidx.activity:activity-compose:1.7.2'
+    implementation(libs.androidx.lifecycle.runtime.ktx) //'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+    implementation(libs.androidx.activity.compose) //'androidx.activity:activity-compose:1.7.2'
 
-    def nav_version = "2.7.1"
-    implementation "androidx.navigation:navigation-compose:$nav_version"
+    //def nav_version = "2.7.1"
+    implementation(libs.androidx.navigation.compose)
+    //"androidx.navigation:navigation-compose:$nav_version"
 
 
     //Glide
 
-    implementation "com.github.bumptech.glide:glide:$glide_version"
+    implementation(libs.glide.glide) //"com.github.bumptech.glide:glide:$glide_version"
     //annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     //kapt "com.github.bumptech.glide:compiler:$glide_version"
-    ksp "com.github.bumptech.glide:ksp:$glide_version"
-    implementation "com.github.bumptech.glide:compose:1.0.0-alpha.3"
+    ksp(libs.glide.ksp) //"com.github.bumptech.glide:ksp:$glide_version"
+    implementation(libs.glide.compose) //'com.github.bumptech.glide:compose:1.0.0-alpha.6'
 
     //implementation 'com.github.skydoves:landscapist-glide:2.0.1'
 
@@ -102,20 +111,21 @@ dependencies {
     //Okhttp
 
     //noinspection GradleDependency
-    implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
+    //implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
+    implementation(libs.okhttp.core)
 
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation(libs.androidx.core.ktx) //'androidx.core:core-ktx:1.10.1'
+//    implementation 'androidx.appcompat:appcompat:1.6.1'
+//    implementation 'com.google.android.material:material:1.9.0'
+//    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
 
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.12'
+    debugImplementation(libs.leakcanary.android) //"com.squareup.leakcanary:leakcanary-android:2.12"
 
 
     //Test
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    testImplementation(libs.junit) //'junit:junit:4.13.2'
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 
 
 }

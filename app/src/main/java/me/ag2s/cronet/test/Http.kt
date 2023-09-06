@@ -88,9 +88,17 @@ object Http {
         dnsSvcb.put("use_alpn", true)
         options.put("UseDnsHttpsSvcb", dnsSvcb)
 
-        options.put("AsyncDNS", JSONObject("{'enable':true}"))
-        options.put("SSLMinVersionAtLeastTLS12", JSONObject("{'enable':false}"))
-        options.put("EncryptedClientHello", JSONObject("{'enable':true}"))
+        val asyncDns=JSONObject()
+        asyncDns.put("enable",true)
+
+        options.put("AsyncDNS", asyncDns)
+        //options.put("SSLMinVersionAtLeastTLS12", JSONObject())
+
+        val ech=JSONObject()
+        ech.put("enable",true)
+
+        options.put("EncryptedClientHello",ech)
+
 
         Log.e("Cronet", options.toString(4))
 

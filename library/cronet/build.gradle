@@ -1,5 +1,6 @@
 plugins {
-    id 'com.android.library'
+    //id 'com.android.library'
+    alias(libs.plugins.android.library)
 //    id 'maven-publish'
 }
 apply from: "$rootDir/gradle/mvn.gradle"
@@ -60,21 +61,25 @@ configurations.configureEach {
 dependencies {
 
 
-    implementation "androidx.startup:startup-runtime:1.1.1"
+    implementation(libs.androidx.startup) //"androidx.startup:startup-runtime:1.1.1"
     //Cronet jars
     api fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
     //GMS
-    api('com.google.android.gms:play-services-cronet:18.0.1') { exclude(group: "org.chromium.net") }
+    api(libs.play.services.cronet) {
+        exclude(group: "org.chromium.net")
+    }//('com.google.android.gms:play-services-cronet:18.0.1') { exclude(group: "org.chromium.net") }
     //HMS
-    api('com.huawei.hms:hquic-provider:5.0.2.300') { exclude(group: "org.chromium.net") }
+    api(libs.hms.cronet) {
+        exclude(group: "org.chromium.net")
+    }//('com.huawei.hms:hquic-provider:5.0.2.300') { exclude(group: "org.chromium.net") }
     // add in cronet 111
-    implementation 'com.google.protobuf:protobuf-javalite:3.24.2'
+    implementation(libs.protobuf.javalite) //'com.google.protobuf:protobuf-javalite:3.24.2'
 
 
-
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    //testImplementation 'junit:junit:4.13.2'
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 }
 
-apply from:'download.gradle'
+apply from: 'download.gradle'

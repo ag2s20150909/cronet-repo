@@ -33,7 +33,7 @@ registries:
     username: dummy
 
 updates:
-  - package-ecosystem: gradle
+  - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "daily"
