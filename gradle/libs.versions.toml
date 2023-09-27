@@ -86,7 +86,7 @@ androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-j
 androidx-startup = {module="androidx.startup:startup-runtime",version.ref="androidx-startup"}
 
 
-glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-alpha.6" }
+glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-beta01" }
 glide-compiler = { module = "com.github.bumptech.glide:compiler", version.ref = "glide" }
 glide-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 glide-ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
