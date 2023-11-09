@@ -15,7 +15,7 @@ okhttp='4.11.0'
 okio='3.5.0'
 glide = "4.16.0"
 leakcanary = "2.12"
-protobuf = "3.24.3"
+protobuf = "3.25.0"
 
 
 
