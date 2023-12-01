@@ -84,6 +84,16 @@ tasks.register('downloadX86', Download) {
     onlyIfModified true
 }
 
+tasks.register('downloadRiscv64', Download) {
+    src BASE_PATH + "libs/x86/libcronet." + CronetVersion + ".so"
+    dest soPath + "/riscv64.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+
+//chromium-cronet/android/119.0.6045.138/Release/cronet/libs/riscv64
+
 tasks.register('cleanSo', Delete) {
     delete jniPath
 }
@@ -116,7 +126,7 @@ tasks.register('syncSoFile', Sync) {
 
 
 tasks.register('copySo', Copy) {
-    dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86
+    dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86,downloadRiscv64
 
     finalizedBy syncSoFile
 
