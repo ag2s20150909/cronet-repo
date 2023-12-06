@@ -121,7 +121,7 @@ glide = ["glide-glide","glide-compose","glide-avif"]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 
-androidx-benchmark = {id="androidx.benchmark",version="1.2.0"}
+androidx-benchmark = {id="androidx.benchmark",version="1.2.2"}
 
 kotlin-android = {id="org.jetbrains.kotlin.android",version.ref="kotlin"}
 ksp = {id="com.google.devtools.ksp",version.ref="ksp"}
