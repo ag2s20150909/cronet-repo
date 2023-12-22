@@ -19,7 +19,7 @@ protobuf = "3.25.1"
 
 
 
-kotlin= "1.9.21"
+kotlin= "1.9.22"
 ksp='1.9.21-1.0.15'
 coroutines = "1.7.3"
 androidGradlePlugin = "8.2.0"
