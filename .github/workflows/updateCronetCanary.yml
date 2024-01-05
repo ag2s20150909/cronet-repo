@@ -32,5 +32,7 @@ jobs:
       - name: Push to Canary
         uses: ad-m/github-push-action@master
         with:
-         github_token: ${{ secrets.GITHUB_TOKEN }}
-         branch: 'Canary'
+          force: true
+          tags: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'Canary'
