@@ -26,26 +26,11 @@ jobs:
         run: |
           echo "获取cronet最新版本"
           source .github/scripts/cronet.sh Dev
-          echo "PR_TITLE=Bump Dev cronet from $current_cronet_version to $lastest_cronet_version " >> $GITHUB_ENV
-          echo "PR_BODY=Changes in the [Git log](https://github.com/chromium/chromium/compare/$current_cronet_version..$lastest_cronet_version)" >> $GITHUB_ENV
-
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        continue-on-error: true
+      - name: Push to Dev
+        uses: ad-m/github-push-action@master
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: ${{ env.PR_TITLE }}
-          commit-message: |
-            ${{ env.PR_TITLE }}
-            - ${{ env.PR_BODY }}
-          body: ${{ env.PR_BODY }}
-          branch: Dev
-          delete-branch: true
-          add-paths: |
-            *cronet*jar
-            *cronet.json
-            *cronet*.so
-            *cronet*.so.js
-            *gradle.properties
-            repo/**
+          force: true
+          tags: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'Dev'
           

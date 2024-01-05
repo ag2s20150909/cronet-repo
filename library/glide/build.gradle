@@ -11,7 +11,7 @@ android {
 
     defaultConfig {
         minSdk 21
-        targetSdk 33
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -40,7 +40,7 @@ dependencies {
     api project(path: ':core')
     api(libs.glide.glide) //"com.github.bumptech.glide:glide:$glide_version"
     annotationProcessor(libs.glide.compiler) //"com.github.bumptech.glide:compiler:$glide_version"
-    implementation(libs.okio)///('com.squareup.okio:okio:3.6.0')
+    implementation(libs.okio)///('com.squareup.okio:okio:3.7.0')
 
 
     testImplementation(libs.junit) //'junit:junit:4.13.2'

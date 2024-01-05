@@ -67,5 +67,9 @@ if version_compare $current_cronet_version $lastest_cronet_version; then
     ./gradlew wrapper --gradle-version=8.5
     ./gradlew downloadCronet
     ./gradlew publish
+    git config --local user.email "github-action@users.noreply.github.com"
+    git config --local user.name "GitHub Action"
+    git add --all
+    git commit -m "Bump $branch cronet from $current_cronet_version to $lastest_cronet_version " -a
 fi
 
