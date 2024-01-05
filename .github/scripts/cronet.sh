@@ -71,6 +71,5 @@ if version_compare $current_cronet_version $lastest_cronet_version; then
     git config --local user.name "GitHub Action"
     git add --all
     git commit -m "Bump $branch cronet from $current_cronet_version to $lastest_cronet_version " -a
-    git tag -a "$lastest_cronet_version" HEAD -m "cronet $lastest_cronet_version"
 fi
 
