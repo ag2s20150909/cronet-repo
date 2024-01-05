@@ -1,0 +1,124 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "okhttp-kt",
+    "version": "Canary-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "okhttp",
+          "version": {
+            "requires": "Canary-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "okhttp-kt-Canary-SNAPSHOT.aar",
+          "url": "okhttp-kt-Canary-SNAPSHOT.aar",
+          "size": 10611,
+          "sha512": "7ff652de2363fc510be1971214b3699648b59bc56adbd4fb99c56935ab4d3d220642a8c9a96168b816894dc0a82f59ee6b86c9f9b232c47c50af27ddd23f4155",
+          "sha256": "78a88f8ea3287391c3e7735961c87ca4c05012fd8064fda7ea85ef3b071638f7",
+          "sha1": "27062b0b4c064c172508f35a172ff6ec82e7ce92",
+          "md5": "7218f26f38bce33b5f68d4517a0f052b"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "4.12.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.22"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-core",
+          "version": {
+            "requires": "1.7.3"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.7.3"
+          }
+        },
+        {
+          "group": "me.ag2s.cronet",
+          "module": "okhttp",
+          "version": {
+            "requires": "Canary-SNAPSHOT"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "okhttp-kt-Canary-SNAPSHOT.aar",
+          "url": "okhttp-kt-Canary-SNAPSHOT.aar",
+          "size": 10611,
+          "sha512": "7ff652de2363fc510be1971214b3699648b59bc56adbd4fb99c56935ab4d3d220642a8c9a96168b816894dc0a82f59ee6b86c9f9b232c47c50af27ddd23f4155",
+          "sha256": "78a88f8ea3287391c3e7735961c87ca4c05012fd8064fda7ea85ef3b071638f7",
+          "sha1": "27062b0b4c064c172508f35a172ff6ec82e7ce92",
+          "md5": "7218f26f38bce33b5f68d4517a0f052b"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "okhttp-kt-Canary-SNAPSHOT-sources.jar",
+          "url": "okhttp-kt-Canary-SNAPSHOT-sources.jar",
+          "size": 1790,
+          "sha512": "9e50200c741dbf94523f56b0caa88e165112ff246f985f237886d426606f469576ad843c5bfaa207ca5a9f99e74671a859468b71ad1c5b7dc055bf130e34a77d",
+          "sha256": "303d7582ca27547505b0512505474c9124d148871cd84362bcd978e1b9bb9124",
+          "sha1": "9e3e1e1501924a6f22e9a424773aef69854158a6",
+          "md5": "c113b02195dcf768e2ac5b08696a798c"
+        }
+      ]
+    }
+  ]
+}

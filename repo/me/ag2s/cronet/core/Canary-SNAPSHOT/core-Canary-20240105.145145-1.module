@@ -1,0 +1,160 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "core",
+    "version": "Canary-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.2.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-Canary-SNAPSHOT.aar",
+          "url": "core-Canary-SNAPSHOT.aar",
+          "size": 530972,
+          "sha512": "934f55b918a5321e14fa874ea392adbe307ac7dacc847b25f5eafad1a46602ba99e4da038259df17509c75c2422e29044163c518259cee370887d202e8002d43",
+          "sha256": "b6669b7562edac4479c6f12fc79a2e13713061dc59bde680c7dd70f59438de6f",
+          "sha1": "5d0a73494d1e16af2a73ad43fe3d7e5cd417b754",
+          "md5": "ac274a407088fdb3ee4f4f056810ec22"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.startup",
+          "module": "startup-runtime",
+          "version": {
+            "requires": "1.1.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.google.protobuf",
+          "module": "protobuf-javalite",
+          "version": {
+            "requires": "3.25.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.0.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.2.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-Canary-SNAPSHOT.aar",
+          "url": "core-Canary-SNAPSHOT.aar",
+          "size": 530972,
+          "sha512": "934f55b918a5321e14fa874ea392adbe307ac7dacc847b25f5eafad1a46602ba99e4da038259df17509c75c2422e29044163c518259cee370887d202e8002d43",
+          "sha256": "b6669b7562edac4479c6f12fc79a2e13713061dc59bde680c7dd70f59438de6f",
+          "sha1": "5d0a73494d1e16af2a73ad43fe3d7e5cd417b754",
+          "md5": "ac274a407088fdb3ee4f4f056810ec22"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "core-Canary-SNAPSHOT-sources.jar",
+          "url": "core-Canary-SNAPSHOT-sources.jar",
+          "size": 12475,
+          "sha512": "0e460da0fa26571c77cdbb759be65f8e295d9c06a6930c64d9c98685d62295485d70d177af8389daf2115c724c9ed20bbf34d3205134943dde9e35a37e0621dd",
+          "sha256": "e5ae1f25ab1fab6326a3685aa4b4eff7db53852c59241ba36adfb3f041c16d1b",
+          "sha1": "750de7c03ce71d3ae5821c73b34a03ef1f62a1fe",
+          "md5": "55336f391f77d6c4c1466725750c3146"
+        }
+      ]
+    }
+  ]
+}

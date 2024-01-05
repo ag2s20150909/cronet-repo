@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>okhttp-kt</artifactId>
+  <versioning>
+    <lastUpdated>20240105145145</lastUpdated>
+    <snapshot>
+      <timestamp>20240105.145145</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>Canary-20240105.145145-1</value>
+        <updated>20240105145145</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>Canary-20240105.145145-1</value>
+        <updated>20240105145145</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>aar</extension>
+        <value>Canary-20240105.145145-1</value>
+        <updated>20240105145145</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>sources</classifier>
+        <extension>jar</extension>
+        <value>Canary-20240105.145145-1</value>
+        <updated>20240105145145</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>Canary-SNAPSHOT</version>
+</metadata>
