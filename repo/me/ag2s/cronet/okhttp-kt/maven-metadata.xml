@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>okhttp-kt</artifactId>
+  <versioning>
+    <latest>Stable-SNAPSHOT</latest>
+    <versions>
+      <version>Stable-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20240105005507</lastUpdated>
+  </versioning>
+</metadata>

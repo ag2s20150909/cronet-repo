@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>core</artifactId>
+  <versioning>
+    <latest>Stable-SNAPSHOT</latest>
+    <versions>
+      <version>Stable-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20240105005458</lastUpdated>
+  </versioning>
+</metadata>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata modelVersion="1.1.0">
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>okhttp-kt</artifactId>
+  <versioning>
+    <lastUpdated>20240105005454</lastUpdated>
+    <snapshot>
+      <timestamp>20240105.005454</timestamp>
+      <buildNumber>1</buildNumber>
+    </snapshot>
+    <snapshotVersions>
+      <snapshotVersion>
+        <extension>pom</extension>
+        <value>Stable-20240105.005454-1</value>
+        <updated>20240105005454</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>aar</extension>
+        <value>Stable-20240105.005454-1</value>
+        <updated>20240105005454</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <classifier>sources</classifier>
+        <extension>jar</extension>
+        <value>Stable-20240105.005454-1</value>
+        <updated>20240105005454</updated>
+      </snapshotVersion>
+      <snapshotVersion>
+        <extension>module</extension>
+        <value>Stable-20240105.005454-1</value>
+        <updated>20240105005454</updated>
+      </snapshotVersion>
+    </snapshotVersions>
+  </versioning>
+  <version>Stable-SNAPSHOT</version>
+</metadata>

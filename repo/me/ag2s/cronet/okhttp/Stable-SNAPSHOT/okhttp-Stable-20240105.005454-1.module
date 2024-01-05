@@ -1,0 +1,117 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "okhttp",
+    "version": "Stable-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Stable-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "okhttp-Stable-SNAPSHOT.aar",
+          "url": "okhttp-Stable-SNAPSHOT.aar",
+          "size": 32278,
+          "sha512": "35736d84afb4cc184f1491c659c2c338e22454b427f3a5e82a93471d5156c22b19c8479c85f54cd476b65dd5230047f4dc3d130cdde07de9fad64e81ff24201a",
+          "sha256": "469f98c794de224969a8159f9862ff38f1216fd47ba42a3262b301da4eb936a3",
+          "sha1": "ee80f0880548e381c7584cf67f97f91e0b0bfa50",
+          "md5": "9c16754024f31fcf86667ed8ab3cffee"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "4.12.0"
+          }
+        },
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Stable-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "1.9.21"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "okhttp-Stable-SNAPSHOT.aar",
+          "url": "okhttp-Stable-SNAPSHOT.aar",
+          "size": 32278,
+          "sha512": "35736d84afb4cc184f1491c659c2c338e22454b427f3a5e82a93471d5156c22b19c8479c85f54cd476b65dd5230047f4dc3d130cdde07de9fad64e81ff24201a",
+          "sha256": "469f98c794de224969a8159f9862ff38f1216fd47ba42a3262b301da4eb936a3",
+          "sha1": "ee80f0880548e381c7584cf67f97f91e0b0bfa50",
+          "md5": "9c16754024f31fcf86667ed8ab3cffee"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "okhttp-Stable-SNAPSHOT-sources.jar",
+          "url": "okhttp-Stable-SNAPSHOT-sources.jar",
+          "size": 17503,
+          "sha512": "2416c3a5ead8cfb350f0d08c5fa0aeb54cdb536e1500e2204e49143a9bd3daba17148d770972fffd83c5c32a1dc823052b71cac12541010fce7894568929b8fa",
+          "sha256": "ce34648e3fa13fd50a3a6e443aa2678ab019514115f3334be755062baaef2c83",
+          "sha1": "1a12583dd868eb362e3921b62df1b5307e38e04f",
+          "md5": "fbcac7ef1159122248524affb449a5f0"
+        }
+      ]
+    }
+  ]
+}
