@@ -9,9 +9,12 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModel
@@ -20,9 +23,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import me.ag2s.cronet.okhttp.CronetHelper
+import me.ag2s.cronet.okhttp.CronetNoOpCallBack
 import me.ag2s.cronet.okhttp.CronetOutputStreamCallBack
 import me.ag2s.cronet.okhttp.CronetParcelFileDescriptorCallback
 import me.ag2s.cronet.okhttp.FileDescriptorRequestBody
@@ -32,7 +37,12 @@ import okhttp3.RequestBody
 import org.chromium.net.UrlResponseInfo
 import java.io.File
 import java.io.IOException
+import java.text.DecimalFormat
+import kotlin.math.log10
+import kotlin.math.log2
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 
 @Composable
@@ -75,10 +85,14 @@ fun DownloadFileScreen() {
         }
     }
 
+    val url by viewModel.url.collectAsState()
+
 
     Column() {
 
-        Button(onClick = { viewModel.speedTest() }) { Text(text = "Download") }
+        TextField(value = url, onValueChange = {viewModel.setUrl(it)}, modifier = Modifier.fillMaxWidth() ,singleLine = true)
+
+        Button(onClick = { viewModel.speedTest(url) }) { Text(text = "Download") }
         Button(onClick = {
 
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
@@ -100,9 +114,22 @@ fun DownloadFileScreen() {
     }
 }
 
+private fun Long.toSpeed(): String {
+    if (this <= 0 ) return "0"
+    val units = arrayOf("B", "kB", "MB", "GB", "TB")
+    val digitGroups = (log10(this.toDouble()) / log10(1024.0)).toInt()
+    return DecimalFormat("#,##0.#").format(this / 1024.0.pow(digitGroups.toDouble())).toString() + " " + units[digitGroups]
+}
+
 class DownloadFileViewModel : ViewModel() {
 
     val result = MutableStateFlow("")
+    val url=MutableStateFlow("https://speed.cloudflare.com/__down?bytes=10485760")
+
+    fun setUrl(link:String){
+
+            url.update { link }
+    }
 
 
     fun setMessage(msg: String?) {
@@ -112,13 +139,13 @@ class DownloadFileViewModel : ViewModel() {
     }
 
     var speedTestJob: Job? = null
-    fun speedTest() {
+    fun speedTest(link: String) {
         speedTestJob?.cancel()
         speedTestJob = viewModelScope.launch {
             suspendCancellableCoroutine<Unit> {
 
                 val requestBuilder = Request.Builder()
-                    .url("https://speed.cloudflare.com/__down?bytes=10485760&r=${Math.random()}")
+                    .url(link)
                     .get()
                 requestBuilder.header("Dnt", "1")
                 requestBuilder.removeHeader("User-Agent")
@@ -126,12 +153,13 @@ class DownloadFileViewModel : ViewModel() {
                 requestBuilder.header("Sec-Ch-Ua-Mobile", "?1")
                 requestBuilder.header("Sec-GPC", "1")
                 requestBuilder.header("Upgrade-Insecure-Requests", "1");
+                requestBuilder.header("Cache-Control","no-cache")
                 requestBuilder.header(
                     "Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,ja;q=0.7,ru;q=0.6,ko;q=0.5"
                 )
 
-                val outFile = File(appCtx.externalCacheDir, "test.bin")
-                val cb = object : CronetOutputStreamCallBack(outFile) {
+                //val outFile = File(appCtx.externalCacheDir, "test.bin")
+                val cb = object : CronetNoOpCallBack() {
                     val startTime=System.currentTimeMillis()
                     var lastSize=0L
                     var lastTime=System.currentTimeMillis()
@@ -140,15 +168,15 @@ class DownloadFileViewModel : ViewModel() {
                     }
 
                     override fun onSuccess() {
-                        result.tryEmit("下载完成 速度：${(lastSize/(System.currentTimeMillis()-startTime))}KB/s")
+                        result.tryEmit("下载完成 速度：${(lastSize/(System.currentTimeMillis()-startTime)*1000).toSpeed()}/s")
                     }
 
                     override fun onProgress(write: Long, total: Long) {
                         val now=System.currentTimeMillis()
-                        val speed=((write-lastSize).toDouble()/(now-lastTime)).roundToInt()
+                        val speed=((write-lastSize).toDouble()/(now-lastTime)).roundToLong()
                         lastSize=write
                         lastTime=now
-                        result.tryEmit("${write}  ${total} ${speed}")
+                        result.tryEmit("${write}  ${total} ${(1000*speed).toSpeed()}/s")
                     }
 
                     override fun onError(error: IOException) {
@@ -157,6 +185,7 @@ class DownloadFileViewModel : ViewModel() {
                 }
                 val urlRequest =
                     CronetHelper.buildRequest(Http.cronetEngine, requestBuilder.build(), cb)
+
                 urlRequest.start()
                 it.invokeOnCancellation {
                     urlRequest.cancel()

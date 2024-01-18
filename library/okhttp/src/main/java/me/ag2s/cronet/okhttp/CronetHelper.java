@@ -38,6 +38,10 @@ public class CronetHelper {
 
 
         Headers headers = request.headers();
+
+        if ("no-cache".equals(headers.get("Cache-Control"))){
+            requestBuilder.disableCache();
+        }
         //Log.e("Cronet", headers.toString());
         for (int i = 0; i < headers.size(); i += 1) {
             if (!headers.name(i).equals(CRONET_NOBODY)){

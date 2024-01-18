@@ -1,7 +1,13 @@
 pluginManagement {
     repositories {
 
-
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
 
         gradlePluginPortal()
         maven {
@@ -9,7 +15,12 @@ pluginManagement {
         }
         google()
         mavenCentral()
-        maven { url 'https://developer.huawei.com/repo/' }
+        maven {
+            url 'https://developer.huawei.com/repo/'
+            content {
+                includeGroupByRegex("com\\.huawei.*")
+            }
+        }
         maven { url "https://maven-central-asia.storage-download.googleapis.com/maven2/" }
         maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
     }
@@ -17,11 +28,20 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-
-
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        maven {
+            url 'https://developer.huawei.com/repo/'
+            content {
+                includeGroupByRegex("com\\.huawei.*")
+            }
+        }
         mavenCentral()
-        maven { url 'https://developer.huawei.com/repo/' }
         maven { url "https://maven-central-asia.storage-download.googleapis.com/maven2/" }
         maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }
 
