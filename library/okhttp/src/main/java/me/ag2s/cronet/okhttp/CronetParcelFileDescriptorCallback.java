@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-public abstract class CronetParcelFileDescriptorCallback extends UrlRequest.Callback {
+public abstract class CronetParcelFileDescriptorCallback extends UrlRequest.Callback implements DownLoadInterface {
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
     private static final int BYTE_BUFFER_CAPACITY = 64 * 1024;
     @NotNull

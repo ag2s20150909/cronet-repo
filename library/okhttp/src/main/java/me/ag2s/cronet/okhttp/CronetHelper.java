@@ -39,7 +39,7 @@ public class CronetHelper {
 
         Headers headers = request.headers();
 
-        if ("no-cache".equals(headers.get("Cache-Control"))){
+        if ("max-age=0".equals(headers.get("Cache-Control"))||"no-cache".equals(headers.get("Cache-Control"))){
             requestBuilder.disableCache();
         }
         //Log.e("Cronet", headers.toString());

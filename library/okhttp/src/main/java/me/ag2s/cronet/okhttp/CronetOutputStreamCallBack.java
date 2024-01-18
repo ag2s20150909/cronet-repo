@@ -21,7 +21,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.util.List;
 
-public abstract class CronetOutputStreamCallBack extends UrlRequest.Callback {
+public abstract class CronetOutputStreamCallBack extends UrlRequest.Callback implements DownLoadInterface {
     private static final String CONTENT_LENGTH_HEADER_NAME = "Content-Length";
     private static final int BYTE_BUFFER_CAPACITY = 64 * 1024;
     private final OutputStream outputStream;
