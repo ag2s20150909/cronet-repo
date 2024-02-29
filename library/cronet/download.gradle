@@ -52,6 +52,7 @@ tasks.register('downloadSourceJar', Download) {
 //
 tasks.register('copyJars', Copy) {
     dependsOn downloadJar, downloadSourceJar
+    finalizedBy createMyCronetEngine
     from libPath
     into "../../cronet/" + CronetVersion + "/libs"
 }
@@ -171,6 +172,7 @@ tasks.register('copySo', Copy) {
  * 自动生成MyCronetEngine
  */
 tasks.register('createMyCronetEngine') {
+    //dependsOn downloadSourceJar
     def inName = "org/chromium/net/ExperimentalCronetEngine.java"
     def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
 
@@ -233,7 +235,7 @@ tasks.register('downloadCronet') {
 
     }
 
-    finalizedBy createMyCronetEngine
+    //finalizedBy createMyCronetEngine
 
 
 }

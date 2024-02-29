@@ -62,6 +62,7 @@ public class MyCronetHelper {
             CronetProvider provider = i.next();
             Log.e(TAG,provider.toString());
             if (!provider.isEnabled() || (provider.getClass() == NativeCronetProvider.class && !cronetLoader.checkCronetNative())) {
+                Log.e(TAG,"removed:"+provider.toString());
                 i.remove();
             }
         }
