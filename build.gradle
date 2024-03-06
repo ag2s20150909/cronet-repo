@@ -1,0 +1,56 @@
+buildscript {
+    ext {
+//        agp_version= '8.1.1'
+//        kotlin_version = '1.9.10'
+//        coroutines_version = '1.7.3'
+//        compose_bom_version = '2023.08.00'
+//        compose_compiler_version = '1.5.3'
+        //okhttp_version = '4.11.0'
+//        glide_version = '4.16.0'
+        compile_sdk_version = 34
+        build_tool_version = '34.0.0'
+    }
+}
+plugins {
+    //id 'com.android.application' version "$agp_version" apply false
+    //id 'com.android.library' version "$agp_version" apply false
+
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.gradle.download) apply false
+    alias(libs.plugins.androidx.benchmark) apply false
+    alias(libs.plugins.ksp) apply false
+
+
+    //id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
+    //id "de.undercouch.download" version "5.5.0" apply false
+    //id 'androidx.benchmark' version '1.2.0-beta05' apply false
+    //id 'com.google.devtools.ksp' version '1.9.10-1.0.13' apply false
+    //id "org.gradle.android.cache-fix" version "2.7.3" apply false
+
+}
+
+
+tasks.register('clean', Delete) {
+    //delete rootProject.buildDir
+    delete rootProject.layout.buildDirectory
+}
+
+subprojects { project ->
+
+//    tasks.withType(JavaCompile).configureEach {
+//        javaCompiler = javaToolchains.compilerFor {
+//            languageVersion = JavaLanguageVersion.of(17)
+//        }
+//    }
+
+//    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+//        //kotlinOptions.jvmTarget = "11"
+//    }
+//    plugins.withType(com.android.build.gradle.api.AndroidBasePlugin) {
+//        //project.apply plugin: "org.gradle.android.cache-fix"
+//    }
+
+
+}
