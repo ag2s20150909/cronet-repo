@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeout
 import me.ag2s.cronet.CronetHolder
-import me.ag2s.cronet.CronetLoader
+import me.ag2s.cronet.CronetPreloader
 import okhttp3.*
 import org.chromium.net.CronetEngine
 import org.chromium.net.UrlRequest
@@ -25,7 +25,7 @@ class CronetCoroutineInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
-        if (CronetLoader.getInstance().isJavaImplement) {
+        if (CronetPreloader.getInstance().isJavaImplement) {
             return chain.proceed(request)
         }
         val builder: Request.Builder = request.newBuilder()

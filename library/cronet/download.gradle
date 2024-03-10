@@ -68,6 +68,7 @@ static def createMyCronetEngine(sourcePath,projectDir) {
 tasks.register('downloadJar', Download) {
     src([
             BASE_PATH + "cronet_api.jar",
+            BASE_PATH +"cronet_shared_java.jar",
             BASE_PATH + "cronet_impl_common_java.jar",
             BASE_PATH + "cronet_impl_native_java.jar",
             BASE_PATH + "cronet_impl_platform_java.jar",
@@ -80,6 +81,7 @@ tasks.register('downloadJar', Download) {
 tasks.register('downloadSourceJar', Download) {
     src([
             BASE_PATH + "cronet_api-src.jar",
+            BASE_PATH +"cronet_shared-src.jar",
             BASE_PATH + "cronet_impl_common_java-src.jar",
             BASE_PATH + "cronet_impl_native_java-src.jar",
             BASE_PATH + "cronet_impl_platform_java-src.jar",

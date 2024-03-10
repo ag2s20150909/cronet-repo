@@ -1,7 +1,6 @@
 package org.chromium.net;
 
 import android.content.Context;
-import android.os.SystemClock;
 import android.util.Log;
 
 import androidx.annotation.VisibleForTesting;
@@ -9,14 +8,13 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.NativeCronetProvider;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import me.ag2s.cronet.CronetLoader;
+import me.ag2s.cronet.CronetPreloader;
 
 public class MyCronetHelper {
 
@@ -28,14 +26,14 @@ public class MyCronetHelper {
 
         List<CronetProvider> providers = new ArrayList<>(CronetProvider.getAllProviders(context));
 
-        CronetLoader cronetLoader = CronetLoader.getInstance();
+        CronetPreloader cronetLoader = CronetPreloader.getInstance();
 
         CronetProvider provider = getEnabledCronetProviders(context, providers, cronetLoader).get(0);
 
         Log.e(TAG, String.format("Using '%s' provider for creating CronetEngine.Builder.", provider));
         ICronetEngineBuilder iCronetEngineBuilder = provider.createBuilder().mBuilderDelegate;
         if (provider.getClass() == NativeCronetProvider.class && cronetLoader.checkCronetNative()) {
-            iCronetEngineBuilder.setLibraryLoader(cronetLoader);
+            iCronetEngineBuilder.setLibraryLoader(cronetLoader.getLibraryLoader());
         }
         return iCronetEngineBuilder;
     }
@@ -55,7 +53,7 @@ public class MyCronetHelper {
      */
     @VisibleForTesting
     private static List<CronetProvider> getEnabledCronetProviders(
-            Context context, List<CronetProvider> providers,CronetLoader cronetLoader) {
+            Context context, List<CronetProvider> providers,CronetPreloader cronetLoader) {
         // Check that there is at least one available provider.
         if (providers.isEmpty()) {
             throw new RuntimeException("Unable to find any Cronet provider."

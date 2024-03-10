@@ -10,7 +10,7 @@ import org.chromium.net.UrlRequest;
 import java.io.IOException;
 
 import me.ag2s.cronet.CronetHolder;
-import me.ag2s.cronet.CronetLoader;
+import me.ag2s.cronet.CronetPreloader;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Request;
@@ -45,7 +45,7 @@ public class CronetInterceptor implements okhttp3.Interceptor {
         chain.connectTimeoutMillis();
 
 
-        if ((CronetLoader.getInstance().isJavaImplement())) {
+        if ((CronetPreloader.getInstance().isJavaImplement())) {
             return chain.proceed(request);
         }
         Request.Builder builder = request.newBuilder();

@@ -9,6 +9,7 @@ class APP : Application() {
     override fun onCreate() {
         super.onCreate()
         appCtx = this
+        //CronetLoader.getInstance().preDownload()
     }
 
     override fun attachBaseContext(base: Context?) {

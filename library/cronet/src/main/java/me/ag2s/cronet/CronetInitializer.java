@@ -6,6 +6,9 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.startup.Initializer;
 
+import org.chromium.base.ThreadUtils;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +39,16 @@ public class CronetInitializer implements Initializer<Void> {
 
     }
 
+    private static void disableThreadCheck() {
+        try {
+            Field field  = ThreadUtils.class.getDeclaredField("sThreadAssertsDisabledForTesting");
+            field.setAccessible(true);
+            field.set(null, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Initializes and a component given the application {@link Context}
      *
@@ -45,7 +58,8 @@ public class CronetInitializer implements Initializer<Void> {
     @Override
     public Void create(@NonNull Context context) {
         mContext = context;
-        CronetLoader.getInstance().preDownload();
+        disableThreadCheck();
+        CronetPreloader.getInstance().preDownload();
         return null;
     }
 
