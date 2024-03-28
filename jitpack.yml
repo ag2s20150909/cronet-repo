@@ -1,0 +1,9 @@
+jdk:
+  - openjdk17
+install:
+  - git gc  --prune=now
+  - echo "Running a custom install command"
+  - chmod +x gradlew
+  - ./gradlew downloadCronet
+  - ./gradlew clean
+  - ./gradlew publish

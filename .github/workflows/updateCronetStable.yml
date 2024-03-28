@@ -1,0 +1,36 @@
+name: Update Cronet Stable
+
+on:
+  schedule:
+    - cron: 0 0 * * *
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor == 'ag2s20150909' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v3
+
+      - name: Check Stable Cronet Updates
+        run: |
+          echo "获取cronet最新版本"
+          source .github/scripts/cronet.sh Stable
+      - name: Push to Stable
+        uses: ad-m/github-push-action@master
+        with:
+          force: true
+          tags: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: 'Stable'
+          
