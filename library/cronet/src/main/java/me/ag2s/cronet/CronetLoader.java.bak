@@ -1,0 +1,134 @@
+package me.ag2s.cronet;
+
+import static org.chromium.net.impl.CronetLibraryLoader.TAG;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
+import android.os.Build;
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.net.CronetProviderInstaller;
+import com.huawei.hms.hquic.HQUICManager;
+
+import org.chromium.net.ApiVersion;
+import org.chromium.net.CronetEngine;
+import org.chromium.net.impl.ImplVersion;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.math.BigInteger;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.util.Enumeration;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+
+/**
+ * Cronet的so加载工具类
+ * CronetClient soLoader
+ */
+public class CronetLoader extends CronetEngine.Builder.LibraryLoader {
+
+
+
+    CronetLoader() {
+
+
+
+    }
+
+    //private final SharedPreferences preferences;
+
+
+
+
+    @SuppressLint("UnsafeDynamicallyLoadedCode")
+    @Override
+    public void loadLibrary(String libName) {
+        Log.e(TAG, "libName:" + libName);
+        long start = System.currentTimeMillis();
+        try {
+            //非cronet的so调用系统方法加载
+            if (!libName.contains("cronet")) {
+                System.loadLibrary(libName);
+                return;
+            }
+            //以下逻辑为cronet加载，优先加载本地，否则从远程加载
+            //首先调用系统行为进行加载
+            System.loadLibrary(libName);
+            Log.e(TAG, "load from system");
+
+        } catch (Throwable e) {
+            //如果找不到，则从远程下载
+
+
+            //删除历史文件
+            CronetInitializer.deleteHistoryFile();
+            //md5 = getUrlMd5(md5Url);
+            Log.i(TAG, "soMD5:" + md5);
+
+
+            if (md5 == null || md5.length() != 32 || soUrl.length() == 0) {
+                //如果md5或下载的url为空，则调用系统行为进行加载
+                System.loadLibrary(libName);
+                return;
+            }
+
+
+            if (!soFile.exists() || !soFile.isFile()) {
+                //noinspection ResultOfMethodCallIgnored
+                soFile.delete();
+                download(soUrl, md5, downloadFile, soFile);
+                //如果文件不存在或不是文件，则调用系统行为进行加载
+                System.loadLibrary(libName);
+                return;
+            }
+
+            if (soFile.exists()) {
+                //如果文件存在，则校验md5值
+                String fileMD5 = getFileMD5(soFile);
+                Log.e(TAG, "File:md5:" + fileMD5);
+                if (fileMD5 != null && fileMD5.equalsIgnoreCase(md5)) {
+                    //md5值一样，则加载
+                    System.load(soFile.getAbsolutePath());
+                    Log.e(TAG, "load from:" + soFile);
+                    return;
+                }
+                //md5不一样则删除
+                //noinspection ResultOfMethodCallIgnored
+                soFile.delete();
+
+            }
+            //不存在则下载
+            download(soUrl, md5, downloadFile, soFile);
+            //使用系统加载方法
+            System.loadLibrary(libName);
+        } finally {
+            Log.e(TAG, "time:" + (System.currentTimeMillis() - start));
+        }
+    }
+    
+    
+    
+
+
+
+}
