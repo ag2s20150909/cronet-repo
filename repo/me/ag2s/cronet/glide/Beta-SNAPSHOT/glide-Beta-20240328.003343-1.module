@@ -1,0 +1,117 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "glide",
+    "version": "Beta-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "8.5"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Beta-SNAPSHOT"
+          }
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "4.16.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "glide-Beta-SNAPSHOT.aar",
+          "url": "glide-Beta-SNAPSHOT.aar",
+          "size": 11938,
+          "sha512": "be017e2e5338567eb375dd598d41b6f85ae9db225566f2c3107de21c4794673412c56a4d523ded5cc952eaba283dc82646ba7928b3d4dc375e4417ac3dabe42b",
+          "sha256": "b8f833423e5f639582daf5a5011135e8f4d94d96d91d7e5e83d7d7c56d8aaaa2",
+          "sha1": "5bf44189b7706d3abf79c0b9df23cc8ac3036fc1",
+          "md5": "51b4ea6b6c128762e8e69d3b3a71e5e6"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.squareup.okio",
+          "module": "okio",
+          "version": {
+            "requires": "3.8.0"
+          }
+        },
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Beta-SNAPSHOT"
+          }
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "4.16.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "glide-Beta-SNAPSHOT.aar",
+          "url": "glide-Beta-SNAPSHOT.aar",
+          "size": 11938,
+          "sha512": "be017e2e5338567eb375dd598d41b6f85ae9db225566f2c3107de21c4794673412c56a4d523ded5cc952eaba283dc82646ba7928b3d4dc375e4417ac3dabe42b",
+          "sha256": "b8f833423e5f639582daf5a5011135e8f4d94d96d91d7e5e83d7d7c56d8aaaa2",
+          "sha1": "5bf44189b7706d3abf79c0b9df23cc8ac3036fc1",
+          "md5": "51b4ea6b6c128762e8e69d3b3a71e5e6"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "glide-Beta-SNAPSHOT-sources.jar",
+          "url": "glide-Beta-SNAPSHOT-sources.jar",
+          "size": 5358,
+          "sha512": "4f00130d415668dc05cb42f171de7a8a3fe3673057578f40b815efdc9511200364df119d31437f8a48166d3c8717a58e90a92c850b64b2b0e9410ef7898b2a15",
+          "sha256": "d35389ac7939548dec36fe9f6877bb21b904a4c9fe03350fe463266aec5d3a66",
+          "sha1": "e879bb4cbe916a1bb5fa0b28874ca4b2efd1a464",
+          "md5": "7e4e9d509ce0408392e222bacb705689"
+        }
+      ]
+    }
+  ]
+}

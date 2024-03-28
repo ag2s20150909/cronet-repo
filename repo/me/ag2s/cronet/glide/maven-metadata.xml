@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>me.ag2s.cronet</groupId>
+  <artifactId>glide</artifactId>
+  <versioning>
+    <latest>Beta-SNAPSHOT</latest>
+    <versions>
+      <version>Beta-SNAPSHOT</version>
+    </versions>
+    <lastUpdated>20240328003350</lastUpdated>
+  </versioning>
+</metadata>

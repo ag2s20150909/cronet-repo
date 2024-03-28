@@ -1,0 +1,326 @@
+import groovy.json.JsonSlurper
+
+import java.security.MessageDigest
+import java.util.zip.ZipFile
+
+apply plugin: 'de.undercouch.download'
+
+def BASE_PATH = "https://storage.googleapis.com/chromium-cronet/android/" + CronetVersion + "/Release/cronet/"
+def assetsDir = projectDir.toString() + "/src/main/assets"
+def libPath = projectDir.toString() + "/libs"
+def sourcePath = projectDir.toString() + "/source"
+
+def soPath = projectDir.toString() + "/so"
+def nativePath = projectDir.toString() + "/../native/src/main/jniLibs"
+def jniPath = projectDir.toString() + "/src/main/jniLibs"
+def cronetPath = rootDir.toString() + "/cronet/" + CronetVersion
+
+//生成文件MD5
+static def generateMD5(final file) {
+    MessageDigest digest = MessageDigest.getInstance("MD5")
+    file.withInputStream() { is ->
+        byte[] buffer = new byte[1024]
+        int numRead = 0
+        while ((numRead = is.read(buffer)) > 0) {
+            digest.update(buffer, 0, numRead)
+        }
+    }
+    return String.format("%032x", new BigInteger(1, digest.digest())).toLowerCase()
+}
+
+static def isCronetOk(version) {
+    def url = "https://storage.googleapis.com/chromium-cronet/android/" + version + "/Release/cronet/" + "libs/arm64-v8a/libcronet." + version + ".so"
+    def conn = new URL(url).openConnection()
+    conn.setRequestMethod("HEAD")
+    conn.connect()
+    return conn.getResponseCode() != 404
+}
+
+static def getLatestCronetVersion(channel, offset) {
+    def req = new URL("https://chromiumdash.appspot.com/fetch_releases?channel=${channel}&platform=Android&num=1&offset=${offset}").openConnection()
+    def json = new JsonSlurper().parseText(req.getInputStream().text)
+    return json[0].version
+}
+
+static def createMyCronetEngine(sourcePath,projectDir) {
+    def inName = "org/chromium/net/ExperimentalCronetEngine.java"
+    def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
+
+    def fileWriter = new FileWriter(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
+    BufferedReader br = new BufferedReader(new InputStreamReader(zipfile.getInputStream(zipfile.getEntry(inName))));
+    def line = null;
+    while ((line = br.readLine()) != null) {
+        line = line.replace("super(context);", "super(MyCronetHelper.createBuilderDelegate(context));")
+        line = line.replace("@deprecated", "")
+        line = line.replace("@Deprecated", "")
+        line = line.replace("ExperimentalCronetEngine extends CronetEngine", "MyCronetEngine extends CronetEngine")
+        fileWriter.write(line)
+        fileWriter.write("\r\n")
+        System.out.println(line)
+    }
+    fileWriter.flush()
+
+    br.close();
+    fileWriter.close()
+}
+
+//下载Cronet相关的jar
+tasks.register('downloadJar', Download) {
+    src([
+            BASE_PATH + "cronet_api.jar",
+            BASE_PATH +"cronet_shared_java.jar",
+            BASE_PATH + "cronet_impl_common_java.jar",
+            BASE_PATH + "cronet_impl_native_java.jar",
+            BASE_PATH + "cronet_impl_platform_java.jar",
+            //BASE_PATH+"httpengine_native_provider_java.jar",
+    ])
+    dest libPath
+    overwrite true
+    onlyIfModified false
+}
+tasks.register('downloadSourceJar', Download) {
+    src([
+            BASE_PATH + "cronet_api-src.jar",
+            BASE_PATH +"cronet_shared-src.jar",
+            BASE_PATH + "cronet_impl_common_java-src.jar",
+            BASE_PATH + "cronet_impl_native_java-src.jar",
+            BASE_PATH + "cronet_impl_platform_java-src.jar",
+            //BASE_PATH+"httpengine_native_provider_java-src.jar",
+    ])
+    dest sourcePath
+    overwrite true
+    onlyIfModified false
+}
+//
+tasks.register('copyJars', Copy) {
+    dependsOn downloadJar, downloadSourceJar
+    //finalizedBy createMyCronetEngine
+    from libPath
+    into "../../cronet/" + CronetVersion + "/libs"
+}
+tasks.register('downloadARM64', Download) {
+    src BASE_PATH + "libs/arm64-v8a/libcronet." + CronetVersion + ".so"
+    dest soPath + "/arm64-v8a.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+tasks.register('downloadARMv7', Download) {
+    src BASE_PATH + "libs/armeabi-v7a/libcronet." + CronetVersion + ".so"
+    dest soPath + "/armeabi-v7a.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+tasks.register('downloadX86_64', Download) {
+    src BASE_PATH + "libs/x86_64/libcronet." + CronetVersion + ".so"
+    dest soPath + "/x86_64.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+tasks.register('downloadX86', Download) {
+    src BASE_PATH + "libs/x86/libcronet." + CronetVersion + ".so"
+    dest soPath + "/x86.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+
+tasks.register('downloadRiscv64', Download) {
+    src BASE_PATH + "libs/x86/libcronet." + CronetVersion + ".so"
+    dest soPath + "/riscv64.so"
+    overwrite true
+    useETag true
+    onlyIfModified true
+}
+
+//chromium-cronet/android/119.0.6045.138/Release/cronet/libs/riscv64
+
+tasks.register('cleanSo', Delete) {
+    delete jniPath
+}
+tasks.register('cleanOld', Delete) {
+    delete "../../cronet/"
+}
+tasks.register('syncJnilibs', Sync) {
+    from cronetPath
+    into jniPath
+    include '**/*.so'
+    exclude("libs/**")
+//    rename { String fileName ->
+//        fileName.replace('.so', '/libcronet.' + CronetVersion + '.so')
+//    }
+}
+
+tasks.register('syncSoFile', Sync) {
+    //dependsOn syncMappingFile
+    from cronetPath
+    into nativePath
+    include '**/*.so'
+    exclude("libs/**")
+//    exclude("logs/**")
+//    exclude("sdk-dependencies/**")
+//    //保护下面的不会被删除
+//    preserve{
+//        include("mapping/**")
+//    }
+}
+
+
+tasks.register('copySo', Copy) {
+    dependsOn cleanSo, cleanOld, downloadARM64, downloadARMv7, downloadX86_64, downloadX86, downloadRiscv64
+
+    finalizedBy syncSoFile
+
+    from soPath
+    println includeCronetSo
+    if ("true".equalsIgnoreCase(includeCronetSo)) {
+        finalizedBy syncJnilibs
+        print "hhhhh"
+    }
+
+    into cronetPath
+    include '**/*.so'
+    rename { String fileName ->
+        fileName.replace('.so', '/libcronet.' + CronetVersion + '.so')
+    }
+    doLast {
+
+        def files = new File(soPath).listFiles(new FileFilter() {
+            @Override
+            boolean accept(File pathname) {
+                String filename = pathname.getName().toLowerCase()
+                return filename.endsWith(".so")
+            }
+        })
+
+        for (File file : files) {
+            def abi = file.name.replace('.so', '')
+            def jsName = file.name.replace('.so', '/libcronet.' + CronetVersion + '.so.js')
+            println abi
+            def f1 = new File(cronetPath + "/" + jsName)
+            if (!f1.exists()) {
+                //f1.parentFile.mkdirs()
+                f1.createNewFile()
+            }
+            f1.text = generateMD5(file)
+            println f1.absolutePath
+        }
+    }
+}
+
+///**
+// * 自动生成MyCronetEngine
+// */
+//tasks.register('createMyCronetEngine') {
+//    //dependsOn downloadSourceJar
+//    def inName = "org/chromium/net/ExperimentalCronetEngine.java"
+//    def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
+//
+//    inputs.file(sourcePath + "/cronet_api-src.jar")
+//    outputs.file(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
+//    def fileWriter = new FileWriter(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
+//    BufferedReader br = new BufferedReader(new InputStreamReader(zipfile.getInputStream(zipfile.getEntry(inName))));
+//    def line = null;
+//    while ((line = br.readLine()) != null) {
+//        line = line.replace("super(context);", "super(MyCronetHelper.createBuilderDelegate(context));")
+//        line = line.replace("@deprecated", "")
+//        line = line.replace("@Deprecated", "")
+//        line = line.replace("ExperimentalCronetEngine extends CronetEngine", "MyCronetEngine extends CronetEngine")
+//        fileWriter.write(line)
+//        fileWriter.write("\r\n")
+//        //System.out.println(line)
+//    }
+//    fileWriter.flush()
+//
+//    br.close();
+//    fileWriter.close()
+//
+//
+//}
+
+tasks.register('downloadCronet') {
+//    tasks.register('_cleanOld', Delete) {
+//        delete "../../cronet/"
+//        delete jniPath
+//    }
+    dependsOn cleanOld
+    dependsOn copySo
+    dependsOn copyJars
+
+
+    doLast {
+
+        createMyCronetEngine(sourcePath,projectDir)
+
+
+        StringBuilder sb = new StringBuilder("{")
+        def files = new File(soPath).listFiles(new FileFilter() {
+            @Override
+            boolean accept(File pathname) {
+                String filename = pathname.getName().toLowerCase()
+                return filename.endsWith(".so")
+            }
+        })
+        for (File file : files) {
+            println file.name.replace(".so", "")
+            sb.append("\"").append(file.name.replace(".so", "")).append("\":\"").append(generateMD5(file)).append("\",")
+        }
+        sb.append("\"version\":\"").append(CronetVersion).append("\"}")
+
+        println sb.toString()
+
+        println assetsDir
+        def f1 = new File(assetsDir + "/cronet.json")
+        if (!f1.exists()) {
+            f1.parentFile.mkdirs()
+            f1.createNewFile()
+        }
+        f1.text = sb.toString()
+
+    }
+
+    //finalizedBy createMyCronetEngine
+
+
+}
+
+tasks.register('fatchCronet') {
+
+    def channel = "Stable"//Stable, Beta, Dev, Canary
+    def offset = 0
+    doLast {
+        def version = getLatestCronetVersion(channel,offset)
+        println version
+        while (!isCronetOk(version)) {
+            offset++
+            version = getLatestCronetVersion(channel,offset)
+            println version
+        }
+    }
+
+}
+
+
+private static String runCommands(String... commands) {
+    def process = new ProcessBuilder(commands).redirectErrorStream(true).start()
+    process.waitFor()
+    def result = ''
+    process.inputStream.eachLine { result += it + '\n' }
+    def errorResult = process.exitValue() == 0
+    if (!errorResult) {
+        throw new IllegalStateException(result)
+    }
+    return result
+}
+
+static synchronized def RunCmd(String cmd, String name) {
+    println name
+    def cmdP = cmd.execute()
+    println cmd + ":\n" + cmdP.text
+    cmdP.waitFor()
+}
+
+
+//     build.dependsOn generateStrings
