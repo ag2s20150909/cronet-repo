@@ -292,6 +292,7 @@ public class CronetPreloader {
 
     public CronetEngine.Builder.LibraryLoader getLibraryLoader() {
         return new CronetEngine.Builder.LibraryLoader() {
+            @SuppressLint("UnsafeDynamicallyLoadedCode")
             @Override
             public void loadLibrary(String libName) {
                 Log.e(TAG, "libName:" + libName);

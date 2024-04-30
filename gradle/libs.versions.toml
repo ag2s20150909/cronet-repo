@@ -1,8 +1,8 @@
 [versions]
 
-androidx-activity = "1.8.2"
-androidx-core='1.12.0'
-androidx-compose-bom = "2024.02.01"
+androidx-activity = "1.9.0"
+androidx-core='1.13.0'
+androidx-compose-bom = "2024.04.01"
 androidx-compose-compiler="1.5.10"
 androidx-glance = "1.0.0"
 androidx-navigation = "2.7.7"
@@ -12,18 +12,18 @@ androidx-junit='1.1.5'
 androidx-startup='1.1.1'
 
 okhttp='4.12.0'
-okio='3.8.0'
+okio='3.9.0'
 glide = "4.16.0"
 leakcanary = "2.12"
-protobuf = "3.25.3"
+protobuf = "4.26.1"
 
 
 
-kotlin= "1.9.22"
-ksp='1.9.22-1.0.17'
+kotlin= "1.9.23"
+ksp='1.9.23-1.0.20'
 coroutines = "1.8.0"
-androidGradlePlugin = "8.3.0"
-graldeDownload='5.5.0'
+androidGradlePlugin = "8.3.2"
+graldeDownload='5.6.0'
 documentfile = "1.0.1"
 
 [libraries]
@@ -101,7 +101,7 @@ okio = {module="com.squareup.okio:okio",version.ref="okio"}
 protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.ref = "protobuf" }
 protobuf-kotlin-lite = { module = "com.google.protobuf:protobuf-kotlin-lite", version.ref = "protobuf" }
 
-play-services-cronet = {module="com.google.android.gms:play-services-cronet",version.require="18.0.1"}
+play-services-cronet = {module="com.google.android.gms:play-services-cronet", version = "18.0.1" }
 hms-cronet = {module="com.huawei.hms:hquic-provider",version.require="5.0.2.300"}
 
 kotlin-std = {module="org.jetbrains.kotlin:kotlin-stdlib",version.ref="kotlin"}
@@ -121,7 +121,7 @@ glide = ["glide-glide","glide-compose","glide-avif"]
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 
-androidx-benchmark = {id="androidx.benchmark",version="1.2.3"}
+androidx-benchmark = {id="androidx.benchmark",version="1.2.4"}
 
 kotlin-android = {id="org.jetbrains.kotlin.android",version.ref="kotlin"}
 ksp = {id="com.google.devtools.ksp",version.ref="ksp"}
