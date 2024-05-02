@@ -1,7 +1,7 @@
 [versions]
 
 androidx-activity = "1.9.0"
-androidx-core='1.13.0'
+androidx-core='1.13.1'
 androidx-compose-bom = "2024.04.01"
 androidx-compose-compiler="1.5.10"
 androidx-glance = "1.0.0"
