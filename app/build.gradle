@@ -84,6 +84,8 @@ dependencies {
 
     //implementation "androidx.compose.ui:ui"
     implementation(libs.androidx.compose.material) //"androidx.compose.material:material"
+    implementation(libs.androidx.compose.material.icons)
+    implementation(libs.androidx.compose.material.iconsExtended)
 
     // Android Studio Preview support
     implementation(libs.androidx.compose.ui.tooling.preview) ///'androidx.compose.ui:ui-tooling-preview'

@@ -35,6 +35,7 @@ import java.util.Enumeration;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -53,7 +54,7 @@ public class CronetPreloader {
     private final File soFile;
     private final File downloadFile;
     private final File parentDir;
-    private String CPU_ABI;
+    private final String CPU_ABI;
     private final String md5;
     private final JSONObject json;
     /**
@@ -68,7 +69,7 @@ public class CronetPreloader {
     /**
      * 优先下载so
      */
-    private boolean prefSo = false;
+    public  boolean prefSo=false;
     /**
      * 缓存是否安装成功的结果
      */
@@ -76,16 +77,17 @@ public class CronetPreloader {
 
     CronetPreloader(){
         mContext = CronetInitializer.getCtx();
+        CPU_ABI=getCpuAbi(mContext);
 
         try {
             ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
             prefSo = appInfo.metaData.getBoolean(PREF_CRONET_SO, false);
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            //prefSo=false;
         }
         soUrl = "https://storage.googleapis.com/chromium-cronet/android/"
                 + ImplVersion.getCronetVersion() + "/Release/cronet/libs/"
-                + getCpuAbi(mContext) + "/" + soName;
+                + CPU_ABI + "/" + soName;
 
         parentDir = mContext.getDir("cronet", Context.MODE_PRIVATE);
         soFile = new File(parentDir, soName);
@@ -103,6 +105,7 @@ public class CronetPreloader {
         Log.e(TAG, "isGMS:" + isGMS);
         Log.e(TAG, "isHMS:" + isHMS);
         Log.e(TAG, "prefSo:" + prefSo);
+        Log.e(TAG, "ABI:" + CPU_ABI);
         Log.e(TAG, "includeCronetSo:" + includeCronetSo);
         Log.e(TAG, "includeCronetApkSo:" + includeCronetApkSo);
         Log.e(TAG, "md5:" + json);
@@ -127,21 +130,23 @@ public class CronetPreloader {
      * 下载并拷贝文件
      */
     private static synchronized void download(final String url, final String md5, final File downloadTempFile, final File destSuccessFile) {
-        if (download) {
+        if (download.get()) {
             return;
         }
-        download = true;
+        download.set(true);
         executor.execute(() -> {
             boolean result = downloadFileIfNotExist(url, downloadTempFile);
             Log.e(TAG, "download result:" + result);
             //文件md5再次校验
             String fileMD5 = getFileMD5(downloadTempFile);
+            Log.e(TAG, "download md5:" + fileMD5);
+            Log.e(TAG, "md5:" + md5);
             if (md5 != null && !md5.equalsIgnoreCase(fileMD5)) {
                 boolean delete = downloadTempFile.delete();
                 if (!delete) {
                     downloadTempFile.deleteOnExit();
                 }
-                download = false;
+                download.set(false);
                 return;
             }
             Log.e(TAG, "download success, copy to " + destSuccessFile);
@@ -213,9 +218,12 @@ public class CronetPreloader {
             return true;
         }
         if (md5 == null || md5.length() != 32 || !soFile.exists()) {
+            Log.e(TAG,"so not found");
             return false;
         }
-        return md5.equals(getFileMD5(soFile));
+        String soMd5=getFileMD5(soFile);
+        Log.e(TAG,"so md5\n"+md5+"\n"+soMd5);
+        return md5.equals(soMd5);
     }
 
     public CronetState getInstallType() {
@@ -292,7 +300,6 @@ public class CronetPreloader {
 
     public CronetEngine.Builder.LibraryLoader getLibraryLoader() {
         return new CronetEngine.Builder.LibraryLoader() {
-            @SuppressLint("UnsafeDynamicallyLoadedCode")
             @Override
             public void loadLibrary(String libName) {
                 Log.e(TAG, "libName:" + libName);
@@ -318,7 +325,7 @@ public class CronetPreloader {
                     Log.i(TAG, "soMD5:" + md5);
 
 
-                    if (md5 == null || md5.length() != 32 || soUrl.length() == 0) {
+                    if (md5 == null || md5.length() != 32 || soUrl.isEmpty()) {
                         //如果md5或下载的url为空，则调用系统行为进行加载
                         System.loadLibrary(libName);
                         return;
@@ -359,6 +366,8 @@ public class CronetPreloader {
             }
         };
     }
+
+
 
     private void downloadSo() {
         executor.execute(() -> {
@@ -450,23 +459,27 @@ public class CronetPreloader {
 
     @SuppressLint({"DiscouragedPrivateApi", "ObsoleteSdkInt"})
     private String getCpuAbi(Context context) {
-        if (CPU_ABI != null) {
-            return CPU_ABI;
-        }
+//        if (CPU_ABI != null) {
+//            return CPU_ABI;
+//        }
         // 5.0以上Application才有primaryCpuAbi字段
         try {
             ApplicationInfo appInfo = context.getApplicationInfo();
             Field abiField = ApplicationInfo.class.getDeclaredField("primaryCpuAbi");
             abiField.setAccessible(true);
-            CPU_ABI = (String) abiField.get(appInfo);
+            Object object = abiField.get(appInfo);
+            if(object!=null){
+                return (String) object;
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
         if (TextUtils.isEmpty(CPU_ABI)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                CPU_ABI = Build.SUPPORTED_ABIS[0];
+                return Build.SUPPORTED_ABIS[0];
             } else {
-                CPU_ABI = Build.CPU_ABI;
+                return   Build.CPU_ABI;
             }
         }
 
@@ -544,7 +557,7 @@ public class CronetPreloader {
         return false;
     }
 
-    static boolean download = false;
+    private static final AtomicBoolean download = new AtomicBoolean(false);
     static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static final class CronetPreloaderHolder {
@@ -569,7 +582,8 @@ public class CronetPreloader {
         if (parent != null && (!parent.exists())) {
             boolean mkdirs = parent.mkdirs();
             if (!mkdirs) {
-                mkdirs = parent.mkdirs();
+                Log.e(TAG,"can not make dir");
+                return false;
             }
         }
         try {
@@ -607,28 +621,22 @@ public class CronetPreloader {
      * 获得文件md5
      */
     private static String getFileMD5(File file) {
-        FileInputStream fileInputStream = null;
-        try {
-            fileInputStream = new FileInputStream(file);
+
+
+        try(FileInputStream fis=new FileInputStream(file)) {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] buffer = new byte[1024];
             int numRead = 0;
-            while ((numRead = fileInputStream.read(buffer)) > 0) {
+            while ((numRead = fis.read(buffer)) > 0) {
                 md5.update(buffer, 0, numRead);
             }
             return String.format("%032x", new BigInteger(1, md5.digest())).toLowerCase();
-        } catch (Exception | OutOfMemoryError e) {
+
+        }catch (Exception | OutOfMemoryError e) {
             e.printStackTrace();
-        } finally {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            return "";
         }
-        return null;
+
     }
 
 }

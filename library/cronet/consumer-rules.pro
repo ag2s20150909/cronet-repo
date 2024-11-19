@@ -1,32 +1,23 @@
-# This constructor is called using the reflection from Cronet API (cronet_api.jar).
--keep class * extends org.chromium.net.CronetProvider {
-    public <init>(android.content.Context);
-}
-
-
 # Proguard config for apps that depend on cronet_impl_common_java.jar.
 
+# Used through reflection by the API code to figure out the version of the impl
+# code it's talking to.
+-keep public class org.chromium.net.impl.ImplVersion {
+  public *;
+}
+
 -dontwarn com.google.errorprone.annotations.DoNotMock
+# -------- Config Path: base/android/proguard/shared_with_cronet.flags --------
+# Copyright 2016 The Chromium Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
-# Part of the Android System SDK, so ProGuard won't be able to resolve it if
-# running against the standard SDK.
--dontwarn android.util.StatsEvent
--dontwarn android.util.StatsEvent$*
+# Contains flags that we want to apply not only to Chromium APKs, but also to
+# third-party apps that bundle the Cronet library.
 
-
-
-# Allow unused native methods to be removed, but prevent renaming on those that are kept.
--keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class !cr_allowunused,** {
-  native <methods>;
-}
-
-# Use assumevalues block instead of assumenosideeffects block because Google3 proguard cannot parse
-# assumenosideeffects blocks which overwrite return value.
-# chromium_code.flags rather than remove_logging.flags so that it's included
-# in cronet.
--assumevalues class org.chromium.base.Log {
-  static boolean isDebug() return false;
-}
+# WARNING: rules in this file are applied to entire third-party APKs, not just
+# Chromium code. They MUST be scoped appropriately to avoid side effects on app
+# code that we do not own.
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class !cr_allowunused,org.chromium.** implements android.os.Parcelable {
@@ -46,16 +37,10 @@
     public static **[] values();
 }
 
-# -identifiernamestring doesn't keep the module impl around, we have to
-# explicitly keep it.
--if @org.chromium.components.module_installer.builder.ModuleInterface interface *
--keep,allowobfuscation,allowaccessmodification class !cr_allowunused,** extends <1> {
-  <init>();
+# Required to remove fields until b/274802355 is resolved.
+-assumevalues class !cr_allowunused,** {
+  final org.chromium.base.ThreadUtils$ThreadChecker * return _NONNULL_;
 }
-
-# TODO(agrieve): Remove once we start to use Android U SDK.
--dontwarn android.window.BackEvent
--dontwarn android.window.OnBackAnimationCallback
 # -------- Config Path: build/android/chromium_annotations.flags --------
 # Copyright 2022 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
@@ -117,15 +102,32 @@
 -identifiernamestring class * {
     @org.chromium.build.annotations.IdentifierNameString *;
 }
+
+# Mark fields with this to help R8 figure out that they cannot be null.
+# Use assumevalues in addition to assumenosideeffects block because Google3 proguard cannot parse
+# assumenosideeffects blocks which overwrite return value.
+-assumevalues class ** {
+  @org.chromium.build.annotations.AssumeNonNull *** *(...) return _NONNULL_;
+}
+-assumenosideeffects class ** {
+  @org.chromium.build.annotations.AssumeNonNull *** *(...);
+}
+-assumevalues class ** {
+  @org.chromium.build.annotations.AssumeNonNull *** * return _NONNULL_;
+}
+-assumenosideeffects class ** {
+  @org.chromium.build.annotations.AssumeNonNull *** *;
+}
 # -------- Config Path: components/cronet/android/cronet_impl_common_proguard.cfg --------
 # Proguard config for apps that depend on cronet_impl_common_java.jar.
 
--dontwarn com.google.errorprone.annotations.DoNotMock
+# Used through reflection by the API code to figure out the version of the impl
+# code it's talking to.
+-keep public class org.chromium.net.impl.ImplVersion {
+  public *;
+}
 
-# Part of the Android System SDK, so ProGuard won't be able to resolve it if
-# running against the standard SDK.
--dontwarn android.util.StatsEvent
--dontwarn android.util.StatsEvent$*
+-dontwarn com.google.errorprone.annotations.DoNotMock
 # -------- Config Path: components/cronet/android/cronet_impl_native_proguard.cfg --------
 # Proguard config for apps that depend on cronet_impl_native_java.jar.
 
@@ -147,8 +149,6 @@
 # Suppress unnecessary warnings.
 -dontnote org.chromium.net.ProxyChangeListener$ProxyReceiver
 -dontnote org.chromium.net.AndroidKeyStore
-# Needs 'void setTextAppearance(int)' (API level 23).
--dontwarn org.chromium.base.ApiCompatibilityUtils
 # Needs 'boolean onSearchRequested(android.view.SearchEvent)' (API level 23).
 -dontwarn org.chromium.base.WindowCallbackWrapper
 
@@ -191,6 +191,18 @@
 -keepclassmembers class org.chromium.** extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }
+# -------- Config Path: components/cronet/android/cronet_shared_proguard.cfg --------
+# Proguard config for apps that depend on cronet_shared_java.jar (which should
+# be all apps that depend on any part of Cronet)
+
+# Part of the Android System SDK, so ProGuard won't be able to resolve it if
+# running against the standard SDK.
+-dontwarn android.util.StatsEvent
+-dontwarn android.util.StatsEvent$*
+# There is also an undefined reference to android.util.StatsLog.write(), which
+# R8 appears to be fine with but other processors (e.g. internal Google
+# ProGuard) may not be. See b/315269496.
+-dontwarn android.util.StatsLog
 # -------- Config Path: third_party/androidx/androidx_annotations.flags --------
 # Copyright 2023 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
@@ -210,11 +222,46 @@
 
 # Keeps for method level annotations.
 -keepclasseswithmembers,allowaccessmodification class ** {
-  @org.jni_zero.AccessedByNative <fields>;
+  @**org.jni_zero.AccessedByNative <fields>;
 }
 -keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
-  @org.jni_zero.CalledByNative <methods>;
+  @**org.jni_zero.CalledByNative <methods>;
 }
 -keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
-  @org.jni_zero.CalledByNativeUnchecked <methods>;
+  @**org.jni_zero.CalledByNativeUnchecked <methods>;
+}
+
+# Allow unused native methods to be removed, but prevent renaming on those that
+# are kept.
+# TODO(crbug.com/315973491): Restrict the broad scope of this rule.
+-keepclasseswithmembernames,includedescriptorclasses,allowaccessmodification class ** {
+  native <methods>;
+}
+
+# Used when multiplexing. We don't package our own @UsedByReflection, so using this instead.
+-keepclasseswithmembers class !cr_allowunused,**J.N {
+  public long *_HASH;
+}
+# Proguard config for apps that depend on cronet_impl_platform_java.jar.
+
+# This constructor is called using the reflection from Cronet API (cronet_api.jar).
+-keep class org.chromium.net.impl.JavaCronetProvider {
+    public <init>(android.content.Context);
+}
+# Proguard config for apps that depend on cronet_shared_java.jar (which should
+# be all apps that depend on any part of Cronet)
+
+# Part of the Android System SDK, so ProGuard won't be able to resolve it if
+# running against the standard SDK.
+-dontwarn android.util.StatsEvent
+-dontwarn android.util.StatsEvent$*
+# There is also an undefined reference to android.util.StatsLog.write(), which
+# R8 appears to be fine with but other processors (e.g. internal Google
+# ProGuard) may not be. See b/315269496.
+-dontwarn android.util.StatsLog
+# Proguard config for apps that depend on httpengine_native_provider_java.jar.
+
+# This constructor is called using the reflection from Cronet API (cronet_api.jar).
+-keep class org.chromium.net.impl.HttpEngineNativeProvider {
+    public <init>(android.content.Context);
 }

@@ -130,6 +130,7 @@ public class MyCronetHelper {
             CronetProvider.ProviderInfo providerInfo = i.next();
             if (!providerInfo.provider.isEnabled()|| (providerInfo.provider.getClass() == NativeCronetProvider.class && !cronetLoader.checkCronetNative())) {
                 i.remove();
+                Log.e(TAG,"remove:"+providerInfo.provider.getName());
             }
         }
 
@@ -147,11 +148,25 @@ public class MyCronetHelper {
                     @Override
                     public int compare(
                             CronetProvider.ProviderInfo p1, CronetProvider.ProviderInfo p2) {
+
+                        if(CronetPreloader.getInstance().prefSo){
+                            if (CronetProvider.PROVIDER_NAME_APP_PACKAGED.equals(
+                                    p1.provider.getName())) {
+                                return -1;
+                            }
+                            if (CronetProvider.PROVIDER_NAME_APP_PACKAGED.equals(
+                                    p2.provider.getName())) {
+                                return 1;
+                            }
+                        }
+
+
                         // The fallback provider should always be at the end of the list.
                         if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(
                                 p1.provider.getName())) {
                             return 1;
                         }
+
                         if (CronetProvider.PROVIDER_NAME_FALLBACK.equals(
                                 p2.provider.getName())) {
                             return -1;
