@@ -2,7 +2,7 @@ name: Update Cronet Stable
 
 on:
   schedule:
-    - cron: 0 0 * * *
+    - cron: 0 0 12 ? * MON
   workflow_dispatch:
 
 jobs:
