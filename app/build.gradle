@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.compose)
     //id 'com.android.application'
 
     //id 'org.jetbrains.kotlin.android'
@@ -47,16 +48,16 @@ android {
     }
     kotlinOptions {
         jvmTarget = '17'
-        freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true"]
-        freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"]
+//        freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:experimentalStrongSkipping=true"]
+//        freeCompilerArgs += ["-P", "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"]
 
     }
     buildFeatures {
         compose true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()//compose_compiler_version
-    }
+//    composeOptions {
+//        kotlinCompilerExtensionVersion libs.versions.androidx.compose.compiler.get()//compose_compiler_version
+//    }
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -64,13 +65,19 @@ android {
     }
 
 }
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+
+}
 
 dependencies {
 
     implementation project(path: ':okhttp')
     implementation project(path: ':core')
-    implementation project(path: ':glide')
+    //implementation project(path: ':glide')
     implementation project(path: ':okhttp-kt')
+    implementation project(path: ':coil')
 
     implementation(libs.kotlin.std)
     implementation(libs.androidx.documentfile)
@@ -103,13 +110,17 @@ dependencies {
     //"androidx.navigation:navigation-compose:$nav_version"
 
 
+    api(libs.coil.compose)
+    api(libs.coil.network.core)
+    api(libs.coil.gif)
+
     //Glide
 
-    implementation(libs.glide.glide) //"com.github.bumptech.glide:glide:$glide_version"
+    //implementation(libs.glide.glide) //"com.github.bumptech.glide:glide:$glide_version"
     //annotationProcessor "com.github.bumptech.glide:compiler:$glide_version"
     //kapt "com.github.bumptech.glide:compiler:$glide_version"
-    ksp(libs.glide.ksp) //"com.github.bumptech.glide:ksp:$glide_version"
-    implementation(libs.glide.compose) //'com.github.bumptech.glide:compose:1.0.0-alpha.6'
+    //ksp(libs.glide.ksp) //"com.github.bumptech.glide:ksp:$glide_version"
+    //implementation(libs.glide.compose) //'com.github.bumptech.glide:compose:1.0.0-alpha.6'
 
     //implementation 'com.github.skydoves:landscapist-glide:2.0.1'
 

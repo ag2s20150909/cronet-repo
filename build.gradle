@@ -21,7 +21,7 @@ plugins {
     alias(libs.plugins.gradle.download) apply false
     alias(libs.plugins.androidx.benchmark) apply false
     alias(libs.plugins.ksp) apply false
-
+    alias(libs.plugins.kotlin.compose) apply false
 
     //id 'org.jetbrains.kotlin.android' version "$kotlin_version" apply false
     //id "de.undercouch.download" version "5.5.0" apply false

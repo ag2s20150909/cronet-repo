@@ -12,7 +12,7 @@ android {
     namespace 'me.ag2s.cronet'
     defaultConfig {
         minSdk 21
-        targetSdk 33
+        targetSdk 35
 
         aarMetadata {
             minCompileSdk = 29
@@ -63,7 +63,14 @@ dependencies {
 
     implementation(libs.androidx.startup) //"androidx.startup:startup-runtime:1.1.1"
     //Cronet jars
-    api fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    //api fileTree(dir: 'libs', include: ['*.jar', '*.aar'])
+    api files('libs/cronet_api.jar')
+    api files('libs/cronet_impl_common_java.jar')
+    api files('libs/cronet_impl_native_java.jar')
+    api files('libs/cronet_impl_platform_java.jar')
+    api files('libs/cronet_shared_java_fix.jar')
+
+
     //GMS
     api(libs.play.services.cronet) {
         exclude(group: "org.chromium.net")
