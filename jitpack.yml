@@ -4,6 +4,7 @@ install:
   - git gc  --prune=now
   - echo "Running a custom install command"
   - chmod +x gradlew
+  - ./gradlew wrapper --gradle-version=8.12.1
   - ./gradlew downloadCronet
   - ./gradlew clean
   - ./gradlew publish
