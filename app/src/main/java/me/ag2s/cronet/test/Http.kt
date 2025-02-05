@@ -1,6 +1,11 @@
 package me.ag2s.cronet.test
 
 import android.util.Log
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.MessageLengthLimitingLogger
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
@@ -8,6 +13,7 @@ import me.ag2s.cronet.CronetHolder
 import me.ag2s.cronet.DirectExecutor
 import me.ag2s.cronet.okhttp.CronetCoroutineInterceptor
 import me.ag2s.cronet.okhttp.CronetInterceptor
+import me.ag2s.ktor.Cronet
 import okhttp3.ConnectionSpec
 import okhttp3.OkHttpClient
 import org.chromium.base.ThreadUtils
@@ -50,6 +56,24 @@ object Http {
             .build().also {
                 CronetHolder.setExecutor(it.dispatcher.executorService)
             }
+    }
+
+
+
+    val client: HttpClient by lazy {
+        HttpClient(Cronet(cronetEngine)) {
+            expectSuccess = true
+            followRedirects = false
+
+            install(Logging) {
+                logger = MessageLengthLimitingLogger(delegate = object : Logger {
+                    override fun log(message: String) {
+                        Log.v("Ktor", message)
+                    }
+                })
+                level = LogLevel.HEADERS
+            }
+        }
     }
 
 

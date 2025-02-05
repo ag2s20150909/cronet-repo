@@ -18,6 +18,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.InternalAPI
+import io.ktor.utils.io.cancel
+import io.ktor.utils.io.readByteArray
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -91,6 +95,7 @@ class BenchmarkViewModel : ViewModel() {
     }
 
 
+    @OptIn(InternalAPI::class)
     fun test2() {
         viewModelScope.launch(Dispatchers.IO) {
             type.emit(1)
@@ -101,8 +106,12 @@ class BenchmarkViewModel : ViewModel() {
             (1..100).pmap {
                 try {
 
-                    OkhttpUtils.getResponse(url).use {
-                        Log.e("GG",it.peekBody(100).string())}
+                    KtorUtils.getSteam(url).execute {
+                        it.rawContent.readByteArray(100).toString()
+
+                        it.rawContent.cancel()
+
+                    }
 
                 }catch (e:Exception){
                     e.printStackTrace()

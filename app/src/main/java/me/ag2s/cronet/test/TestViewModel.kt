@@ -40,7 +40,7 @@ class TestViewModel : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) {
             if (URLUtil.isNetworkUrl(protocol.value + url.value)) {
                 kotlin.runCatching {
-                    txt.emit(OkhttpUtils.httpGet(protocol.value + url.value))
+                    txt.emit(KtorUtils.get(protocol.value + url.value))
                 }.onFailure {
                     txt.emit(it.stackTraceToString())
                 }

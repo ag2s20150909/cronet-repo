@@ -78,6 +78,7 @@ dependencies {
     //implementation project(path: ':glide')
     implementation project(path: ':okhttp-kt')
     implementation project(path: ':coil')
+    implementation project(path: ':ktor')
 
     implementation(libs.kotlin.std)
     implementation(libs.androidx.documentfile)
@@ -109,6 +110,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     //"androidx.navigation:navigation-compose:$nav_version"
 
+
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.logging.jvm)
 
     api(libs.coil.compose)
     api(libs.coil.network.core)

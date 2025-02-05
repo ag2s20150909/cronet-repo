@@ -82,7 +82,6 @@ dependencies {
     // add in cronet 111
     implementation(libs.protobuf.javalite) //'com.google.protobuf:protobuf-javalite:3.24.2'
 
-
     //testImplementation 'junit:junit:4.13.2'
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

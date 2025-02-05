@@ -72,3 +72,5 @@ include ':okhttp-kt'
 project(':okhttp-kt').projectDir = new File(rootDir, 'library/okhttp-kt')
 include ':coil'
 project(':coil').projectDir = new File(rootDir, 'library/coil')
+include ':ktor'
+project(':ktor').projectDir = new File(rootDir, 'library/ktor')

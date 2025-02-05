@@ -11,18 +11,19 @@ androidx-espresso='3.6.1'
 androidx-junit='1.2.1'
 androidx-startup='1.2.0'
 
-coil = "3.0.4"
+coil = "3.1.0"
 
 okhttp='4.12.0'
-okio='3.9.1'
+okio='3.10.2'
 glide = "4.16.0"
 leakcanary = "2.12"
 protobuf = "4.26.1"
 
 
 
-kotlin= "2.1.0"
-ksp='2.1.0-1.0.29'
+kotlin= "2.1.10"
+ksp='2.1.10-1.0.29'
+ktor = "3.0.3"
 coroutines = "1.10.1"
 androidGradlePlugin = "8.8.0"
 graldeDownload='5.6.0'
@@ -103,6 +104,14 @@ coil-video = { module = "io.coil-kt.coil3:coil-video", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 coil-network-core= { module = "io.coil-kt.coil3:coil-network-core", version.ref = "coil" }
 coil-network-cache-control= { module = "io.coil-kt.coil3:coil-network-cache-control", version.ref = "coil" }
+
+
+ktor-client-core = { group = "io.ktor", name = "ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-client-logging-jvm = { group = "io.ktor", name = "ktor-client-logging-jvm", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { group = "io.ktor", name = "ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-okhttp={ group = "io.ktor", name = "ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-cio={ group = "io.ktor", name = "ktor-client-cio", version.ref = "ktor" }
 
 
 glide-compose = { module = "com.github.bumptech.glide:compose", version = "1.0.0-beta01" }

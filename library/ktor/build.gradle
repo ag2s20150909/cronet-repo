@@ -4,7 +4,7 @@ plugins {
 }
 apply from: "$rootDir/gradle/mvn.gradle"
 android {
-    namespace 'me.ag2s.coil'
+    namespace 'me.ag2s.ktor'
     compileSdk 35
 
     defaultConfig {
@@ -37,16 +37,9 @@ android {
 
 dependencies {
 
-//    implementation libs.androidx.core.ktx
-//    implementation libs.androidx.appcompat
-//    implementation libs.material
     implementation project(path: ':core')
-    implementation(libs.kotlin.std)
-    implementation(libs.bundles.coroutines)
-    implementation(libs.okio)
-    implementation(libs.coil.network.core)
+    implementation(libs.ktor.client.core)
 
-    //implementation 'org.chromium.net:cronet-api:119.6045.31'
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
