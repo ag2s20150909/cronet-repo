@@ -64,7 +64,7 @@ if version_compare $current_cronet_version $lastest_cronet_version; then
     sed -i s/CronetMainVersion=.*/CronetMainVersion=$lastest_cronet_main_version/ $path
     echo "start download latest cronet"
     chmod +x gradlew
-    ./gradlew wrapper --gradle-version=8.12.1
+    ./gradlew wrapper --gradle-version=8.14
     ./gradlew downloadCronet
     ./gradlew publish
     git update-ref -d HEAD
