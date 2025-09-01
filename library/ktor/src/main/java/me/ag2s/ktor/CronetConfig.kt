@@ -7,5 +7,5 @@ import org.chromium.net.CronetEngine
 class CronetConfig(val preconfigured: CronetEngine): HttpClientEngineConfig() {
 
     var followRedirects: Boolean = true
-    var responseBufferSize: Int = 1024
+    var responseBufferSize: Int = DEFAULT_BUFFER_SIZE
 }

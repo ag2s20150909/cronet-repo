@@ -135,17 +135,17 @@ tasks.register('downloadCfgs', Download) {
     }
 }
 
-tasks.register("fixJar",Zip){
-
-    File srcFile = file('libs/cronet_shared_java.jar')
-
-    println(srcFile.toString())
-    from zipTree(srcFile).matching {
-        exclude 'org/chromium/base/metrics/ScopedSysTraceEvent.class'
-    }
-    destinationDirectory = file("libs/")
-    archiveFileName="cronet_shared_java_fix.jar"
-}
+//tasks.register("fixJar",Zip){
+//
+//    File srcFile = file('libs/cronet_shared_java.jar')
+//
+//    println(srcFile.toString())
+//    from zipTree(srcFile).matching {
+//        exclude 'org/chromium/base/metrics/ScopedSysTraceEvent.class'
+//    }
+//    destinationDirectory = file("libs/")
+//    archiveFileName="cronet_shared_java_fix.jar"
+//}
 
 
 //
@@ -154,7 +154,7 @@ tasks.register('copyJars', Copy) {
     //finalizedBy createMyCronetEngine
     from libPath
     into "../../cronet/" + CronetVersion + "/libs"
-    finalizedBy fixJar
+    //finalizedBy fixJar
 }
 tasks.register('downloadARM64', Download) {
     src BASE_PATH + "libs/arm64-v8a/libcronet." + CronetVersion + ".so"

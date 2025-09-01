@@ -2,7 +2,7 @@
 
 androidx-activity = "1.10.0"
 androidx-core='1.15.0'
-androidx-compose-bom = "2025.01.01"
+androidx-compose-bom = "2025.08.00"
 androidx-compose-compiler="1.5.15"
 androidx-glance = "1.1.1"
 androidx-navigation = "2.8.6"
@@ -21,11 +21,11 @@ protobuf = "4.26.1"
 
 
 
-kotlin= "2.1.10"
-ksp='2.1.10-1.0.29'
-ktor = "3.0.3"
-coroutines = "1.10.1"
-androidGradlePlugin = "8.8.0"
+kotlin= "2.2.10"
+ksp='2.2.10-2.0.2'
+ktor = "3.2.3"
+coroutines = "1.10.2"
+androidGradlePlugin = "8.12.2"
 graldeDownload='5.6.0'
 documentfile = "1.0.1"
 appcompat = "1.7.0"

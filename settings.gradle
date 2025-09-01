@@ -65,8 +65,8 @@ project(':native').projectDir= new File(rootDir, 'library/native')
 include ':okhttp'
 project(':okhttp').projectDir = new File(rootDir, 'library/okhttp')
 
-include ':glide'
-project(':glide').projectDir = new File(rootDir, 'library/glide')
+//include ':glide'
+//project(':glide').projectDir = new File(rootDir, 'library/glide')
 
 include ':okhttp-kt'
 project(':okhttp-kt').projectDir = new File(rootDir, 'library/okhttp-kt')

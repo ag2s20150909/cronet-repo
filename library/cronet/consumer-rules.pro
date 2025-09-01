@@ -107,16 +107,16 @@
 # Use assumevalues in addition to assumenosideeffects block because Google3 proguard cannot parse
 # assumenosideeffects blocks which overwrite return value.
 -assumevalues class ** {
-  @org.chromium.build.annotations.AssumeNonNull *** *(...) return _NONNULL_;
+  @org.chromium.build.annotations.OptimizeAsNonNull *** *(...) return _NONNULL_;
 }
 -assumenosideeffects class ** {
-  @org.chromium.build.annotations.AssumeNonNull *** *(...);
+  @org.chromium.build.annotations.OptimizeAsNonNull *** *(...);
 }
 -assumevalues class ** {
-  @org.chromium.build.annotations.AssumeNonNull *** * return _NONNULL_;
+  @org.chromium.build.annotations.OptimizeAsNonNull *** * return _NONNULL_;
 }
 -assumenosideeffects class ** {
-  @org.chromium.build.annotations.AssumeNonNull *** *;
+  @org.chromium.build.annotations.OptimizeAsNonNull *** *;
 }
 # -------- Config Path: components/cronet/android/cronet_impl_common_proguard.cfg --------
 # Proguard config for apps that depend on cronet_impl_common_java.jar.
@@ -155,7 +155,6 @@
 -dontwarn org.chromium.base.WindowCallbackWrapper
 
 # Generated for chrome apk and not included into cronet.
--dontwarn org.chromium.base.multidex.ChromiumMultiDexInstaller
 -dontwarn org.chromium.base.library_loader.LibraryLoader
 -dontwarn org.chromium.base.SysUtils
 -dontwarn org.chromium.build.NativeLibraries
@@ -166,10 +165,6 @@
 -dontnote org.chromium.net.UrlRequest$ResponseHeadersMap
 # https://android.googlesource.com/platform/sdk/+/marshmallow-mr1-release/files/proguard-android.txt#54
 -dontwarn android.support.**
-
-# This class should be explicitly kept to avoid failure if
-# class/merging/horizontal proguard optimization is enabled.
--keep class org.chromium.base.CollectionUtil
 
 # Skip protobuf runtime check for isOnAndroidDevice().
 # A nice-to-have optimization shamelessly stolen from //third_party/protobuf/java/lite/proguard.pgcfg.
@@ -195,6 +190,10 @@
 -keepclassmembers class org.chromium.** extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }
+
+# Part of the Android System SDK; false positive when pointing ProGuard to the
+# public SDK.
+-dontwarn android.os.SystemProperties
 # -------- Config Path: components/cronet/android/cronet_shared_proguard.cfg --------
 # Proguard config for apps that depend on cronet_shared_java.jar (which should
 # be all apps that depend on any part of Cronet)
@@ -246,6 +245,8 @@
 -keepclasseswithmembers class !cr_allowunused,**J.N {
   public long *_HASH;
 }
+# -------- Config Path: obj/third_party/androidx/androidx_annotation_annotation_experimental_java/proguard.txt --------
+# Intentionally empty proguard rules to indicate this library is safe to shrink
 # Proguard config for apps that depend on cronet_impl_platform_java.jar.
 
 # This constructor is called using the reflection from Cronet API (cronet_api.jar).

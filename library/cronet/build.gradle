@@ -11,8 +11,8 @@ android {
     buildToolsVersion = build_tool_version
     namespace 'me.ag2s.cronet'
     defaultConfig {
-        minSdk 21
-        targetSdk 35
+        minSdk 23
+        targetSdk 36
 
         aarMetadata {
             minCompileSdk = 29
@@ -68,7 +68,7 @@ dependencies {
     api files('libs/cronet_impl_common_java.jar')
     api files('libs/cronet_impl_native_java.jar')
     api files('libs/cronet_impl_platform_java.jar')
-    api files('libs/cronet_shared_java_fix.jar')
+    api files('libs/cronet_shared_java.jar')
 
 
     //GMS

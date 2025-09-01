@@ -163,7 +163,7 @@ object Http {
     }
 
 
-    fun source2String(@NetworkQualityObservationSource source: Int): String {
+    fun source2String( source: Int): String {
         return when (source) {
             NetworkQualityObservationSource.HTTP -> {
                 "HTTP"

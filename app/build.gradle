@@ -18,8 +18,8 @@ android {
     namespace 'me.ag2s.cronet.test'
     defaultConfig {
         applicationId "me.ag2s.cronet.test"
-        minSdk 21
-        targetSdk 34
+        minSdk 23
+        targetSdk 36
         versionCode 1
         versionName "1.0"
 

@@ -22,6 +22,7 @@ import io.ktor.utils.io.writer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.asExecutor
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -41,11 +42,9 @@ private val METHODS_WITHOUT_BODY = listOf(HttpMethod.Get, HttpMethod.Head)
 
 private val ENCODINGS_HANDLED_BY_CRONET = setOf("br", "deflate", "gzip", "x-gzip")
 
-public const val CONTENT_LENGTH_HEADER_NAME = "Content-Length";
-public const val CONTENT_ENCODING_HEADER_NAME = "Content-Encoding";
 
 @OptIn(InternalAPI::class)
-public class CronetClientEngine(override val config: CronetConfig) :
+class CronetClientEngine(override val config: CronetConfig) :
     HttpClientEngineBase("ktor-cronet") {
     override val supportedCapabilities = hashSetOf(HttpTimeoutCapability, SSECapability)
 
@@ -66,6 +65,8 @@ public class CronetClientEngine(override val config: CronetConfig) :
         val requestTime = GMTDate()
 
         val pipe = Pipe.open()
+
+        var job:Job?=null
 
 
         // All chunked response is written to this.
@@ -103,12 +104,12 @@ public class CronetClientEngine(override val config: CronetConfig) :
                 }
 
                 override fun onResponseStarted(request: UrlRequest, info: UrlResponseInfo) {
-                    val buffer = ByteBuffer.allocate(config.responseBufferSize)
+
                     request.read(ByteBuffer.allocateDirect(config.responseBufferSize))
 
-                    CoroutineScope(callContext).launch {
-
-                        val response = writer(Dispatchers.IO) {
+                    job=CoroutineScope(callContext).launch {
+                        val buffer = ByteBuffer.allocate(config.responseBufferSize)
+                        val response = writer {
                             while (sourceChannel.isOpen) {
                                 if (!channel.isClosedForWrite) {
                                     buffer.clear()
@@ -199,6 +200,7 @@ public class CronetClientEngine(override val config: CronetConfig) :
             }.build()
 
             continuation.invokeOnCancellation {
+                job?.cancel()
                 request.cancel()
             }
 
@@ -219,10 +221,10 @@ private fun UrlResponseInfo.toHttpResponseData(
         requestTime = requestTime,
         headers = Headers.build {
 
-            var result: Boolean = keepEncodingAffectedHeaders()
+            val result: Boolean = keepEncodingAffectedHeaders()
             allHeaders.forEach { (key, value) ->
-                if (key == CONTENT_LENGTH_HEADER_NAME && result) {
-                    append(CONTENT_LENGTH_HEADER_NAME, "-1")
+                if (key == HttpHeaders.ContentLength && result) {
+                    append(HttpHeaders.ContentLength, "-1")
                 } else {
                     appendAll(key, value)
                 }
@@ -242,7 +244,7 @@ private fun UrlResponseInfo.toHttpResponseData(
 }
 
 private fun UrlResponseInfo.keepEncodingAffectedHeaders(): Boolean {
-    allHeaders.get(CONTENT_ENCODING_HEADER_NAME)?.forEach {
+    allHeaders[HttpHeaders.ContentEncoding]?.forEach {
         if (ENCODINGS_HANDLED_BY_CRONET.contains(it)) {
             return true
         }
