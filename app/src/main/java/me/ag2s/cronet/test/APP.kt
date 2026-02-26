@@ -19,7 +19,6 @@ class APP : Application(),SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
         appCtx = this
-        //CronetLoader.getInstance().preDownload()
     }
 
     override fun attachBaseContext(base: Context?) {

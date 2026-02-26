@@ -22,10 +22,10 @@ protobuf = "4.26.1"
 
 
 kotlin= "2.2.10"
-ksp='2.2.10-2.0.2'
+ksp= "2.3.2"
 ktor = "3.2.3"
 coroutines = "1.10.2"
-androidGradlePlugin = "8.12.2"
+androidGradlePlugin = "9.0.1"
 graldeDownload='5.6.0'
 documentfile = "1.0.1"
 appcompat = "1.7.0"

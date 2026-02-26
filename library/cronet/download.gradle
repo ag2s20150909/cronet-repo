@@ -73,7 +73,7 @@ tasks.register('downloadJar', Download) {
             BASE_PATH + "cronet_impl_common_java.jar",
             BASE_PATH + "cronet_impl_native_java.jar",
             BASE_PATH + "cronet_impl_platform_java.jar",
-            //BASE_PATH+"httpengine_native_provider_java.jar",
+            BASE_PATH+"httpengine_native_provider_java.jar",
     ])
     dest libPath
     overwrite true
@@ -86,7 +86,7 @@ tasks.register('downloadSourceJar', Download) {
             BASE_PATH + "cronet_impl_common_java-src.jar",
             BASE_PATH + "cronet_impl_native_java-src.jar",
             BASE_PATH + "cronet_impl_platform_java-src.jar",
-            //BASE_PATH+"httpengine_native_provider_java-src.jar",
+            BASE_PATH+"httpengine_native_provider_java-src.jar",
     ])
     dest sourcePath
     overwrite true
@@ -99,7 +99,7 @@ tasks.register('downloadCfgs', Download) {
             BASE_PATH + "cronet_impl_platform_proguard.cfg",
             BASE_PATH + "cronet_shared_proguard.cfg",
             BASE_PATH + "httpengine_native_provider_proguard.cfg",
-            //BASE_PATH+"httpengine_native_provider_java-src.jar",
+            BASE_PATH+"httpengine_native_provider_java-src.jar",
     ])
     dest sourcePath
     overwrite true

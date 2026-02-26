@@ -270,9 +270,7 @@ public class CronetPreloader {
         //安装GMS的预加载
         if (prefSo) {
             downloadSo();
-        }
-
-        if (isGMS) {
+        }else if (isGMS) {
             CronetProviderInstaller.installProvider(mContext);
         } else {
             downloadSo();

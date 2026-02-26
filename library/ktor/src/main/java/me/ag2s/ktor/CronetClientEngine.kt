@@ -118,9 +118,12 @@ class CronetClientEngine(override val config: CronetConfig) :
                                     if (bytesRead < 0) {
                                         sourceChannel.close()
                                         channel.flushAndClose()
+                                        break
+                                    }else{
+                                        buffer.flip()
+                                        channel.writeByteBuffer(buffer)
                                     }
-                                    buffer.flip()
-                                    channel.writeByteBuffer(buffer)
+
                                 } else {
                                     break
                                 }
