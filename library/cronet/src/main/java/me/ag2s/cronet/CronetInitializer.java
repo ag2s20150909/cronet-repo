@@ -50,9 +50,7 @@ public class CronetInitializer implements Initializer<Void> {
     public Void create(@NonNull Context context) {
         mContext = context;
         CronetPreloader.getInstance().preDownload();
-        if(BuildConfig.DEBUG){
-            ThreadUtils.setThreadAssertsDisabledForTesting(true);
-        }
+        
 
 
 
