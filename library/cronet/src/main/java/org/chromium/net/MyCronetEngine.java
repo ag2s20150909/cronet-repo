@@ -23,9 +23,8 @@ import java.util.concurrent.Executor;
  * experimental features. Experimental features may be deprecated in the future. Use at your own
  * risk.
  *
- * <p>{@hide since this class exposes experimental features that should be hidden.}
- *
  *  scheduled for deletion, don't use in new code.
+ * @hide
  */
 
 public abstract class MyCronetEngine extends CronetEngine {
@@ -89,6 +88,8 @@ public abstract class MyCronetEngine extends CronetEngine {
      * A version of {@link CronetEngine.Builder} that exposes experimental features. Instances of
      * this class are not meant for general use, but instead only to access experimental features.
      * Experimental features may be deprecated in the future. Use at your own risk.
+     *
+     * @hide
      */
     public static class Builder extends CronetEngine.Builder {
         /**
@@ -109,7 +110,7 @@ public abstract class MyCronetEngine extends CronetEngine {
          * implementation.
          *
          * @param builderDelegate delegate that provides the actual implementation.
-         *     <p>{@hide}
+         * @hide
          */
         public Builder(ICronetEngineBuilder builderDelegate) {
             super(builderDelegate);

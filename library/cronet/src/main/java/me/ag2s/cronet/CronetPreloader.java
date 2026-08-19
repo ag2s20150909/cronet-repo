@@ -80,7 +80,7 @@ public class CronetPreloader {
         CPU_ABI=getCpuAbi(mContext);
 
         try {
-            ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
+ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
             prefSo = appInfo.metaData.getBoolean(PREF_CRONET_SO, false);
         } catch (PackageManager.NameNotFoundException e) {
             //prefSo=false;
@@ -244,22 +244,21 @@ public class CronetPreloader {
 
     public boolean checkApk(){
         try {
-            ZipFile zf=new ZipFile(mContext.getPackageResourcePath());
-            Enumeration<? extends ZipEntry> zes = zf.entries();
-            while (zes.hasMoreElements()) {
-                ZipEntry ze = zes.nextElement();
-                if(ze.getName().contains("libcronet")){
-                    return true;
+            //使用 try-with-resources 确保资源被正确关闭
+            try (ZipFile zf = new ZipFile(mContext.getPackageResourcePath())) {
+                Enumeration<? extends ZipEntry> zes = zf.entries();
+                while (zes.hasMoreElements()) {
+                    ZipEntry ze = zes.nextElement();
+                    if(ze.getName().contains("libcronet")){
+                        return true;
+                    }
                 }
-
             }
-
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
         return false;
-
     }
 
     /**

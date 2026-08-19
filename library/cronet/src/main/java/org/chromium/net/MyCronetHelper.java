@@ -128,7 +128,7 @@ public class MyCronetHelper {
         // Exclude disabled providers from the list.
         for (Iterator<CronetProvider.ProviderInfo> i = providers.iterator(); i.hasNext(); ) {
             CronetProvider.ProviderInfo providerInfo = i.next();
-            if (!providerInfo.provider.isEnabled()|| (providerInfo.provider.getClass() == NativeCronetProvider.class && !cronetLoader.checkCronetNative())) {
+            if ((!providerInfo.provider.isEnabled()&&providerInfo.provider.getClass() != NativeCronetProvider.class)|| (providerInfo.provider.getClass() == NativeCronetProvider.class && !cronetLoader.checkCronetNative())) {
                 i.remove();
                 Log.e(TAG,"remove:"+providerInfo.provider.getName());
             }

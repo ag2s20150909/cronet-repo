@@ -6,8 +6,6 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.startup.Initializer;
 
-import org.chromium.base.ThreadUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,7 +49,7 @@ public class CronetInitializer implements Initializer<Void> {
         mContext = context;
         CronetPreloader.getInstance().preDownload();
         if(BuildConfig.DEBUG){
-            ThreadUtils.setThreadAssertsDisabledForTesting(true);
+            //ThreadUtils.setThreadAssertsDisabledForTesting(true);
         }
 
 
