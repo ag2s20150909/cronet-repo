@@ -1,7 +1,6 @@
 package me.ag2s.cronet;
 
 
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
@@ -318,6 +317,7 @@ public class CronetPreloader {
         try {
 
             // 反射获取 sLibAlreadyLoaded 字段
+            @SuppressLint("VisibleForTests")
             Field sLibAlreadyLoadedField = org.chromium.net.impl.CronetLibraryLoader.class.getDeclaredField("sLibAlreadyLoaded");
             sLibAlreadyLoadedField.setAccessible(true);
 
@@ -395,11 +395,16 @@ public class CronetPreloader {
             connection.setConnectTimeout(15000);
             connection.setReadTimeout(15000);
 
+            File parent = destFile.getParentFile();
+            if (parent != null && !parent.exists()) {
+                parent.mkdirs();
+            }
+
             // try-with-resources 自动关流
             try (InputStream inputStream = connection.getInputStream();
+
                  OutputStream outputStream = new FileOutputStream(destFile)) {
 
-                destFile.getParentFile().mkdirs();
                 byte[] buffer = new byte[8192];
                 int read;
                 while ((read = inputStream.read(buffer)) != -1) {
