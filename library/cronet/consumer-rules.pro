@@ -245,3 +245,4 @@
 -keepclassmembers class * extends org.chromium.net.internal.com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }
+-keepclassmembers class org.chromium.net.impl.CronetLibraryLoader { private static * sLibAlreadyLoaded; }

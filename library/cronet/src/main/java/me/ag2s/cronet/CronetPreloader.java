@@ -317,12 +317,8 @@ public class CronetPreloader {
     public static void bypassCronetLibraryLoading() {
         try {
 
-
-            // 获取 CronetLibraryLoader 类
-            Class<?> loaderClass = Class.forName("org.chromium.net.impl.CronetLibraryLoader");
-
             // 反射获取 sLibAlreadyLoaded 字段
-            Field sLibAlreadyLoadedField = loaderClass.getDeclaredField("sLibAlreadyLoaded");
+            Field sLibAlreadyLoadedField = org.chromium.net.impl.CronetLibraryLoader.class.getDeclaredField("sLibAlreadyLoaded");
             sLibAlreadyLoadedField.setAccessible(true);
 
             // 将其强制设置为 true，欺骗 Cronet 库已加载

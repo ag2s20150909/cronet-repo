@@ -20,4 +20,5 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--keep class org.chromium.net.impl.CronetLibraryLoader
+-keepclassmembers class org.chromium.net.impl.CronetLibraryLoader { private static * sLibAlreadyLoaded; }
+
