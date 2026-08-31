@@ -127,7 +127,7 @@ tasks.register('downloadCfgs', Download) {
                 pw.println(line);
             }
         }
-        pw.println("keep class org.chromium.net.impl.CronetLibraryLoader")
+        pw.println("-keep class org.chromium.net.impl.CronetLibraryLoader")
         pw.flush();
         pw.close();
 
