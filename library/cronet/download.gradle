@@ -127,6 +127,7 @@ tasks.register('downloadCfgs', Download) {
                 pw.println(line);
             }
         }
+        pw.println("keep class org.chromium.net.impl.CronetLibraryLoader")
         pw.flush();
         pw.close();
 
@@ -135,17 +136,7 @@ tasks.register('downloadCfgs', Download) {
     }
 }
 
-//tasks.register("fixJar",Zip){
-//
-//    File srcFile = file('libs/cronet_shared_java.jar')
-//
-//    println(srcFile.toString())
-//    from zipTree(srcFile).matching {
-//        exclude 'org/chromium/base/metrics/ScopedSysTraceEvent.class'
-//    }
-//    destinationDirectory = file("libs/")
-//    archiveFileName="cronet_shared_java_fix.jar"
-//}
+
 
 
 //
@@ -268,35 +259,7 @@ tasks.register('copySo', Copy) {
     }
 }
 
-///**
-// * 自动生成MyCronetEngine
-// */
-//tasks.register('createMyCronetEngine') {
-//    //dependsOn downloadSourceJar
-//    def inName = "org/chromium/net/ExperimentalCronetEngine.java"
-//    def zipfile = new ZipFile(sourcePath + "/cronet_api-src.jar")
-//
-//    inputs.file(sourcePath + "/cronet_api-src.jar")
-//    outputs.file(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
-//    def fileWriter = new FileWriter(projectDir.toString() + "/src/main/java/org/chromium/net/MyCronetEngine.java")
-//    BufferedReader br = new BufferedReader(new InputStreamReader(zipfile.getInputStream(zipfile.getEntry(inName))));
-//    def line = null;
-//    while ((line = br.readLine()) != null) {
-//        line = line.replace("super(context);", "super(MyCronetHelper.createBuilderDelegate(context));")
-//        line = line.replace("@deprecated", "")
-//        line = line.replace("@Deprecated", "")
-//        line = line.replace("ExperimentalCronetEngine extends CronetEngine", "MyCronetEngine extends CronetEngine")
-//        fileWriter.write(line)
-//        fileWriter.write("\r\n")
-//        //System.out.println(line)
-//    }
-//    fileWriter.flush()
-//
-//    br.close();
-//    fileWriter.close()
-//
-//
-//}
+
 
 tasks.register('downloadCronet') {
 //    tasks.register('_cleanOld', Delete) {

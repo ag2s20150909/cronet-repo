@@ -303,6 +303,7 @@ public class CronetPreloader {
     private void loadSo(File file) {
         if (file == null || !file.exists()) return;
         try {
+            bypassCronetLibraryLoading();
             System.load(file.getAbsolutePath());
             ins = CronetState.Native;
             Log.i(TAG, "Successfully loaded so from: " + file.getAbsolutePath());
@@ -310,6 +311,33 @@ public class CronetPreloader {
             Log.e(TAG, "Failed to load cronet so, file might be corrupted.", e);
             deleteFileSafely(file); // 损坏的文件直接删除
             ins = CronetState.Java; // 回退到 Java 状态
+        }
+    }
+
+    public static void bypassCronetLibraryLoading() {
+        try {
+
+
+            // 获取 CronetLibraryLoader 类
+            Class<?> loaderClass = Class.forName("org.chromium.net.impl.CronetLibraryLoader");
+
+            // 反射获取 sLibAlreadyLoaded 字段
+            Field sLibAlreadyLoadedField = loaderClass.getDeclaredField("sLibAlreadyLoaded");
+            sLibAlreadyLoadedField.setAccessible(true);
+
+            // 将其强制设置为 true，欺骗 Cronet 库已加载
+            sLibAlreadyLoadedField.set(null, true);
+
+            System.out.println("成功通过反射绕过 CronetLibraryLoader 的默认加载逻辑");
+
+            /*
+             * ⚠️ 注意：在执行此代码前，请确保你已经手动加载了 SO 库，例如：
+             * ReLinker.loadLibrary(context, "cronet");
+             * 或 System.load("/data/data/your.package/app_so/libcronet.so");
+             */
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
