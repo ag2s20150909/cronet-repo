@@ -75,6 +75,7 @@ dependencies {
 
     implementation project(path: ':okhttp')
     implementation project(path: ':core')
+    //implementation project(path: ':native')
     //implementation project(path: ':glide')
     implementation project(path: ':okhttp-kt')
     implementation project(path: ':coil')

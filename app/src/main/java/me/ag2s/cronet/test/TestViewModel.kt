@@ -42,6 +42,7 @@ class TestViewModel : ViewModel() {
                 kotlin.runCatching {
                     txt.emit(KtorUtils.get(protocol.value + url.value))
                 }.onFailure {
+                    it.printStackTrace()
                     txt.emit(it.stackTraceToString())
                 }
 

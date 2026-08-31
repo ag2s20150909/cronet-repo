@@ -54,7 +54,7 @@ public class MyCronetHelper {
             var builderDelegate = providerInfo.provider.createBuilder().mBuilderDelegate;
 
             if (providerInfo.provider.getClass() == NativeCronetProvider.class && cronetLoader.checkCronetNative()) {
-                builderDelegate.setLibraryLoader(cronetLoader.getLibraryLoader());
+                cronetLoader.preLoadSo();
             }
             var implCronetVersion = getImplCronetVersion(builderDelegate);
             if (implCronetVersion != null) {
@@ -69,18 +69,6 @@ public class MyCronetHelper {
             logger.logCronetEngineBuilderInitializedInfo(logInfo);
         }
 
-//        List<CronetProvider> providers = new ArrayList<>(CronetProvider.getAllProviders(context));
-//
-//        CronetPreloader cronetLoader = CronetPreloader.getInstance();
-//
-//        CronetProvider provider = getEnabledCronetProviders(context, providers, cronetLoader).get(0);
-//
-//        Log.e(TAG, String.format("Using '%s' provider for creating CronetEngine.Builder.", provider));
-//        ICronetEngineBuilder iCronetEngineBuilder = provider.createBuilder().mBuilderDelegate;
-//        if (provider.getClass() == NativeCronetProvider.class && cronetLoader.checkCronetNative()) {
-//            iCronetEngineBuilder.setLibraryLoader(cronetLoader.getLibraryLoader());
-//        }
-//        return iCronetEngineBuilder;
     }
 
 

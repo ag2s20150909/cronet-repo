@@ -1,10 +1,11 @@
 package me.ag2s.cronet;
 
+
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
@@ -14,7 +15,6 @@ import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.net.CronetProviderInstaller;
 import com.huawei.hms.hquic.HQUICManager;
 
-import org.chromium.net.CronetEngine;
 import org.chromium.net.impl.ImplVersion;
 import org.json.JSONObject;
 
@@ -41,86 +41,78 @@ import java.util.zip.ZipFile;
 
 public class CronetPreloader {
     public static final String PREF_CRONET_SO = "prefCronetSo";
+    private static final String TAG = "CronetLoader";
+
     /**
      * 打包时是否包含Cronet so
-     * Whether the aar package include cronet so when package,
      */
     public final boolean includeCronetSo = BuildConfig.includeCronetSo;
-    public final boolean includeCronetApkSo;
+    // 改为非 final，支持延迟初始化以防构造函数阻塞主线程
+    public boolean includeCronetApkSo;
 
     private final Context mContext;
     private final String soName = "libcronet." + ImplVersion.getCronetVersion() + ".so";
     private final String soUrl;
-    private final File soFile;
+    public final File soFile;
     private final File downloadFile;
     private final File parentDir;
     private final String CPU_ABI;
-    private final String md5;
-    private final JSONObject json;
-    /**
-     * 手机是否安装GSM
-     */
+
+    // 延迟加载字段
+    private String md5;
+    private JSONObject json;
+    private boolean isInitialized = false;
 
     public final boolean isGMS;
-    /**
-     * 手机是否安装HMS
-     */
     public final boolean isHMS;
-    /**
-     * 优先下载so
-     */
-    public  boolean prefSo=false;
-    /**
-     * 缓存是否安装成功的结果
-     */
+    public boolean prefSo = false;
+
     private volatile CronetState ins = CronetState.Java;
 
-    CronetPreloader(){
+    // 改为实例变量，更符合单例面向对象设计
+    private final AtomicBoolean isDownloading = new AtomicBoolean(false);
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    CronetPreloader() {
         mContext = CronetInitializer.getCtx();
-        CPU_ABI=getCpuAbi(mContext);
+        CPU_ABI = getCpuAbi(mContext);
 
         try {
-ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
-            prefSo = appInfo.metaData.getBoolean(PREF_CRONET_SO, false);
+            ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mContext.getPackageName(), PackageManager.GET_META_DATA);
+            if (appInfo.metaData != null) {
+                prefSo = appInfo.metaData.getBoolean(PREF_CRONET_SO, false);
+            }
         } catch (PackageManager.NameNotFoundException e) {
-            //prefSo=false;
+            Log.e(TAG, "Get meta data failed", e);
         }
+
         soUrl = "https://storage.googleapis.com/chromium-cronet/android/"
                 + ImplVersion.getCronetVersion() + "/Release/cronet/libs/"
                 + CPU_ABI + "/" + soName;
 
         parentDir = mContext.getDir("cronet", Context.MODE_PRIVATE);
         soFile = new File(parentDir, soName);
+        downloadFile = new File(mContext.getCacheDir() + "/so_download", soName);
 
         isGMS = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(mContext) == ConnectionResult.SUCCESS;
         isHMS = isHW();
 
+        Log.i(TAG, "Init: GMS=" + isGMS + ", HMS=" + isHMS + ", ABI=" + CPU_ABI);
+    }
 
-        downloadFile = new File(mContext.getCacheDir() + "/so_download", soName);
-
-        includeCronetApkSo=checkApk();
+    /**
+     * 确保耗时的 I/O 操作（读 Json、检查 APK）在后台或首次使用时执行，防止 ANR
+     */
+    private synchronized void ensureInitialized() {
+        if (isInitialized) return;
 
         json = initJson(mContext);
         md5 = getMd5(CPU_ABI);
-        Log.e(TAG, "isGMS:" + isGMS);
-        Log.e(TAG, "isHMS:" + isHMS);
-        Log.e(TAG, "prefSo:" + prefSo);
-        Log.e(TAG, "ABI:" + CPU_ABI);
-        Log.e(TAG, "includeCronetSo:" + includeCronetSo);
-        Log.e(TAG, "includeCronetApkSo:" + includeCronetApkSo);
-        Log.e(TAG, "md5:" + json);
-        Log.e(TAG, "soName+:" + soName);
-        Log.e(TAG, "destSuccessFile:" + soFile);
-        Log.e(TAG, "tempFile:" + downloadFile);
-        Log.e(TAG, "soUrl:" + soUrl);
-        Log.e(TAG, "md5:" + md5);
+        includeCronetApkSo = checkApk();
+        isInitialized = true;
 
-
+        Log.i(TAG, "Initialized: includeCronetApkSo=" + includeCronetApkSo + ", md5=" + md5);
     }
-
-
-    //private final SharedPreferences preferences;
-    private static final String TAG = "CronetLoader";
 
     public static CronetPreloader getInstance() {
         return CronetPreloaderHolder.instance;
@@ -129,67 +121,66 @@ ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mConte
     /**
      * 下载并拷贝文件
      */
-    private static synchronized void download(final String url, final String md5, final File downloadTempFile, final File destSuccessFile) {
-        if (download.get()) {
+    private void download(final String url, final String md5, final File downloadTempFile, final File destSuccessFile) {
+        // 使用 CAS 保证原子性，防止并发下载
+        if (!isDownloading.compareAndSet(false, true)) {
+            Log.w(TAG, "Download task is already running.");
             return;
         }
-        download.set(true);
-        executor.execute(() -> {
-            boolean result = downloadFileIfNotExist(url, downloadTempFile);
-            Log.e(TAG, "download result:" + result);
-            //文件md5再次校验
-            String fileMD5 = getFileMD5(downloadTempFile);
-            Log.e(TAG, "download md5:" + fileMD5);
-            Log.e(TAG, "md5:" + md5);
-            if (md5 != null && !md5.equalsIgnoreCase(fileMD5)) {
-                boolean delete = downloadTempFile.delete();
-                if (!delete) {
-                    downloadTempFile.deleteOnExit();
-                }
-                download.set(false);
-                return;
-            }
-            Log.e(TAG, "download success, copy to " + destSuccessFile);
-            //下载成功拷贝文件
-            copyFile(downloadTempFile, destSuccessFile);
-            //文件变动后重新计算MD5
-            CronetPreloaderHolder.instance.ins = CronetState.Native;
-            File parentFile = downloadTempFile.getParentFile();
-            deleteHistoryFile(parentFile, null);
-        });
 
+        executor.execute(() -> {
+            try {
+                boolean result = downloadFileIfNotExist(url, downloadTempFile);
+                Log.i(TAG, "download result: " + result);
+
+                if (!result) return;
+
+                // 文件 MD5 再次校验
+                String fileMD5 = getFileMD5(downloadTempFile);
+                if (md5 != null && !md5.equalsIgnoreCase(fileMD5)) {
+                    Log.e(TAG, "MD5 mismatch! Expected: " + md5 + ", Got: " + fileMD5);
+                    deleteFileSafely(downloadTempFile);
+                    return;
+                }
+
+                Log.i(TAG, "download success, copy to " + destSuccessFile);
+                copyFile(downloadTempFile, destSuccessFile);
+
+                // 下载拷贝成功后尝试加载
+                loadSo(destSuccessFile);
+
+                // 清理下载临时目录的历史文件
+                File parentFile = downloadTempFile.getParentFile();
+                if (parentFile != null) {
+                    deleteHistoryFile(parentFile, null);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Download process error", e);
+            } finally {
+                // 【关键修复】无论成功失败，必须重置标志位，否则后续永远无法下载
+                isDownloading.set(false);
+            }
+        });
     }
 
-    /**
-     * 判断是否需要下载Cronet
-     * Judge whether cronet needs to be downloaded
-     *
-     * @return
-     */
-
     private boolean need() {
-        return !(isGMS || includeCronetSo||includeCronetApkSo);
+        return !(isGMS || includeCronetSo || includeCronetApkSo);
     }
 
     private JSONObject initJson(Context context) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try {
-            //获取assets资源管理器
-            AssetManager assetManager = context.getAssets();
-            //通过管理器打开文件并读取
-            BufferedReader bf = new BufferedReader(new InputStreamReader(
-                    assetManager.open("cronet.json")));
+        // 使用 try-with-resources 防止流泄露
+        try (InputStream is = context.getAssets().open("cronet.json");
+             BufferedReader bf = new BufferedReader(new InputStreamReader(is))) {
+            StringBuilder stringBuilder = new StringBuilder();
             String line;
             while ((line = bf.readLine()) != null) {
                 stringBuilder.append(line);
             }
             return new JSONObject(stringBuilder.toString());
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.e(TAG, "initJson failed", e);
             return null;
         }
-
-
     }
 
     public static boolean isHW() {
@@ -197,443 +188,258 @@ ApplicationInfo appInfo = mContext.getPackageManager().getApplicationInfo(mConte
         return "huawei".equalsIgnoreCase(manufacturer);
     }
 
-    /**
-     * 判断Cronet是否正确安装
-     *
-     * @return true or false
-     */
     public boolean isJavaImplement() {
         ins = getInstallType();
         return ins.equals(CronetState.Java);
-
     }
 
-    /**
-     * 检测Cronet So 是否存在
-     *
-     * @return boolean
-     */
     public boolean checkCronetNative() {
-        if(includeCronetSo||includeCronetApkSo){
+        ensureInitialized();
+        if (includeCronetSo || includeCronetApkSo) {
             return true;
         }
         if (md5 == null || md5.length() != 32 || !soFile.exists()) {
-            Log.e(TAG,"so not found");
+            Log.w(TAG, "so not found or md5 invalid");
             return false;
         }
-        String soMd5=getFileMD5(soFile);
-        Log.e(TAG,"so md5\n"+md5+"\n"+soMd5);
-        return md5.equals(soMd5);
+        String soMd5 = getFileMD5(soFile);
+        return md5.equalsIgnoreCase(soMd5);
     }
 
     public CronetState getInstallType() {
-
         if (!ins.equals(CronetState.Java)) {
             return ins;
         }
-        if (includeCronetSo||includeCronetApkSo){
-            ins=CronetState.Native;
-        }else if (isGMS) {
+        ensureInitialized();
+
+        if (includeCronetSo || includeCronetApkSo) {
+            ins = CronetState.Native;
+        } else if (isGMS) {
             ins = CronetProviderInstaller.isInstalled() ? CronetState.GMS : CronetState.Java;
         } else {
             ins = checkCronetNative() ? CronetState.Native : CronetState.Java;
         }
         return ins;
-
     }
 
-    public boolean checkApk(){
-        try {
-            //使用 try-with-resources 确保资源被正确关闭
-            try (ZipFile zf = new ZipFile(mContext.getPackageResourcePath())) {
-                Enumeration<? extends ZipEntry> zes = zf.entries();
-                while (zes.hasMoreElements()) {
-                    ZipEntry ze = zes.nextElement();
-                    if(ze.getName().contains("libcronet")){
-                        return true;
-                    }
+    public boolean checkApk() {
+        try (ZipFile zf = new ZipFile(mContext.getPackageResourcePath())) {
+            Enumeration<? extends ZipEntry> zes = zf.entries();
+            while (zes.hasMoreElements()) {
+                ZipEntry ze = zes.nextElement();
+                if (ze.getName().contains("libcronet")) {
+                    return true;
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+            Log.e(TAG, "checkApk failed", e);
         }
         return false;
     }
 
-    /**
-     * 预加载Cronet
-     */
-
     public void preDownload() {
-        //安装GMS的预加载
+        ensureInitialized();
         if (prefSo) {
             downloadSo();
-        }else if (isGMS) {
+        } else if (isGMS) {
             CronetProviderInstaller.installProvider(mContext);
         } else {
-            downloadSo();
-            HQUICManager.asyncInit(mContext, new HQUICManager.HQUICInitCallback() {
-                @Override
-                public void onSuccess() {
-                    ins = CronetState.HMS;
-                    Log.e(TAG, "HQUIC安装陈功");
-                }
+            if (isHMS) {
+                HQUICManager.asyncInit(mContext, new HQUICManager.HQUICInitCallback() {
+                    @Override
+                    public void onSuccess() {
+                        ins = CronetState.HMS;
+                        Log.i(TAG, "HQUIC安装成功");
+                    }
 
-                @Override
-                public void onFail(Exception e) {
-                    Log.e(TAG, "HQUIC安装失败", e);
-                    downloadSo();
+                    @Override
+                    public void onFail(Exception e) {
+                        Log.e(TAG, "HQUIC安装失败，降级下载So", e);
+                        downloadSo();
+                    }
+                });
+            } else {
+                downloadSo();
+            }
+        }
+    }
 
-                }
-            });
+    public void preLoadSo() {
+        ensureInitialized();
+        deleteHistoryFile(parentDir, soFile);
 
-
+        if (md5 == null || md5.length() != 32 || TextUtils.isEmpty(soUrl)) {
+            Log.w(TAG, "Invalid md5 or url, fallback to Java");
+            return;
         }
 
-
-    }
-
-
-    public CronetEngine.Builder.LibraryLoader getLibraryLoader() {
-        return new CronetEngine.Builder.LibraryLoader() {
-            @Override
-            public void loadLibrary(String libName) {
-                Log.e(TAG, "libName:" + libName);
-                long start = System.currentTimeMillis();
-                try {
-                    //非cronet的so调用系统方法加载
-                    if (!libName.contains("cronet")) {
-                        System.loadLibrary(libName);
-                        return;
-                    }
-                    //以下逻辑为cronet加载，优先加载本地，否则从远程加载
-                    //首先调用系统行为进行加载
-                    System.loadLibrary(libName);
-                    Log.e(TAG, "load from system");
-
-                } catch (Throwable e) {
-                    //如果找不到，则从远程下载
-
-
-                    //删除历史文件
-                    deleteHistoryFile(parentDir, soFile);
-                    //md5 = getUrlMd5(md5Url);
-                    Log.i(TAG, "soMD5:" + md5);
-
-
-                    if (md5 == null || md5.length() != 32 || soUrl.isEmpty()) {
-                        //如果md5或下载的url为空，则调用系统行为进行加载
-                        System.loadLibrary(libName);
-                        return;
-                    }
-
-
-                    if (!soFile.exists() || !soFile.isFile()) {
-                        //noinspection ResultOfMethodCallIgnored
-                        soFile.delete();
-                        download(soUrl, md5, downloadFile, soFile);
-                        //如果文件不存在或不是文件，则调用系统行为进行加载
-                        System.loadLibrary(libName);
-                        return;
-                    }
-
-                    if (soFile.exists()) {
-                        //如果文件存在，则校验md5值
-                        String fileMD5 = getFileMD5(soFile);
-                        Log.e(TAG, "File:md5:" + fileMD5);
-                        if (fileMD5 != null && fileMD5.equalsIgnoreCase(md5)) {
-                            //md5值一样，则加载
-                            System.load(soFile.getAbsolutePath());
-                            Log.e(TAG, "load from:" + soFile);
-                            return;
-                        }
-                        //md5不一样则删除
-                        //noinspection ResultOfMethodCallIgnored
-                        soFile.delete();
-
-                    }
-                    //不存在则下载
-                    download(soUrl, md5, downloadFile, soFile);
-                    //使用系统加载方法
-                    System.loadLibrary(libName);
-                } finally {
-                    Log.e(TAG, "time:" + (System.currentTimeMillis() - start));
-                }
+        if (soFile.exists() && soFile.isFile()) {
+            String fileMD5 = getFileMD5(soFile);
+            if (md5.equalsIgnoreCase(fileMD5)) {
+                loadSo(soFile);
+                return;
+            } else {
+                deleteFileSafely(soFile);
             }
-        };
+        }
+        download(soUrl, md5, downloadFile, soFile);
     }
-
-
 
     private void downloadSo() {
         executor.execute(() -> {
+            ensureInitialized();
             if (soFile.exists() && Objects.equals(md5, getFileMD5(soFile))) {
-                Log.e(TAG, "So 库已存在");
-                ins = CronetState.Native;
+                Log.i(TAG, "So 库已存在");
+                loadSo(soFile);
             } else {
                 download(soUrl, md5, downloadFile, soFile);
             }
-
-            Log.e(TAG, soName);
         });
     }
 
     /**
-     * Cronet下载链接示例
-     * https://storage.googleapis.com/chromium-cronet/android/92.0.4515.127/Release/cronet/libs/arm64-v8a/libcronet.92.0.4515.127.so
+     * 统一的 SO 加载逻辑，精准捕获异常防止状态错乱
      */
+    private void loadSo(File file) {
+        if (file == null || !file.exists()) return;
+        try {
+            System.load(file.getAbsolutePath());
+            ins = CronetState.Native;
+            Log.i(TAG, "Successfully loaded so from: " + file.getAbsolutePath());
+        } catch (UnsatisfiedLinkError | SecurityException e) {
+            Log.e(TAG, "Failed to load cronet so, file might be corrupted.", e);
+            deleteFileSafely(file); // 损坏的文件直接删除
+            ins = CronetState.Java; // 回退到 Java 状态
+        }
+    }
+
     public enum CronetState {
         GMS, HMS, Native, Java
     }
 
-//    @SuppressLint("UnsafeDynamicallyLoadedCode")
-//    @Override
-//    public void loadLibrary(String libName) {
-//        Log.e(TAG, "libName:" + libName);
-//        long start = System.currentTimeMillis();
-//        try {
-//            //非cronet的so调用系统方法加载
-//            if (!libName.contains("cronet")) {
-//                System.loadLibrary(libName);
-//                return;
-//            }
-//            //以下逻辑为cronet加载，优先加载本地，否则从远程加载
-//            //首先调用系统行为进行加载
-//            System.loadLibrary(libName);
-//            Log.e(TAG, "load from system");
-//
-//        } catch (Throwable e) {
-//            //如果找不到，则从远程下载
-//
-//
-//            //删除历史文件
-//            deleteHistoryFile(parentDir, soFile);
-//            //md5 = getUrlMd5(md5Url);
-//            Log.i(TAG, "soMD5:" + md5);
-//
-//
-//            if (md5 == null || md5.length() != 32 || soUrl.length() == 0) {
-//                //如果md5或下载的url为空，则调用系统行为进行加载
-//                System.loadLibrary(libName);
-//                return;
-//            }
-//
-//
-//            if (!soFile.exists() || !soFile.isFile()) {
-//                //noinspection ResultOfMethodCallIgnored
-//                soFile.delete();
-//                download(soUrl, md5, downloadFile, soFile);
-//                //如果文件不存在或不是文件，则调用系统行为进行加载
-//                System.loadLibrary(libName);
-//                return;
-//            }
-//
-//            if (soFile.exists()) {
-//                //如果文件存在，则校验md5值
-//                String fileMD5 = getFileMD5(soFile);
-//                Log.e(TAG, "File:md5:" + fileMD5);
-//                if (fileMD5 != null && fileMD5.equalsIgnoreCase(md5)) {
-//                    //md5值一样，则加载
-//                    System.load(soFile.getAbsolutePath());
-//                    Log.e(TAG, "load from:" + soFile);
-//                    return;
-//                }
-//                //md5不一样则删除
-//                //noinspection ResultOfMethodCallIgnored
-//                soFile.delete();
-//
-//            }
-//            //不存在则下载
-//            download(soUrl, md5, downloadFile, soFile);
-//            //使用系统加载方法
-//            System.loadLibrary(libName);
-//        } finally {
-//            Log.e(TAG, "time:" + (System.currentTimeMillis() - start));
-//        }
-//    }
-
-
     @SuppressLint({"DiscouragedPrivateApi", "ObsoleteSdkInt"})
     private String getCpuAbi(Context context) {
-//        if (CPU_ABI != null) {
-//            return CPU_ABI;
-//        }
-        // 5.0以上Application才有primaryCpuAbi字段
         try {
             ApplicationInfo appInfo = context.getApplicationInfo();
+            @SuppressLint("PrivateApi")
             Field abiField = ApplicationInfo.class.getDeclaredField("primaryCpuAbi");
             abiField.setAccessible(true);
             Object object = abiField.get(appInfo);
-            if(object!=null){
+            if (object != null) {
                 return (String) object;
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if (TextUtils.isEmpty(CPU_ABI)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return Build.SUPPORTED_ABIS[0];
-            } else {
-                return   Build.CPU_ABI;
-            }
+            Log.w(TAG, "getCpuAbi reflection failed", e);
         }
 
-        //貌似只有这个过时了的API能获取当前APP使用的ABI
-        return CPU_ABI;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return Build.SUPPORTED_ABIS[0];
+        } else {
+            return Build.CPU_ABI;
+        }
     }
-
 
     private String getMd5(String abi) {
-        return json.optString(abi, "");
+        // 修复 NPE：防止 json 解析失败时报错
+        return json != null ? json.optString(abi, "") : "";
     }
 
+    private void deleteFileSafely(File file) {
+        if (file != null && file.exists()) {
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
+        }
+    }
 
-    /**
-     * 删除历史文件
-     */
-    private static void deleteHistoryFile(File dir, File currentFile) {
+    private void deleteHistoryFile(File dir, File currentFile) {
+        if (dir == null || !dir.exists()) return;
         File[] files = dir.listFiles();
-        if (files != null && files.length > 0) {
+        if (files != null) {
             for (File f : files) {
                 if (f.exists() && (currentFile == null || !f.getAbsolutePath().equals(currentFile.getAbsolutePath()))) {
-                    boolean delete = f.delete();
-                    Log.e(TAG, "delete file: " + f + " result: " + delete);
-                    if (!delete) {
-                        f.deleteOnExit();
-                    }
+                    deleteFileSafely(f);
                 }
             }
         }
     }
 
-    /**
-     * 下载文件
-     */
-    private static boolean downloadFileIfNotExist(String url, File destFile) {
-        InputStream inputStream = null;
-        OutputStream outputStream = null;
+    private boolean downloadFileIfNotExist(String url, File destFile) {
+        HttpURLConnection connection = null;
         try {
-            HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
-            inputStream = connection.getInputStream();
-            if (destFile.exists()) {
+            connection = (HttpURLConnection) new URL(url).openConnection();
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(15000);
+
+            // try-with-resources 自动关流
+            try (InputStream inputStream = connection.getInputStream();
+                 OutputStream outputStream = new FileOutputStream(destFile)) {
+
+                destFile.getParentFile().mkdirs();
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, read);
+                }
                 return true;
             }
-            destFile.getParentFile().mkdirs();
-            destFile.createNewFile();
-            outputStream = new FileOutputStream(destFile);
-            byte[] buffer = new byte[32768];
-            int read;
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
-                outputStream.flush();
-            }
-            return true;
         } catch (Throwable e) {
-            e.printStackTrace();
-            if (destFile.exists() && !destFile.delete()) {
-                destFile.deleteOnExit();
-            }
+            Log.e(TAG, "Download file failed", e);
+            deleteFileSafely(destFile);
         } finally {
-            if (inputStream != null) {
-                try {
-                    inputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (outputStream != null) {
-                try {
-                    outputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            if (connection != null) {
+                connection.disconnect(); // 防止连接池泄露
             }
         }
         return false;
     }
-
-    private static final AtomicBoolean download = new AtomicBoolean(false);
-    static ExecutorService executor = Executors.newSingleThreadExecutor();
 
     private static final class CronetPreloaderHolder {
         @SuppressLint("StaticFieldLeak")
         private static final CronetPreloader instance = new CronetPreloader();
     }
 
-
-    /**
-     * 拷贝文件
-     */
-    private static boolean copyFile(File source, File dest) {
+    private boolean copyFile(File source, File dest) {
         if (source == null || !source.exists() || !source.isFile() || dest == null) {
             return false;
         }
         if (source.getAbsolutePath().equals(dest.getAbsolutePath())) {
             return true;
         }
-        FileInputStream is = null;
-        FileOutputStream os = null;
-        File parent = dest.getParentFile();
-        if (parent != null && (!parent.exists())) {
-            boolean mkdirs = parent.mkdirs();
-            if (!mkdirs) {
-                Log.e(TAG,"can not make dir");
-                return false;
-            }
-        }
-        try {
-            is = new FileInputStream(source);
-            os = new FileOutputStream(dest, false);
 
-            byte[] buffer = new byte[1024 * 512];
+        File parent = dest.getParentFile();
+        if (parent != null && !parent.exists()) {
+            parent.mkdirs();
+        }
+
+        try (FileInputStream is = new FileInputStream(source);
+             FileOutputStream os = new FileOutputStream(dest, false)) {
+
+            byte[] buffer = new byte[8192];
             int length;
             while ((length = is.read(buffer)) > 0) {
                 os.write(buffer, 0, length);
             }
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            if (os != null) {
-                try {
-                    os.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
+            Log.e(TAG, "Copy file failed", e);
         }
         return false;
     }
 
-    /**
-     * 获得文件md5
-     */
-    private static String getFileMD5(File file) {
-
-
-        try(FileInputStream fis=new FileInputStream(file)) {
+    private String getFileMD5(File file) {
+        if (file == null || !file.exists()) return "";
+        try (FileInputStream fis = new FileInputStream(file)) {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
-            byte[] buffer = new byte[1024];
-            int numRead = 0;
+            byte[] buffer = new byte[8192]; // 增大缓冲区提升读取速度
+            int numRead;
             while ((numRead = fis.read(buffer)) > 0) {
                 md5.update(buffer, 0, numRead);
             }
             return String.format("%032x", new BigInteger(1, md5.digest())).toLowerCase();
-
-        }catch (Exception | OutOfMemoryError e) {
-            e.printStackTrace();
+        } catch (Exception | OutOfMemoryError e) {
+            Log.e(TAG, "getFileMD5 failed", e);
             return "";
         }
-
     }
-
 }
