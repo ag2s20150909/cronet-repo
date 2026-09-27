@@ -1,0 +1,110 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "native",
+    "version": "Canary-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Canary-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "native-Canary-SNAPSHOT.aar",
+          "url": "native-Canary-SNAPSHOT.aar",
+          "size": 16481827,
+          "sha512": "d3202e91696660ac16cd14a41b8c95874c8e8ce2a256883ef3f2570f25b4cd618c96969c1a80c690936d428c8b81107228deb3bc1d32d27915cbb8d0ce445b77",
+          "sha256": "fffc45b741992e7e70a67a7bf43bb58fcb8a34c66b89f2a1d4b06d4074fe00ee",
+          "sha1": "9a8778193e9a14b81b49cf6537ab150678ade7eb",
+          "md5": "fbb8fd0ec40ac8fe21159262a21d9bed"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Canary-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "native-Canary-SNAPSHOT.aar",
+          "url": "native-Canary-SNAPSHOT.aar",
+          "size": 16481827,
+          "sha512": "d3202e91696660ac16cd14a41b8c95874c8e8ce2a256883ef3f2570f25b4cd618c96969c1a80c690936d428c8b81107228deb3bc1d32d27915cbb8d0ce445b77",
+          "sha256": "fffc45b741992e7e70a67a7bf43bb58fcb8a34c66b89f2a1d4b06d4074fe00ee",
+          "sha1": "9a8778193e9a14b81b49cf6537ab150678ade7eb",
+          "md5": "fbb8fd0ec40ac8fe21159262a21d9bed"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "native-Canary-SNAPSHOT-sources.jar",
+          "url": "native-Canary-SNAPSHOT-sources.jar",
+          "size": 261,
+          "sha512": "1487e5a20c9e4d74f298e07c42e96a61be11b7a768c3fbc199ee138cd68e1fc2267d1cfe3f11f288acc05df755315344d052cc5f6f751f126ab4fe1caa5125ea",
+          "sha256": "c6deada2fac53b8ea6523dbda77597b128006674616f140f04df23264c6d1aa3",
+          "sha1": "2ad14aed781c4a73ed4dbb421966d408a0a06686",
+          "md5": "f43436d6bec321290f6af228ad602604"
+        }
+      ]
+    }
+  ]
+}
