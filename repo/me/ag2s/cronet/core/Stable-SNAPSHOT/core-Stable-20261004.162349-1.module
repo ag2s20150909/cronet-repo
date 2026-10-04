@@ -1,0 +1,186 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "core",
+    "version": "Stable-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.1.0"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.2.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.20"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-Stable-SNAPSHOT.aar",
+          "url": "core-Stable-SNAPSHOT.aar",
+          "size": 1277990,
+          "sha512": "e20053c5c1582a2970073f02d0825b136ad02624711dd4b79be3b905330fbe0fdc9d99fa956d31a697496803767b202ff24877bc419c4904c24bcbb7c3e35821",
+          "sha256": "b407ade3d3d392096e54472cf448603710fb34c845a5038003893c301545d5de",
+          "sha1": "f40ca436af7b05350483369ef8dff0f61cfc14d6",
+          "md5": "6e76975e5c4e33eae6d08f6ac2c64beb"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.startup",
+          "module": "startup-runtime",
+          "version": {
+            "requires": "1.2.0"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.google.protobuf",
+          "module": "protobuf-javalite",
+          "version": {
+            "requires": "4.34.1"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.gms",
+          "module": "play-services-cronet",
+          "version": {
+            "requires": "18.1.0"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "com.huawei.hms",
+          "module": "hquic-provider",
+          "version": {
+            "requires": "5.0.2.300"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.20"
+          },
+          "excludes": [
+            {
+              "group": "org.chromium.net",
+              "module": "*"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "core-Stable-SNAPSHOT.aar",
+          "url": "core-Stable-SNAPSHOT.aar",
+          "size": 1277990,
+          "sha512": "e20053c5c1582a2970073f02d0825b136ad02624711dd4b79be3b905330fbe0fdc9d99fa956d31a697496803767b202ff24877bc419c4904c24bcbb7c3e35821",
+          "sha256": "b407ade3d3d392096e54472cf448603710fb34c845a5038003893c301545d5de",
+          "sha1": "f40ca436af7b05350483369ef8dff0f61cfc14d6",
+          "md5": "6e76975e5c4e33eae6d08f6ac2c64beb"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "core-Stable-SNAPSHOT-sources.jar",
+          "url": "core-Stable-SNAPSHOT-sources.jar",
+          "size": 13802,
+          "sha512": "a5f7ca0f126c7906acfe20d6ab4328e6308acec27f55dadea764305deab8823aca9951a098b7da7f53f22a239fe28f7433218bb8c5261a4e8c0bf9c622858c58",
+          "sha256": "3d62cc7020f43ecda0d05d224dc027146fba355196e928354d8f8cd5fee219db",
+          "sha1": "7d3e8f30657eef0e2dad38fc8fb23f15c8714585",
+          "md5": "ef44db97b068ddc50f8169ac1c6fc9d1"
+        }
+      ]
+    }
+  ]
+}
