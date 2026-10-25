@@ -1,0 +1,122 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "me.ag2s.cronet",
+    "module": "coil",
+    "version": "Stable-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.7.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "coil-Stable-SNAPSHOT.aar",
+          "url": "coil-Stable-SNAPSHOT.aar",
+          "size": 17065,
+          "sha512": "28067df5e75bec5e47c0e9695f5df3e92adb765f6290518de8743ff05dba1c7984c0b0e02a38382e318b7d2dafe876ebecf1f708e353e808f36a2bb2e4fae3f4",
+          "sha256": "161a0e8f188001ec8287165c251661ed198e617cc056195506b675f54174cd59",
+          "sha1": "52c1a503cf3c8c8627c0a5896a7e2b43465c16de",
+          "md5": "d6a1a24522700afb6544844800b464f3"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "me.ag2s.cronet",
+          "module": "core",
+          "version": {
+            "requires": "Stable-SNAPSHOT"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.20"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-core",
+          "version": {
+            "requires": "1.10.2"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.10.2"
+          }
+        },
+        {
+          "group": "com.squareup.okio",
+          "module": "okio",
+          "version": {
+            "requires": "3.17.0"
+          }
+        },
+        {
+          "group": "io.coil-kt.coil3",
+          "module": "coil-network-core",
+          "version": {
+            "requires": "3.4.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "coil-Stable-SNAPSHOT.aar",
+          "url": "coil-Stable-SNAPSHOT.aar",
+          "size": 17065,
+          "sha512": "28067df5e75bec5e47c0e9695f5df3e92adb765f6290518de8743ff05dba1c7984c0b0e02a38382e318b7d2dafe876ebecf1f708e353e808f36a2bb2e4fae3f4",
+          "sha256": "161a0e8f188001ec8287165c251661ed198e617cc056195506b675f54174cd59",
+          "sha1": "52c1a503cf3c8c8627c0a5896a7e2b43465c16de",
+          "md5": "d6a1a24522700afb6544844800b464f3"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "coil-Stable-SNAPSHOT-sources.jar",
+          "url": "coil-Stable-SNAPSHOT-sources.jar",
+          "size": 3060,
+          "sha512": "de62c9dea2d2ee00fcc277171866374fba731a5f72f5be5e6675e06fdb2c2b2cc947680999cc8c3e6215632c8ede297388b79f4487517e624660e7d0965a0abd",
+          "sha256": "84d90d798faed2d87db756e09026bf633484dc3d787ede6a7a61c1578dd15452",
+          "sha1": "f32c95f0b739f5ea7039bccc247573abb5ce6c4e",
+          "md5": "aace2d7dab0542b4ad4e1b8c06435a86"
+        }
+      ]
+    }
+  ]
+}
