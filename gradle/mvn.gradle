@@ -1,0 +1,40 @@
+apply plugin: "maven-publish"
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+
+
+                artifactId = PROJ_ARTIFACTID
+                if ("true" == System.env.JITPACK) {
+                    group = 'com.github.ag2s20150909'
+
+                } else {
+                    group = PROJ_GROUP
+                    version = PROJ_VERSION
+                    //version = PROJ_VERSION
+                }
+
+
+            }
+        }
+
+        repositories {
+
+            if ("true" == System.env.JITPACK) {
+                mavenLocal()
+
+            }
+
+
+            maven {
+                name = 'myrepo'
+                url = "${rootDir}/repo"
+            }
+
+
+        }
+    }
+}
